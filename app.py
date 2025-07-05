@@ -17,6 +17,17 @@ st.image(logo, width=100)
 st.title("Analyse de questionnaire SUS")
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
+with open("template_sus.xlsx", "rb") as f:
+    template_bytes = f.read()
+
+st.download_button(
+    label="⬇️ Télécharger le modèle Excel (SUS)",
+    data=template_bytes,
+    file_name="template_sus.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+
 uploaded_file = st.file_uploader("📁 Charger le fichier Excel", type=["xlsx"])
 
 if uploaded_file:
