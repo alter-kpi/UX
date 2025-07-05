@@ -129,6 +129,7 @@ if uploaded_file:
             ax_dist.set_ylabel("Nombre de sujets")
             ax_dist.set_xlabel("Catégories de score")
             ax_dist.set_ylim(0, max(distribution.values) + 2)
+            ax_dist.get_yaxis().set_visible(False)
             plt.xticks(rotation=20)
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
