@@ -149,39 +149,40 @@ if uploaded_file:
                 pdf = FPDF()
                 pdf.add_page()
             
-                # Ajouter le logo (facultatif) en haut à gauche
+                # Logo
                 try:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
-                    pass  # Ignore si le fichier n'existe pas
+                    pass
             
-                # Titre centré
+                # Titre (centré)
                 pdf.set_font("Arial", "B", 16)
                 title = "Rapport - Questionnaire SUS".replace("–", "-")
                 pdf.cell(0, 10, title, ln=True, align='C')
             
-                # Infos générales centrées
+                # Infos générales (alignées à gauche)
                 pdf.set_font("Arial", "", 12)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(10)
             
-                # Jauge SUS centrée
+                # Jauge SUS (titre à gauche, image centrée)
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
                     pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 10, "Jauge SUS", ln=True)
-                    pdf.image(f_jauge.name, x=15, w=180)  # x=15 pour centrer sur A4
+                    pdf.cell(0, 10, "Jauge SUS", ln=True)  # align left
+                    pdf.image(f_jauge.name, x=15, w=180)
                     pdf.ln(5)
             
-                # Histogramme centré
+                # Histogramme (titre à gauche, image centrée)
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_dist:
                     fig_dist.savefig(f_dist.name, format='png', bbox_inches='tight')
-                    pdf.cell(0, 10, "Répartition des sujets", ln=True)
+                    pdf.cell(0, 10, "Répartition des sujets", ln=True)  # align left
                     pdf.image(f_dist.name, x=15, w=180)
             
                 return pdf.output(dest='S').encode('latin1')
+
 
 
 
