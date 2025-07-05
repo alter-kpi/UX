@@ -119,25 +119,29 @@ if uploaded_file:
             distribution = categories.value_counts().sort_index()
 
             fig_dist, ax_dist = plt.subplots(figsize=(8, 4))
-            bars = ax_dist.bar(distribution.index, distribution.values, color=colors)  # 👈 plus de bord noir
+            bars = ax_dist.bar(distribution.index, distribution.values, color=colors)  # Pas de bord noir
             
+            # Ajouter les étiquettes sur les barres
             for bar in bars:
                 height = bar.get_height()
                 ax_dist.text(bar.get_x() + bar.get_width()/2, height + 0.2, int(height), ha='center', fontsize=10)
             
+            # Titres et labels
             ax_dist.set_title("Répartition des sujets par catégorie SUS")
             ax_dist.set_xlabel("Catégories de score")
             ax_dist.set_ylim(0, max(distribution.values) + 2)
             
-            ax_dist.get_yaxis().set_visible(False)  # Supprime l'axe Y
+            # Nettoyage visuel
+            ax_dist.get_yaxis().set_visible(False)             # Supprime axe Y
             ax_dist.spines['top'].set_visible(False)
             ax_dist.spines['right'].set_visible(False)
             ax_dist.spines['left'].set_visible(False)
-            ax_dist.spines['bottom'].set_visible(False)  # 👈 supprime aussi la ligne X
+            ax_dist.spines['bottom'].set_visible(True)         # ✅ Affiche uniquement l’axe X
             
             plt.xticks(rotation=20)
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
+
 
 
             # --- PDF : génération via fichiers temporaires ---
