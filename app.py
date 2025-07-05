@@ -155,7 +155,7 @@ if uploaded_file:
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
                     pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 10, "Jauge SUS", ln=True)
+                    pdf.cell(0, 10, "Jauge", ln=True)
                     pdf.image(f_jauge.name, w=180)
                     pdf.ln(5)
             
