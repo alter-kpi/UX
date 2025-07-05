@@ -149,39 +149,40 @@ if uploaded_file:
                 pdf = FPDF()
                 pdf.add_page()
             
-                # Ajouter le logo en haut à gauche
+                # Ajouter le logo (facultatif) en haut à gauche
                 try:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
-                    pass  # Au cas où le logo n'est pas trouvé
+                    pass  # Ignore si le fichier n'existe pas
             
-                pdf.set_xy(50, 10)
+                # Titre centré
                 pdf.set_font("Arial", "B", 16)
                 title = "Rapport - Questionnaire SUS".replace("–", "-")
-                pdf.cell(0, 10, title, ln=True)
+                pdf.cell(0, 10, title, ln=True, align='C')
             
+                # Infos générales centrées
                 pdf.set_font("Arial", "", 12)
-                pdf.set_x(50)
-                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.set_x(50)
-                pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
-                pdf.set_x(50)
-                pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(15)
+                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True, align='C')
+                pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True, align='C')
+                pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True, align='C')
+                pdf.ln(10)
             
+                # Jauge SUS centrée
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
                     pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 10, "Jauge", ln=True)
-                    pdf.image(f_jauge.name, w=180)
+                    pdf.cell(0, 10, "Jauge SUS", ln=True, align='C')
+                    pdf.image(f_jauge.name, x=15, w=180)  # x=15 pour centrer sur A4
                     pdf.ln(5)
             
+                # Histogramme centré
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_dist:
                     fig_dist.savefig(f_dist.name, format='png', bbox_inches='tight')
-                    pdf.cell(0, 10, "Répartition des sujets", ln=True)
-                    pdf.image(f_dist.name, w=180)
+                    pdf.cell(0, 10, "Répartition des sujets", ln=True, align='C')
+                    pdf.image(f_dist.name, x=15, w=180)
             
                 return pdf.output(dest='S').encode('latin1')
+
 
 
 
