@@ -120,17 +120,26 @@ if uploaded_file:
             def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
-                pdf.set_font("Arial", "B", 16)
             
-                # Remplacer les caractères non pris en charge
+                # Ajouter le logo en haut à gauche
+                try:
+                    pdf.image("Logo.png", x=10, y=8, w=30)
+                except RuntimeError:
+                    pass  # Au cas où le logo n'est pas trouvé
+            
+                pdf.set_xy(50, 10)
+                pdf.set_font("Arial", "B", 16)
                 title = "Rapport AlterUX – Questionnaire SUS".replace("–", "-")
                 pdf.cell(0, 10, title, ln=True)
             
                 pdf.set_font("Arial", "", 12)
+                pdf.set_x(50)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.set_x(50)
                 pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
+                pdf.set_x(50)
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(10)
+                pdf.ln(15)
             
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
@@ -145,6 +154,7 @@ if uploaded_file:
                     pdf.image(f_dist.name, w=180)
             
                 return pdf.output(dest='S').encode('latin1')
+
 
 
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
