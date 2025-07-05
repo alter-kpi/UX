@@ -129,7 +129,7 @@ if uploaded_file:
             
                 pdf.set_xy(50, 10)
                 pdf.set_font("Arial", "B", 16)
-                title = "Rapport AlterUX – Questionnaire SUS".replace("–", "-")
+                title = "Rapport - Questionnaire SUS".replace("–", "-")
                 pdf.cell(0, 10, title, ln=True)
             
                 pdf.set_font("Arial", "", 12)
