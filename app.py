@@ -75,12 +75,10 @@ if uploaded_file:
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
 
-            # Aiguille + score
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
             ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
                     bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2'))
 
-            # Labels de zones
             for start, end, color, label in zones:
                 center = (start + end) / 2
                 ax.text(center, 0.35, label, ha='center', fontsize=9, color='black',
@@ -118,43 +116,38 @@ if uploaded_file:
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
 
-            # Convertir matplotlib figures en image bytes
+            # --- PDF utils ---
             def fig_to_image_bytes(fig):
                 buf = io.BytesIO()
                 fig.savefig(buf, format='PNG', bbox_inches='tight')
                 buf.seek(0)
                 return buf
-            
-            # Générer le PDF avec fpdf
+
             def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
                 pdf.set_font("Arial", "B", 16)
                 pdf.cell(0, 10, "Rapport AlterUX – Questionnaire SUS", ln=True)
-            
+
                 pdf.set_font("Arial", "", 12)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(10)
-            
-                # Insérer les graphiques
+
                 img_jauge = fig_to_image_bytes(fig_jauge)
                 img_dist = fig_to_image_bytes(fig_dist)
-            
+
                 pdf.set_font("Arial", "B", 12)
                 pdf.cell(0, 10, "Jauge SUS", ln=True)
                 pdf.image(img_jauge, w=180)
                 pdf.ln(5)
-            
+
                 pdf.cell(0, 10, "Répartition des sujets", ln=True)
                 pdf.image(img_dist, w=180)
-            
-                # Retourner le PDF en mémoire
-                pdf_bytes = pdf.output(dest='S').encode('latin1')
-                return pdf_bytes
-            
-            # Générer le PDF et proposer le téléchargement
+
+                return pdf.output(dest='S').encode('latin1')
+
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
@@ -162,7 +155,6 @@ if uploaded_file:
                 file_name="rapport_alterux.pdf",
                 mime="application/pdf"
             )
-
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
