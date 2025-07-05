@@ -3,6 +3,9 @@ from PIL import Image
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from fpdf import FPDF
+from datetime import date
+import io
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
@@ -114,6 +117,52 @@ if uploaded_file:
             plt.xticks(rotation=20)
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
+
+            # Convertir matplotlib figures en image bytes
+            def fig_to_image_bytes(fig):
+                buf = io.BytesIO()
+                fig.savefig(buf, format='PNG', bbox_inches='tight')
+                buf.seek(0)
+                return buf
+            
+            # Générer le PDF avec fpdf
+            def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", "B", 16)
+                pdf.cell(0, 10, "Rapport AlterUX – Questionnaire SUS", ln=True)
+            
+                pdf.set_font("Arial", "", 12)
+                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
+                pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.ln(10)
+            
+                # Insérer les graphiques
+                img_jauge = fig_to_image_bytes(fig_jauge)
+                img_dist = fig_to_image_bytes(fig_dist)
+            
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Jauge SUS", ln=True)
+                pdf.image(img_jauge, w=180)
+                pdf.ln(5)
+            
+                pdf.cell(0, 10, "Répartition des sujets", ln=True)
+                pdf.image(img_dist, w=180)
+            
+                # Retourner le PDF en mémoire
+                pdf_bytes = pdf.output(dest='S').encode('latin1')
+                return pdf_bytes
+            
+            # Générer le PDF et proposer le téléchargement
+            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
+            st.download_button(
+                label="📄 Télécharger le rapport PDF",
+                data=pdf_bytes,
+                file_name="rapport_alterux.pdf",
+                mime="application/pdf"
+            )
+
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
