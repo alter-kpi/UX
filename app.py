@@ -130,3 +130,26 @@ if uploaded_file:
                 pdf.ln(10)
 
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
+                    fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(0, 10, "Jauge SUS", ln=True)
+                    pdf.image(f_jauge.name, w=180)
+                    pdf.ln(5)
+
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_dist:
+                    fig_dist.savefig(f_dist.name, format='png', bbox_inches='tight')
+                    pdf.cell(0, 10, "Répartition des sujets", ln=True)
+                    pdf.image(f_dist.name, w=180)
+
+                return pdf.output(dest='S').encode('latin1')
+
+            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
+            st.download_button(
+                label="📄 Télécharger le rapport PDF",
+                data=pdf_bytes,
+                file_name="rapport_alterux.pdf",
+                mime="application/pdf"
+            )
+
+    except Exception as e:
+        st.error(f"Une erreur est survenue : {str(e)}")
