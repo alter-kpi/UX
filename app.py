@@ -119,20 +119,26 @@ if uploaded_file:
             distribution = categories.value_counts().sort_index()
 
             fig_dist, ax_dist = plt.subplots(figsize=(8, 4))
-            bars = ax_dist.bar(distribution.index, distribution.values, color=colors, edgecolor='black')
-
+            bars = ax_dist.bar(distribution.index, distribution.values, color=colors)  # 👈 plus de bord noir
+            
             for bar in bars:
                 height = bar.get_height()
                 ax_dist.text(bar.get_x() + bar.get_width()/2, height + 0.2, int(height), ha='center', fontsize=10)
-
+            
             ax_dist.set_title("Répartition des sujets par catégorie SUS")
-            ax_dist.set_ylabel("Nombre de sujets")
             ax_dist.set_xlabel("Catégories de score")
             ax_dist.set_ylim(0, max(distribution.values) + 2)
-            ax_dist.get_yaxis().set_visible(False)
+            
+            ax_dist.get_yaxis().set_visible(False)  # Supprime l'axe Y
+            ax_dist.spines['top'].set_visible(False)
+            ax_dist.spines['right'].set_visible(False)
+            ax_dist.spines['left'].set_visible(False)
+            ax_dist.spines['bottom'].set_visible(False)  # 👈 supprime aussi la ligne X
+            
             plt.xticks(rotation=20)
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
+
 
             # --- PDF : génération via fichiers temporaires ---
             def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
