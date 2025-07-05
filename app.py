@@ -173,14 +173,14 @@ if uploaded_file:
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
                     pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 10, "Jauge SUS", ln=True)  # align left
+                    pdf.cell(0, 10, "Jauge", ln=True)  # align left
                     pdf.image(f_jauge.name, x=15, w=180)
                     pdf.ln(5)
             
                 # Histogramme (titre à gauche, image centrée)
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_dist:
                     fig_dist.savefig(f_dist.name, format='png', bbox_inches='tight')
-                    pdf.cell(0, 10, "Répartition des sujets", ln=True)  # align left
+                    pdf.cell(0, 10, "Histogramme", ln=True)  # align left
                     pdf.image(f_dist.name, x=15, w=180)
             
                 return pdf.output(dest='S').encode('latin1')
