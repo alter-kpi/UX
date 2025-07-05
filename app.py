@@ -85,22 +85,28 @@ if uploaded_file:
             fig, ax = plt.subplots(figsize=(10, 2))
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
-
+            
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
             ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
                     bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2'))
-
+            
             for start, end, color, label in zones:
                 center = (start + end) / 2
                 ax.text(center, 0.35, label, ha='center', fontsize=9, color='black',
                         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
-
+            
+            # Afficher les valeurs de bornes sous la jauge
+            for start, end, _, _ in zones:
+                ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color='gray')
+            ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color='gray')
+            
             ax.set_xlim(0, 100)
-            ax.set_ylim(-0.5, 0.8)
+            ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
             ax.set_title("Score SUS", fontsize=14, pad=20)
             fig.tight_layout()
             st.pyplot(fig)
+
 
             # --- Histogramme de répartition ---
             st.subheader("📊 Répartition des sujets par catégorie")
