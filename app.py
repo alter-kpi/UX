@@ -123,7 +123,7 @@ if uploaded_file:
             
                 # Ajouter le logo en haut à gauche
                 try:
-                    pdf.image("Logo.png", x=10, y=8, w=30)
+                    pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
                     pass  # Au cas où le logo n'est pas trouvé
             
