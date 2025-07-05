@@ -193,7 +193,7 @@ if uploaded_file:
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
                 data=pdf_bytes,
-                file_name="rapport_alterux.pdf",
+                file_name="rapport_sus.pdf",
                 mime="application/pdf"
             )
 
