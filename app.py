@@ -154,7 +154,9 @@ if uploaded_file:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
                     pass
-            
+                    
+                pdf.ln(20)  # 👈 saute 20 unités pour descendre sous le logo
+                
                 # Titre (centré)
                 pdf.set_font("Arial", "B", 16)
                 title = "Rapport - Questionnaire SUS".replace("–", "-")
