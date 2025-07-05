@@ -6,6 +6,7 @@ import numpy as np
 from fpdf import FPDF
 from datetime import date
 import io
+import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
@@ -16,7 +17,6 @@ st.image(logo, width=100)
 st.title("Analyse de questionnaire SUS")
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
-# Chargement du fichier
 uploaded_file = st.file_uploader("📁 Charger le fichier Excel", type=["xlsx"])
 
 if uploaded_file:
@@ -116,13 +116,7 @@ if uploaded_file:
             fig_dist.tight_layout()
             st.pyplot(fig_dist)
 
-            # --- PDF utils ---
-            def fig_to_image_bytes(fig):
-                buf = io.BytesIO()
-                fig.savefig(buf, format='PNG', bbox_inches='tight')
-                buf.seek(0)
-                return buf
-
+            # --- PDF : génération via fichiers temporaires ---
             def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
@@ -135,26 +129,4 @@ if uploaded_file:
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(10)
 
-                img_jauge = fig_to_image_bytes(fig_jauge)
-                img_dist = fig_to_image_bytes(fig_dist)
-
-                pdf.set_font("Arial", "B", 12)
-                pdf.cell(0, 10, "Jauge SUS", ln=True)
-                pdf.image(img_jauge, w=180)
-                pdf.ln(5)
-
-                pdf.cell(0, 10, "Répartition des sujets", ln=True)
-                pdf.image(img_dist, w=180)
-
-                return pdf.output(dest='S').encode('latin1')
-
-            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
-            st.download_button(
-                label="📄 Télécharger le rapport PDF",
-                data=pdf_bytes,
-                file_name="rapport_alterux.pdf",
-                mime="application/pdf"
-            )
-
-    except Exception as e:
-        st.error(f"Une erreur est survenue : {str(e)}")
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
