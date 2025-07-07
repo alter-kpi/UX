@@ -152,7 +152,7 @@ if uploaded_file:
 
 
             # --- PDF : génération via fichiers temporaires ---
-            def generate_pdf(avg_score, fig_jauge, fig_dist, num_subjects):
+            def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
             
@@ -161,62 +161,47 @@ if uploaded_file:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
                     pass
-                    
-                pdf.ln(20)  # 👈 saute 20 unités pour descendre sous le logo
-                
+            
+                pdf.ln(20)
+            
                 # Titre (centré)
                 pdf.set_font("Arial", "B", 16)
                 title = "Rapport - Questionnaire SUS".replace("–", "-")
                 pdf.cell(0, 10, title, ln=True, align='C')
             
-                # Infos générales (alignées à gauche)
+                # Infos
                 pdf.set_font("Arial", "", 12)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(10)
             
-                # Jauge SUS (titre à gauche, image centrée)
+                # Jauge
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_jauge:
                     fig_jauge.savefig(f_jauge.name, format='png', bbox_inches='tight')
                     pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 10, "Jauge", ln=True)  # align left
+                    pdf.cell(0, 10, "Jauge", ln=True)
                     pdf.image(f_jauge.name, x=15, w=180)
                     pdf.ln(5)
             
-                # Histogramme (titre à gauche, image centrée)
+                # Histogramme
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_dist:
                     fig_dist.savefig(f_dist.name, format='png', bbox_inches='tight')
-                    pdf.cell(0, 10, "Histogramme", ln=True)  # align left
+                    pdf.cell(0, 10, "Histogramme", ln=True)
                     pdf.image(f_dist.name, x=15, w=180)
+                    pdf.ln(5)
+            
+                # Radar chart
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_radar:
+                    fig_radar.savefig(f_radar.name, format='png', bbox_inches='tight')
+                    pdf.cell(0, 10, "Radar – Moyenne par question", ln=True)
+                    pdf.image(f_radar.name, x=30, w=150)  # centré et un peu plus petit
             
                 return pdf.output(dest='S').encode('latin1')
 
-                # Radar chart des moyennes par question
-                st.subheader("📍 Moyenne par question")
-                
-                question_means = df[questions].mean()
-                labels = questions
-                values = question_means.tolist()
-                values += values[:1]  # pour refermer le radar
-                
-                angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-                angles += angles[:1]
-                
-                fig_radar, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-                ax.plot(angles, values, color='b', linewidth=2)
-                ax.fill(angles, values, color='b', alpha=0.25)
-                ax.set_xticks(angles[:-1])
-                ax.set_xticklabels(labels)
-                ax.set_yticks([1, 2, 3, 4, 5])
-                ax.set_yticklabels(["1", "2", "3", "4", "5"])
-                ax.set_ylim(1, 5)
-                ax.set_title("Moyenne des réponses par question (1 à 5)", y=1.1)
-                
-                st.pyplot(fig_radar)
 
 
-            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
+            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
                 data=pdf_bytes,
