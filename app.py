@@ -37,16 +37,12 @@ if uploaded_file:
 
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
-            st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
-            if 'Sujet' in df.columns:
-                st.dataframe(df[['Sujet', 'SUS_Score']])
-            else:
-                st.dataframe(df[['SUS_Score']])
+            st.subheader(f"🧽 Scores individuels : {len(df)} sujets")
+            st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             avg_score = df['SUS_Score'].mean()
             st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
 
-            # --- Zones et couleurs ---
             zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
             zones = [
                 (0, 25, zone_colors[0], "Pire imaginable"),
@@ -57,8 +53,8 @@ if uploaded_file:
                 (86, 100, zone_colors[5], "Meilleur imaginable")
             ]
 
-            # --- Jauge ---
-            fig, ax = plt.subplots(figsize=(8, 2))
+            # Jauge
+            fig, ax = plt.subplots(figsize=(6, 1.5))
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
@@ -74,18 +70,17 @@ if uploaded_file:
             ax.set_xlim(0, 100)
             ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
-            ax.set_title("Score SUS", fontsize=14, pad=20)
             fig.tight_layout()
             st.pyplot(fig, use_container_width=False)
 
-            # --- Histogramme ---
+            # Histogramme
             st.subheader("📊 Répartition des sujets par catégorie")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
             categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
             distribution = categories.value_counts().sort_index()
-            fig_dist, ax_dist = plt.subplots(figsize=(8, 4))
+            fig_dist, ax_dist = plt.subplots(figsize=(6, 3))
             bars = ax_dist.bar(distribution.index, distribution.values, color=colors)
             for bar in bars:
                 height = bar.get_height()
@@ -94,37 +89,32 @@ if uploaded_file:
             ax_dist.set_xlabel("Catégories de score")
             ax_dist.set_ylim(0, max(distribution.values) + 2)
             ax_dist.get_yaxis().set_visible(False)
-            ax_dist.spines['top'].set_visible(False)
-            ax_dist.spines['right'].set_visible(False)
-            ax_dist.spines['left'].set_visible(False)
-            ax_dist.spines['bottom'].set_visible(True)
-            plt.xticks(rotation=20)
+            for spine in ['top', 'right', 'left']:
+                ax_dist.spines[spine].set_visible(False)
             fig_dist.tight_layout()
             st.pyplot(fig_dist, use_container_width=False)
 
-            # --- Radar chart ---
+            # Radar
             st.subheader("📍 Moyenne par question")
             question_means = df[questions].mean()
-            labels = questions
+            radar_labels = questions
             values = question_means.tolist() + [question_means.tolist()[0]]
-            angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-            angles += angles[:1]
-            fig_radar, ax = plt.subplots(figsize=(5.5, 5.5), subplot_kw=dict(polar=True))
+            angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
+            fig_radar, ax = plt.subplots(figsize=(5, 5), subplot_kw=dict(polar=True))
             ax.plot(angles, values, color='b', linewidth=2)
             ax.fill(angles, values, color='b', alpha=0.25)
             ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(labels)
+            ax.set_xticklabels(radar_labels)
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_ylim(1, 5)
             ax.set_title("Moyenne des réponses par question (1 à 5)", y=1.1)
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
 
-            # --- Boxplot ---
+            # Boxplot
             st.subheader("📦 Distribution des scores SUS")
-            fig_box, ax_box = plt.subplots(figsize=(4, 6))
-            ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True,
-                           boxprops=dict(facecolor="#5bc0de"))
+            fig_box, ax_box = plt.subplots(figsize=(3, 5))
+            ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True, boxprops=dict(facecolor="#5bc0de"))
             ax_box.set_title("Distribution des scores SUS")
             ax_box.set_ylabel("Score SUS")
             ax_box.set_xticks([1])
@@ -132,7 +122,7 @@ if uploaded_file:
             fig_box.tight_layout()
             st.pyplot(fig_box, use_container_width=False)
 
-            # --- Génération PDF ---
+            # PDF
             def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, fig_box, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
@@ -154,7 +144,7 @@ if uploaded_file:
                         fig.savefig(tmp.name, format='png', bbox_inches='tight')
                         pdf.set_font("Arial", "B", 12)
                         pdf.cell(0, 10, title, ln=True)
-                        x = (pdf.w - pdf.l_margin - pdf.r_margin - width) / 2 + pdf.l_margin
+                        x = (pdf.w - width) / 2
                         pdf.image(tmp.name, x=x, w=width)
                         pdf.ln(5)
 
@@ -189,5 +179,6 @@ st.download_button(
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
+# Logo bas de page
 logo = Image.open("Logo.png")
 st.image(logo, width=80)
