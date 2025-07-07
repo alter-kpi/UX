@@ -16,6 +16,9 @@ st.image(logo, width=80)
 
 st.title("Analyse de questionnaire SUS")
 
+with open("template_sus.xlsx", "rb") as f:
+    template_bytes = f.read()
+    
 st.download_button(
     label="⬇️ Télécharger le template Excel (SUS)",
     data=template_bytes,
@@ -24,9 +27,6 @@ st.download_button(
 )
 
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
-
-with open("template_sus.xlsx", "rb") as f:
-    template_bytes = f.read()
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
