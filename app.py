@@ -171,6 +171,30 @@ if uploaded_file:
             
                 return pdf.output(dest='S').encode('latin1')
 
+                # --- Radar chart des moyennes par question ---
+                st.subheader("📍 Moyenne par question")
+                
+                question_means = df[questions].mean()
+                labels = questions
+                values = question_means.tolist()
+                values += values[:1]  # pour refermer le radar
+                
+                angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+                angles += angles[:1]
+                
+                fig_radar, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+                ax.plot(angles, values, color='b', linewidth=2)
+                ax.fill(angles, values, color='b', alpha=0.25)
+                ax.set_xticks(angles[:-1])
+                ax.set_xticklabels(labels)
+                ax.set_yticks([1, 2, 3, 4, 5])
+                ax.set_yticklabels(["1", "2", "3", "4", "5"])
+                ax.set_ylim(1, 5)
+                ax.set_title("Moyenne des réponses par question (1 à 5)", y=1.1)
+                
+                st.pyplot(fig_radar)
+
+
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
