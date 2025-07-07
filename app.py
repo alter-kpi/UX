@@ -22,7 +22,6 @@ with open("template_sus.xlsx", "rb") as f:
 
 st.download_button(
     label="⬇️ Télécharger le modèle Excel (SUS)",
-    fontsize=12
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
