@@ -10,10 +10,6 @@ import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-# Logo
-logo = Image.open("Logo.png")
-st.image(logo, width=80)
-
 st.title("Analyse de questionnaire SUS")
 
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
@@ -198,4 +194,8 @@ st.download_button(
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
+# Logo
+logo = Image.open("Logo.png")
+st.image(logo, width=80)
 
