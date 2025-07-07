@@ -183,7 +183,7 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 
 st.markdown("---")
-st.markdown("Télécharger le template Excel des résultats à charger dans cette application :")
+st.markdown("Template Excel des résultats à charger dans cette application disponible ici :")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
