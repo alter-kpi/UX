@@ -195,7 +195,9 @@ if uploaded_file:
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_radar:
                     fig_radar.savefig(f_radar.name, format='png', bbox_inches='tight')
                     pdf.cell(0, 10, "Radar - Moyenne par question", ln=True)
-                    pdf.image(f_radar.name, x=45, w=120)  # centré et un peu plus petit
+                    image_width = 120
+                    x_center = (pdf.w - pdf.l_margin - pdf.r_margin - image_width) / 2 + pdf.l_margin
+                    pdf.image(f_radar.name, x=x_center, w=image_width)
             
                 return pdf.output(dest='S').encode('latin1')
 
