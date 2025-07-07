@@ -16,16 +16,6 @@ st.image(logo, width=80)
 
 st.title("Analyse de questionnaire SUS")
 
-with open("template_sus.xlsx", "rb") as f:
-    template_bytes = f.read()
-    
-st.download_button(
-    label="⬇️ Télécharger le template Excel (SUS)",
-    data=template_bytes,
-    file_name="template_sus.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
@@ -185,10 +175,6 @@ if uploaded_file:
             
                 return pdf.output(dest='S').encode('latin1')
 
-
-
-
-
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, len(df))
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
@@ -199,3 +185,17 @@ if uploaded_file:
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
+
+
+st.markdown("Télécharger le template Excel des résultats à charger dans cette application :")
+
+with open("template_sus.xlsx", "rb") as f:
+    template_bytes = f.read()
+    
+st.download_button(
+    label="⬇️ Télécharger le template Excel (SUS)",
+    data=template_bytes,
+    file_name="template_sus.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
