@@ -193,7 +193,7 @@ with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
     
 st.download_button(
-    label="Template Excel (SUS)",
+    label="⬇️ Template Excel (SUS)",
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
