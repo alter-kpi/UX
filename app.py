@@ -113,7 +113,7 @@ if uploaded_file:
 
             # Boxplot
             st.subheader("📦 Distribution des scores SUS")
-            fig_box, ax_box = plt.subplots(figsize=(2, 4))
+            fig_box, ax_box = plt.subplots(figsize=(1, 2))
             ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True, boxprops=dict(facecolor="#5bc0de"))
             ax_box.set_title("Distribution des scores SUS")
             ax_box.set_ylabel("Score SUS")
