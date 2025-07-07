@@ -150,7 +150,21 @@ if uploaded_file:
             
             st.pyplot(fig_radar)
 
+            # --- Boxplot des scores SUS ---
+            st.subheader("📦 Distribution des scores SUS")
+            
+            fig_box, ax_box = plt.subplots(figsize=(4, 6))
+            ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True,
+                           boxprops=dict(facecolor="#5bc0de"))
+            ax_box.set_title("Distribution des scores SUS")
+            ax_box.set_ylabel("Score SUS")
+            ax_box.set_xticks([1])
+            ax_box.set_xticklabels([""])
+            fig_box.tight_layout()
+            
+            st.pyplot(fig_box)
 
+            
             # --- PDF : génération via fichiers temporaires ---
             def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
                 pdf = FPDF()
