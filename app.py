@@ -91,7 +91,7 @@ if uploaded_file:
             ax.axis('off')
             ax.set_title("Score SUS", fontsize=14, pad=20)
             fig.tight_layout()
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=False)
 
             # --- Histogramme de répartition ---
             st.subheader("📊 Répartition des sujets par catégorie")
@@ -125,7 +125,7 @@ if uploaded_file:
             
             plt.xticks(rotation=20)
             fig_dist.tight_layout()
-            st.pyplot(fig_dist)
+            st.pyplot(fig_dist, use_container_width=False)
 
             # Radar chart des moyennes par question
             st.subheader("📍 Moyenne par question")
@@ -148,7 +148,7 @@ if uploaded_file:
             ax.set_ylim(1, 5)
             ax.set_title("Moyenne des réponses par question (1 à 5)", y=1.1)
             
-            st.pyplot(fig_radar)
+            st.pyplot(fig_radar, use_container_width=False)
 
             # --- Boxplot des scores SUS ---
             st.subheader("📦 Distribution des scores SUS")
@@ -162,7 +162,7 @@ if uploaded_file:
             ax_box.set_xticklabels([""])
             fig_box.tight_layout()
             
-            st.pyplot(fig_box)
+            st.pyplot(fig_box, use_container_width=False)
 
             
             # --- PDF : génération via fichiers temporaires ---
