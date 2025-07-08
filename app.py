@@ -87,6 +87,8 @@ if uploaded_file:
             st.markdown("---")
             
             # Jauge
+            st.markdown(f"#### Score SUS : {avg_score:.1f}")
+            
             fig, ax = plt.subplots(figsize=(6, 1.5))
             fig.patch.set_alpha(0)         # fond transparent
             ax.set_facecolor("none")       # fond transparent
