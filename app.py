@@ -138,7 +138,6 @@ if uploaded_file:
                 add_fig(fig_jauge, "Jauge", 180)
                 add_fig(fig_dist, "Histogramme", 180)
                 add_fig(fig_radar, "Radar - Moyenne par question", 120)
-                add_fig(fig_box, "Boxplot - Distribution des scores SUS", 80)
 
                 return pdf.output(dest='S').encode('latin1')
 
