@@ -110,6 +110,7 @@ if uploaded_file:
             
             st.pyplot(fig, use_container_width=False)
 
+            st.markdown("---")
 
             # Histogramme ---
             st.markdown("#### Répartition des sujets par catégorie")
@@ -150,6 +151,7 @@ if uploaded_file:
             fig_dist.tight_layout()
             st.pyplot(fig_dist, use_container_width=False)
 
+            st.markdown("---")
 
             # Radar
             st.markdown("#### Moyenne par question")
@@ -162,26 +164,23 @@ if uploaded_file:
             fig_radar.patch.set_alpha(0)           # fond transparent
             ax.set_facecolor("none")               # fond transparent
             
-            # Tracé
             ax.plot(angles, values, color='cyan', linewidth=1)
             ax.fill(angles, values, color='cyan', alpha=0.25)
             
-            # Axe des angles (questions)
             ax.set_xticks(angles[:-1])
             ax.set_xticklabels(radar_labels, fontsize=6, color='white')
             
-            # Axe radial (1-5)
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='white')
             ax.set_ylim(1, 5)
             
-            # Autres ajustements
             ax.tick_params(colors='white')
             ax.spines['polar'].set_color('white')
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
-
+            
+            st.markdown("---")
 
             # Aperçu des données
             st.write("#### Aperçu des données :", df.head())
