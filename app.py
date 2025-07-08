@@ -87,30 +87,33 @@ if uploaded_file:
             ]
             
             # Jauge
-            
-            st.markdown(f"#### Score SUS moyen : **{avg_score:.1f} / 100**")
-            
             fig, ax = plt.subplots(figsize=(6, 1.5))
+            fig.patch.set_alpha(0)         # fond transparent
+            ax.set_facecolor("none")       # fond transparent
+            
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
+            
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
             ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
-                    bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2'))
+                    bbox=dict(facecolor='black', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.8))
+            
             for start, end, color, label in zones:
                 center = (start + end) / 2
-                ax.text(center, 0.35, label, ha='center', fontsize=9, color='black',
-                        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.2'))
+                ax.text(center, 0.35, label, ha='center', fontsize=9, color='white',
+                        bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'))
+            
             for start, end, _, _ in zones:
                 ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color='gray')
             ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color='gray')
+            
             ax.set_xlim(0, 100)
             ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
-             #fig.tight_layout()
-            fig.patch.set_alpha(0)
-            ax.set_facecolor("none")
+            fig.tight_layout()
             
             st.pyplot(fig, use_container_width=False)
+
 
             # Histogramme
             st.markdown("#### Répartition des sujets par catégorie")
