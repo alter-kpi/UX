@@ -40,6 +40,8 @@ if uploaded_file:
             st.subheader(f"Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
+            avg_score = df['SUS_Score'].mean()
+            
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
             q3 = df['SUS_Score'].quantile(0.75)
