@@ -91,6 +91,7 @@ if uploaded_file:
             for spine in ['top', 'right', 'left']:
                 ax_dist.spines[spine].set_visible(False)
             fig_dist.tight_layout()
+            plt.xticks(rotation=30)
             st.pyplot(fig_dist, use_container_width=False)
 
             # Radar
