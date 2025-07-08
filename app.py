@@ -37,9 +37,6 @@ if uploaded_file:
 
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
-            st.markdown(f"#### Scores individuels : {len(df)} sujets")
-            st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
-
             avg_score = df['SUS_Score'].mean()
             
              # Statistiques descriptives
@@ -152,6 +149,10 @@ if uploaded_file:
             ax.set_ylim(1, 5)
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
+            # Scores individuels
+            st.markdown(f"#### Scores individuels : {len(df)} sujets")
+            st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # PDF
             def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
