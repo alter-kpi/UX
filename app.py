@@ -9,7 +9,7 @@ import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-st.title("📃 Analyse de questionnaire SUS")
+st.title("📊 Analyse de questionnaire SUS")
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
