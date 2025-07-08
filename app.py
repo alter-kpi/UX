@@ -67,6 +67,8 @@ if uploaded_file:
                     f"{iqr:.1f}"
                 ]
             })
+
+            st.markdown("---")
             
             st.markdown("#### Statistiques")
             st.table(stats_df)
@@ -81,6 +83,8 @@ if uploaded_file:
                 (73, 86, zone_colors[4], "Excellent"),
                 (86, 100, zone_colors[5], "Meilleur imaginable")
             ]
+
+            st.markdown("---")
             
             # Jauge
             fig, ax = plt.subplots(figsize=(6, 1.5))
