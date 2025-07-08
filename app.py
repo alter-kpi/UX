@@ -96,7 +96,7 @@ if uploaded_file:
             
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
             ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
-                    bbox=dict(facecolor='black', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.8))
+                    bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.8))
             
             for start, end, color, label in zones:
                 center = (start + end) / 2
