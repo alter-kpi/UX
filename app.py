@@ -114,25 +114,27 @@ if uploaded_file:
             ax_box.set_xticklabels([""])
             fig_box.tight_layout()
 
-            # --- SECTION 2 : Affichage à l'écran ---
+            # SECTION 2 : Affichage à l'écran
+            with st.container():
+                col_left, col_right = st.columns([2, 1])  # Largeur 2/3 à gauche, 1/3 à droite
+            
+                with col_left:
+                    st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
+                    st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
+            
+                    st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
+                    st.pyplot(fig, use_container_width=False)  # Jauge
+            
+                    st.subheader("📊 Répartition des sujets par catégorie")
+                    st.pyplot(fig_dist, use_container_width=False)  # Histogramme
+            
+                    st.subheader("📍 Moyenne par question")
+                    st.pyplot(fig_radar, use_container_width=False)  # Radar
+            
+                with col_right:
+                    st.subheader("📦 Distribution des scores SUS")
+                    st.pyplot(fig_box, use_container_width=False)  # Boxplot
 
-            st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
-            st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
-
-            st.subheader("📈 Score SUS moyen")
-            st.metric("Score moyen", f"{avg_score:.1f} / 100")
-
-            st.subheader("🎯 Jauge SUS")
-            st.pyplot(fig_jauge, use_container_width=False)
-
-            st.subheader("📊 Répartition des sujets par catégorie")
-            st.pyplot(fig_dist, use_container_width=False)
-
-            st.subheader("📍 Moyenne par question")
-            st.pyplot(fig_radar, use_container_width=False)
-
-            st.subheader("📦 Distribution des scores SUS")
-            st.pyplot(fig_box, use_container_width=False)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
