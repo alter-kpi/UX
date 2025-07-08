@@ -37,11 +37,11 @@ if uploaded_file:
 
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
-            st.subheader(f"🧽 Scores individuels : {len(df)} sujets")
+            st.subheader(f"Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             avg_score = df['SUS_Score'].mean()
-            st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
+            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
 
             zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
             zones = [
@@ -74,7 +74,7 @@ if uploaded_file:
             st.pyplot(fig, use_container_width=False)
 
             # Histogramme
-            st.subheader("📊 Répartition des sujets par catégorie")
+            st.subheader("Répartition des sujets par catégorie")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
@@ -95,7 +95,7 @@ if uploaded_file:
             st.pyplot(fig_dist, use_container_width=False)
 
             # Radar
-            st.subheader("📍 Moyenne par question")
+            st.subheader("Moyenne par question")
             question_means = df[questions].mean()
             radar_labels = questions
             values = question_means.tolist() + [question_means.tolist()[0]]
@@ -112,7 +112,7 @@ if uploaded_file:
             st.pyplot(fig_radar, use_container_width=False)
 
             # Boxplot
-            st.subheader("📦 Distribution des scores SUS")
+            st.subheader("Distribution des scores SUS")
             fig_box, ax_box = plt.subplots(figsize=(2.2, 3.8))
             ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True, boxprops=dict(facecolor="#5bc0de"))
             ax_box.set_title("Distribution des scores SUS", fontsize=10)
