@@ -17,7 +17,6 @@ uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
-        st.write("#### Aperçu des données :", df.head())
 
         questions = [f"Question{i}" for i in range(1, 11)]
         if not all(col in df.columns for col in questions):
@@ -149,6 +148,9 @@ if uploaded_file:
             ax.set_ylim(1, 5)
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
+            # Aperçu des données
+            st.write("#### Aperçu des données :", df.head())
 
             # Scores individuels
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
