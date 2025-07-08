@@ -104,10 +104,9 @@ if uploaded_file:
             ax.plot(angles, values, color='b', linewidth=1)
             ax.fill(angles, values, color='b', alpha=0.25)
             ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(radar_labels,fontsize=8)
+            ax.set_xticklabels(radar_labels,fontsize=6)
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_ylim(1, 5)
-            ax.set_title("Moyenne des réponses par question (1 à 5)", y=1.1)
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
 
