@@ -111,25 +111,47 @@ if uploaded_file:
             st.pyplot(fig, use_container_width=False)
 
 
-            # Histogramme
+            # Histogramme ---
             st.markdown("#### Répartition des sujets par catégorie")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
             categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
             distribution = categories.value_counts().sort_index()
+            
             fig_dist, ax_dist = plt.subplots(figsize=(6, 3))
+            fig_dist.patch.set_alpha(0)           # fond transparent
+            ax_dist.set_facecolor("none")         # fond transparent
+            
             bars = ax_dist.bar(distribution.index, distribution.values, color=colors)
+            
+            # Ajouter les étiquettes
             for bar in bars:
                 height = bar.get_height()
-                ax_dist.text(bar.get_x() + bar.get_width()/2, height + 0.2, int(height), ha='center', fontsize=10)
+                ax_dist.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    height + 0.2,
+                    int(height),
+                    ha='center',
+                    fontsize=10,
+                    color='white'
+                )
+            
+            # Style 
             ax_dist.set_ylim(0, max(distribution.values) + 2)
             ax_dist.get_yaxis().set_visible(False)
+            
             for spine in ['top', 'right', 'left']:
                 ax_dist.spines[spine].set_visible(False)
-            fig_dist.tight_layout()
+            
+            ax_dist.spines['bottom'].set_color('white')
+            ax_dist.tick_params(axis='x', colors='white')
+            
             plt.xticks(rotation=30)
+            
+            fig_dist.tight_layout()
             st.pyplot(fig_dist, use_container_width=False)
+
 
             # Radar
             st.markdown("#### Moyenne par question")
