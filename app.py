@@ -124,15 +124,18 @@ if uploaded_file:
                     st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
                     st.pyplot(fig, use_container_width=False)
 
-                    st.subheader("📊 Répartition des sujets par catégorie")
-                    st.pyplot(fig_dist, use_container_width=False)
-
                     st.subheader("📍 Moyenne par question")
                     st.pyplot(fig_radar, use_container_width=False)
 
                 with col_right:
+
+                    st.subheader("📊 Répartition des sujets par catégorie")
+                    st.pyplot(fig_dist, use_container_width=False)
+                    
                     st.subheader("📦 Distribution des scores SUS")
                     st.pyplot(fig_box, use_container_width=False)
+
+    
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
