@@ -71,7 +71,6 @@ if uploaded_file:
             ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
             fig.tight_layout()
-            fig.patch.set_alpha(0)
             st.pyplot(fig, use_container_width=False)
 
             # Histogramme
@@ -101,7 +100,7 @@ if uploaded_file:
             radar_labels = questions
             values = question_means.tolist() + [question_means.tolist()[0]]
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
-            fig_radar, ax = plt.subplots(figsize=(5, 5), subplot_kw=dict(polar=True))
+            fig_radar, ax = plt.subplots(figsize=(3, 3), subplot_kw=dict(polar=True))
             ax.plot(angles, values, color='b', linewidth=2)
             ax.fill(angles, values, color='b', alpha=0.25)
             ax.set_xticks(angles[:-1])
