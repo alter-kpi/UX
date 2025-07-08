@@ -118,9 +118,9 @@ if uploaded_file:
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
 
-            # stats_df_questions = calculate_question_stats(df, questions)
-            # st.markdown("#### Statistiques par question")
-            # st.dataframe(stats_df_questions)
+            stats_df_questions = calculate_question_stats(df, questions)
+            st.markdown("#### Statistiques par question")
+            st.dataframe(stats_df_questions)
 
             def generate_pdf(avg_score, num_subjects, stats_df, fig_jauge, fig_hist, fig_radar, question_stats_df):
                 pdf = FPDF()
