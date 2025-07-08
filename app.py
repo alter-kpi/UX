@@ -48,7 +48,7 @@ if uploaded_file:
             # Container - Tableau des scores
             st.    
             with st.container():
-                st.markdown(f"🧮 Scores individuels : {len(df)} sujets")
+                st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
                 st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # Container - Score moyen et jauge
