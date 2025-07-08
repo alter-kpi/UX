@@ -188,7 +188,6 @@ if uploaded_file:
 
              # Statistiques par question
             with st.container():
-                st.markdown("#### Statistiques par question")
             
                 stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
                 stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
