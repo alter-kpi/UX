@@ -72,7 +72,7 @@ if uploaded_file:
                 ]
             })
             
-            st.markdown("# Résumé des scores SUS")
+            st.markdown("#### Statistiques")
             st.table(stats_df)
 
             avg_score = df['SUS_Score'].mean()
