@@ -71,6 +71,7 @@ if uploaded_file:
             ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
             fig.tight_layout()
+            fig.patch.set_facecolor('lightgray')
             st.pyplot(fig, use_container_width=False)
 
             # Histogramme
