@@ -109,16 +109,6 @@ if uploaded_file:
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
 
-            # Boxplot
-            st.subheader("Distribution des scores SUS")
-            fig_box, ax_box = plt.subplots(figsize=(2.2, 3.8))
-            ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True, boxprops=dict(facecolor="#5bc0de"))
-            ax_box.set_ylabel("Score SUS", fontsize=9)
-            ax_box.set_xticks([1])
-            ax_box.set_xticklabels([""], fontsize=6)
-            fig_box.tight_layout()
-            st.pyplot(fig_box, use_container_width=False)
-
             # PDF
             def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, fig_box, num_subjects):
                 pdf = FPDF()
