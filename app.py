@@ -103,7 +103,7 @@ if uploaded_file:
             for start, end, color, label in zones:
                 center = (start + end) / 2
                 ax.text(center, 0.35, label, ha='center', fontsize=9, color='white',
-                        bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'))
+                        bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'),rotation=30)
             
             for start, end, _, _ in zones:
                 ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color='gray')
