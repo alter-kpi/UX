@@ -9,7 +9,7 @@ import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-st.title("Analyse de questionnaire SUS")
+st.markdown("# Analyse de questionnaire SUS")
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
@@ -36,11 +36,11 @@ if uploaded_file:
                 return score * 2.5
 
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
+
             avg_score = df['SUS_Score'].mean()
 
-            # SECTION 1 : PRÉPARATION DES FIGURES
-
-            # Jauge
+            # --- Génération des figures ---
+            # Couleurs et zones
             zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
             zones = [
                 (0, 25, zone_colors[0], "Pire imaginable"),
@@ -51,7 +51,8 @@ if uploaded_file:
                 (86, 100, zone_colors[5], "Meilleur imaginable")
             ]
 
-            fig, ax = plt.subplots(figsize=(6, 1.5))
+            # Jauge
+            fig_jauge, ax = plt.subplots(figsize=(6, 1.5))
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
@@ -67,7 +68,7 @@ if uploaded_file:
             ax.set_xlim(0, 100)
             ax.set_ylim(-0.7, 0.8)
             ax.axis('off')
-            fig.tight_layout()
+            fig_jauge.tight_layout()
 
             # Histogramme
             bins = [0, 25, 39, 52, 73, 86, 100]
@@ -108,42 +109,32 @@ if uploaded_file:
             ax_box.boxplot(df["SUS_Score"], vert=True, patch_artist=True, boxprops=dict(facecolor="#5bc0de"))
             ax_box.set_title("Distribution des scores SUS", fontsize=10)
             ax_box.set_ylabel("Score SUS", fontsize=9)
+            ax_box.tick_params(labelsize=8)
             ax_box.set_xticks([1])
             ax_box.set_xticklabels([""])
             fig_box.tight_layout()
 
-            # SECTION 2 : AFFICHAGE À L'ÉCRAN
+            # --- Disposition visuelle avec containers ---
+            with st.container():
+                st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
+                st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            # Container 1 : titre & résumé
             with st.container():
-                st.title("Analyse de questionnaire SUS")
-                st.markdown("Résumé général ici...")
-                st.metric("Score moyen", f"{avg_score:.1f} / 100")
-                st.metric("Nombre de sujets", len(df))
-            
-            # Container 2 : jauge seule
-            with st.container():
-                st.subheader("📍 Score SUS global")
+                st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
                 st.pyplot(fig_jauge, use_container_width=False)
-            
-            # Container 3 : 2 colonnes côte à côte
+
             with st.container():
                 col1, col2 = st.columns(2)
-                
                 with col1:
                     st.subheader("📊 Répartition par catégorie")
                     st.pyplot(fig_dist, use_container_width=False)
-            
                 with col2:
                     st.subheader("📦 Boxplot des scores")
                     st.pyplot(fig_box, use_container_width=False)
-            
-            # Container 4 : radar en pleine largeur
+
             with st.container():
                 st.subheader("📌 Moyenne par question")
                 st.pyplot(fig_radar, use_container_width=False)
-
-    
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
