@@ -110,7 +110,7 @@ if uploaded_file:
             st.pyplot(fig, use_container_width=False)
 
             # Histogramme
-            st.markdown("####Répartition des sujets par catégorie")
+            st.markdown("#### Répartition des sujets par catégorie")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
