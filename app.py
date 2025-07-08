@@ -106,7 +106,7 @@ if uploaded_file:
             ax.set_xticklabels(radar_labels,fontsize=6)
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_yticks([1, 2, 3, 4, 5])
-            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=9)  # 👈 ajuste ici la taille
+            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6)  # 👈 ajuste ici la taille
             ax.set_ylim(1, 5)
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
