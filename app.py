@@ -110,7 +110,7 @@ if uploaded_file:
             st.pyplot(fig_radar, use_container_width=False)
 
             # PDF
-            def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, fig_box, num_subjects):
+            def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
                 pdf = FPDF()
                 pdf.add_page()
                 try:
