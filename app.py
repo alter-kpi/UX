@@ -74,8 +74,6 @@ if uploaded_file:
             st.table(stats_df)
 
             avg_score = df['SUS_Score'].mean()
-            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
-
             zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
             zones = [
                 (0, 25, zone_colors[0], "Pire imaginable"),
@@ -87,6 +85,9 @@ if uploaded_file:
             ]
             
             # Jauge
+            
+            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
+            
             fig, ax = plt.subplots(figsize=(6, 1.5))
             for start, end, color, label in zones:
                 ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
