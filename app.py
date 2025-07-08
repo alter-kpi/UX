@@ -17,7 +17,7 @@ uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
-        st.write("Aperçu des données :", df.head())
+        st.markdown("#### Aperçu des données :", df.head())
 
         questions = [f"Question{i}" for i in range(1, 11)]
         if not all(col in df.columns for col in questions):
@@ -88,7 +88,7 @@ if uploaded_file:
             
             # Jauge
             
-            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
+            st.markdown(f"#### Score SUS moyen : **{avg_score:.1f} / 100**")
             
             fig, ax = plt.subplots(figsize=(6, 1.5))
             for start, end, color, label in zones:
@@ -110,7 +110,7 @@ if uploaded_file:
             st.pyplot(fig, use_container_width=False)
 
             # Histogramme
-            st.subheader("Répartition des sujets par catégorie")
+            st.markdown("####Répartition des sujets par catégorie")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
@@ -130,7 +130,7 @@ if uploaded_file:
             st.pyplot(fig_dist, use_container_width=False)
 
             # Radar
-            st.subheader("Moyenne par question")
+            st.markdown("#### Moyenne par question")
             question_means = df[questions].mean()
             radar_labels = questions
             values = question_means.tolist() + [question_means.tolist()[0]]
