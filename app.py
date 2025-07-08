@@ -125,7 +125,6 @@ if uploaded_file:
             
             bars = ax_dist.bar(distribution.index, distribution.values, color=colors)
             
-            # Ajouter les étiquettes
             for bar in bars:
                 height = bar.get_height()
                 ax_dist.text(
@@ -137,7 +136,6 @@ if uploaded_file:
                     color='white'
                 )
             
-            # Style 
             ax_dist.set_ylim(0, max(distribution.values) + 2)
             ax_dist.get_yaxis().set_visible(False)
             
@@ -159,17 +157,31 @@ if uploaded_file:
             radar_labels = questions
             values = question_means.tolist() + [question_means.tolist()[0]]
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
+            
             fig_radar, ax = plt.subplots(figsize=(3, 3), subplot_kw=dict(polar=True))
-            ax.plot(angles, values, color='b', linewidth=1)
-            ax.fill(angles, values, color='b', alpha=0.25)
+            fig_radar.patch.set_alpha(0)           # fond transparent
+            ax.set_facecolor("none")               # fond transparent
+            
+            # Tracé
+            ax.plot(angles, values, color='cyan', linewidth=1)
+            ax.fill(angles, values, color='cyan', alpha=0.25)
+            
+            # Axe des angles (questions)
             ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(radar_labels,fontsize=6)
+            ax.set_xticklabels(radar_labels, fontsize=6, color='white')
+            
+            # Axe radial (1-5)
             ax.set_yticks([1, 2, 3, 4, 5])
-            ax.set_yticks([1, 2, 3, 4, 5])
-            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6)  # 👈 ajuste ici la taille
+            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='white')
             ax.set_ylim(1, 5)
+            
+            # Autres ajustements
+            ax.tick_params(colors='white')
+            ax.spines['polar'].set_color('white')
+            
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
 
             # Aperçu des données
             st.write("#### Aperçu des données :", df.head())
