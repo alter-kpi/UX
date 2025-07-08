@@ -207,37 +207,71 @@ if uploaded_file:
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            # PDF
-            def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
+            def generate_pdf(avg_score, num_subjects, stats_df, fig_jauge, fig_hist, fig_radar, question_stats_df):
                 pdf = FPDF()
                 pdf.add_page()
+                
+                # Logo en haut à gauche
                 try:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
                     pass
-                pdf.ln(20)
+                
+                # Titre et infos générales
                 pdf.set_font("Arial", "B", 16)
+                pdf.ln(10)
                 pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
                 pdf.set_font("Arial", "", 12)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
                 pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(10)
-
+                pdf.ln(5)
+            
+                # Statistiques globales
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Statistiques globales", ln=True)
+                pdf.set_font("Arial", "", 10)
+                for index, row in stats_df.iterrows():
+                    pdf.cell(0, 8, f"{row['Indicateur']} : {row['Valeur']}", ln=True)
+                pdf.ln(5)
+            
                 def add_fig(fig, title, width):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                        fig.savefig(tmp.name, format='png', bbox_inches='tight')
+                        fig.savefig(tmp.name, format='png', bbox_inches='tight', transparent=True)
                         pdf.set_font("Arial", "B", 12)
                         pdf.cell(0, 10, title, ln=True)
                         x = (pdf.w - width) / 2
                         pdf.image(tmp.name, x=x, w=width)
                         pdf.ln(5)
-
+            
+                # Graphiques
                 add_fig(fig_jauge, "Jauge", 180)
-                add_fig(fig_dist, "Histogramme", 180)
+                add_fig(fig_hist, "Histogramme", 180)
                 add_fig(fig_radar, "Radar - Moyenne par question", 120)
-
+            
+                # Statistiques par question
+                pdf.add_page()
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Statistiques par question", ln=True)
+                pdf.set_font("Arial", "B", 9)
+            
+                # En-tête du tableau
+                col_widths = [25, 20, 20, 20, 20, 20, 20]
+                columns = list(question_stats_df.columns)
+                for i, col in enumerate(columns):
+                    pdf.cell(col_widths[i], 8, col, border=1, align='C')
+                pdf.ln()
+            
+                # Lignes du tableau
+                pdf.set_font("Arial", "", 9)
+                for idx, row in question_stats_df.iterrows():
+                    pdf.cell(col_widths[0], 8, idx, border=1)
+                    for i, val in enumerate(row):
+                        pdf.cell(col_widths[i+1], 8, str(val), border=1, align='C')
+                    pdf.ln()
+            
                 return pdf.output(dest='S').encode('latin1')
+
 
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
             st.download_button(
