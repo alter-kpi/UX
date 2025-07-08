@@ -40,22 +40,7 @@ if uploaded_file:
             st.subheader(f"Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            avg_score = df['SUS_Score'].mean()
-            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
-
-            
-
-            zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
-            zones = [
-                (0, 25, zone_colors[0], "Pire imaginable"),
-                (25, 39, zone_colors[1], "Mauvais"),
-                (39, 52, zone_colors[2], "Acceptable"),
-                (52, 73, zone_colors[3], "Bon"),
-                (73, 86, zone_colors[4], "Excellent"),
-                (86, 100, zone_colors[5], "Meilleur imaginable")
-            ]
-
-            # Statistiques descriptives
+             # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
             q3 = df['SUS_Score'].quantile(0.75)
             iqr = q3 - q1
@@ -88,6 +73,18 @@ if uploaded_file:
             st.markdown("### Résumé des scores SUS")
             st.table(stats_df)
 
+            avg_score = df['SUS_Score'].mean()
+            st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
+
+            zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
+            zones = [
+                (0, 25, zone_colors[0], "Pire imaginable"),
+                (25, 39, zone_colors[1], "Mauvais"),
+                (39, 52, zone_colors[2], "Acceptable"),
+                (52, 73, zone_colors[3], "Bon"),
+                (73, 86, zone_colors[4], "Excellent"),
+                (86, 100, zone_colors[5], "Meilleur imaginable")
+            ]
             
             # Jauge
             fig, ax = plt.subplots(figsize=(6, 1.5))
