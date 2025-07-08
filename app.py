@@ -37,7 +37,7 @@ if uploaded_file:
 
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
-            st.subheader(f"Scores individuels : {len(df)} sujets")
+            st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             avg_score = df['SUS_Score'].mean()
