@@ -142,7 +142,7 @@ if uploaded_file:
 
                 return pdf.output(dest='S').encode('latin1')
 
-            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, fig_box, len(df))
+            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
             st.download_button(
                 label="📄 Télécharger le rapport PDF",
                 data=pdf_bytes,
