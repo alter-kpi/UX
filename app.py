@@ -159,19 +159,6 @@ if uploaded_file:
 
             st.markdown("---")
 
-            # Statistiques par question
-            with st.container():
-                st.markdown("#### Statistiques par question")
-            
-                stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
-                stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
-            
-                stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
-                stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
-            
-                stats_df = stats_df.round(2)
-                st.dataframe(stats_df)
-
             # Radar
             st.markdown("#### Moyenne par question")
             question_means = df[questions].mean()
@@ -198,8 +185,21 @@ if uploaded_file:
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
+             # Statistiques par question
+            with st.container():
+                st.markdown("#### Statistiques par question")
             
-            st.markdown("---")
+                stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
+                stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
+            
+                stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
+                stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
+            
+                stats_df = stats_df.round(2)
+                st.dataframe(stats_df)
+                 
+            st.markdown("---")         
 
             # Aperçu des données
             st.write("#### Aperçu des données :", df.head())
