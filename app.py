@@ -43,6 +43,8 @@ if uploaded_file:
             avg_score = df['SUS_Score'].mean()
             st.subheader(f"Score SUS moyen : **{avg_score:.1f} / 100**")
 
+            
+
             zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
             zones = [
                 (0, 25, zone_colors[0], "Pire imaginable"),
@@ -53,6 +55,40 @@ if uploaded_file:
                 (86, 100, zone_colors[5], "Meilleur imaginable")
             ]
 
+            # Statistiques descriptives
+            q1 = df['SUS_Score'].quantile(0.25)
+            q3 = df['SUS_Score'].quantile(0.75)
+            iqr = q3 - q1
+            
+            stats_df = pd.DataFrame({
+                "Indicateur": [
+                    "Score SUS moyen",
+                    "Taille de l’échantillon",
+                    "Score minimum",
+                    "Score maximum",
+                    "Écart-type",
+                    "Médiane",
+                    "1er quartile (Q1)",
+                    "3e quartile (Q3)",
+                    "IQR"
+                ],
+                "Valeur": [
+                    f"{avg_score:.1f}",
+                    len(df),
+                    df["SUS_Score"].min(),
+                    df["SUS_Score"].max(),
+                    f"{df['SUS_Score'].std():.2f}",
+                    f"{df['SUS_Score'].median():.1f}",
+                    f"{q1:.1f}",
+                    f"{q3:.1f}",
+                    f"{iqr:.1f}"
+                ]
+            })
+            
+            st.markdown("### Résumé des scores SUS")
+            st.table(stats_df)
+
+            
             # Jauge
             fig, ax = plt.subplots(figsize=(6, 1.5))
             for start, end, color, label in zones:
