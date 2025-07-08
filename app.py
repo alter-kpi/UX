@@ -114,26 +114,34 @@ if uploaded_file:
 
             # SECTION 2 : AFFICHAGE À L'ÉCRAN
 
+            # Container 1 : titre & résumé
             with st.container():
-                col_left, col_right = st.columns([2, 1])
-
-                with col_left:
-                    st.subheader(f"🧮 Scores individuels : {len(df)} sujets")
-                    st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
-
-                    st.subheader(f"📈 Score SUS moyen : **{avg_score:.1f} / 100**")
-                    st.pyplot(fig, use_container_width=False)
-
-                    st.subheader("📍 Moyenne par question")
-                    st.pyplot(fig_radar, use_container_width=False)
-
-                with col_right:
-
-                    st.subheader("📊 Répartition des sujets par catégorie")
+                st.title("Analyse de questionnaire SUS")
+                st.markdown("Résumé général ici...")
+                st.metric("Score moyen", f"{avg_score:.1f} / 100")
+                st.metric("Nombre de sujets", len(df))
+            
+            # Container 2 : jauge seule
+            with st.container():
+                st.subheader("📍 Score SUS global")
+                st.pyplot(fig_jauge, use_container_width=False)
+            
+            # Container 3 : 2 colonnes côte à côte
+            with st.container():
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("📊 Répartition par catégorie")
                     st.pyplot(fig_dist, use_container_width=False)
-                    
-                    st.subheader("📦 Distribution des scores SUS")
+            
+                with col2:
+                    st.subheader("📦 Boxplot des scores")
                     st.pyplot(fig_box, use_container_width=False)
+            
+            # Container 4 : radar en pleine largeur
+            with st.container():
+                st.subheader("📌 Moyenne par question")
+                st.pyplot(fig_radar, use_container_width=False)
 
     
 
