@@ -85,7 +85,6 @@ if uploaded_file:
             for bar in bars:
                 height = bar.get_height()
                 ax_dist.text(bar.get_x() + bar.get_width()/2, height + 0.2, int(height), ha='center', fontsize=10)
-            ax_dist.set_xlabel("Catégories de score")
             ax_dist.set_ylim(0, max(distribution.values) + 2)
             ax_dist.get_yaxis().set_visible(False)
             for spine in ['top', 'right', 'left']:
