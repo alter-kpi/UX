@@ -207,8 +207,8 @@ if uploaded_file:
             # Radar - Score SUS par question
             st.markdown("#### Score SUS par question")
             question_means = df[questions].mean()
-            
-            #radar_labels = [sus_questions[q][lang] for q in questions]
+                       
+            radar_labels = [f"Q{i}" for i in range(1, 11)]
             values = question_means.tolist() + [question_means.tolist()[0]]
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
@@ -231,6 +231,17 @@ if uploaded_file:
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
+            # Légende des questions
+            st.markdown("##### Légende des questions")
+            
+            legend_df = pd.DataFrame({
+                "Question": [f"Q{i}" for i in range(1, 11)],
+                "Français": [sus_questions[q]["fr"] for q in questions],
+                "English": [sus_questions[q]["en"] for q in questions]
+            })
+            
+            st.dataframe(legend_df)
 
 
              # Statistiques par question
