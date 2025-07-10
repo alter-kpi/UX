@@ -91,7 +91,11 @@ if uploaded_file:
                 "Français": [sus_questions[q][lang] for q in questions]
             })
             
-            st.table(legend_df)  # Affiche sans l'index
+            # Redéfinir l'index pour qu’il commence à 1
+            legend_df.index = range(1, len(legend_df) + 1)
+            
+            st.table(legend_df)
+
             
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
