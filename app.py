@@ -7,9 +7,54 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
+sus_questions = {
+    "Question1": {
+        "fr": "Je voudrais utiliser ce système fréquemment.",
+        "en": "I think that I would like to use this system frequently."
+    },
+    "Question2": {
+        "fr": "Ce système est inutilement complexe.",
+        "en": "I found the system unnecessarily complex."
+    },
+    "Question3": {
+        "fr": "Ce système est facile à utiliser.",
+        "en": "I thought the system was easy to use."
+    },
+    "Question4": {
+        "fr": "J'aurais besoin du soutien d’un technicien pour être capable d’utiliser ce système.",
+        "en": "I think that I would need the support of a technical person to be able to use this system."
+    },
+    "Question5": {
+        "fr": "Les différentes fonctionnalités de ce système sont bien intégrées.",
+        "en": "I found the various functions in this system were well integrated."
+    },
+    "Question6": {
+        "fr": "Il y a trop d’incohérences dans ce système.",
+        "en": "I thought there was too much inconsistency in this system."
+    },
+    "Question7": {
+        "fr": "La plupart des gens apprendront à utiliser ce système très rapidement.",
+        "en": "I would imagine that most people would learn to use this system very quickly."
+    },
+    "Question8": {
+        "fr": "Ce système est très lourd à utiliser.",
+        "en": "I found the system very cumbersome to use."
+    },
+    "Question9": {
+        "fr": "Je me suis senti(e) très en confiance en utilisant ce système.",
+        "en": "I felt very confident using the system."
+    },
+    "Question10": {
+        "fr": "J’ai eu besoin d’apprendre beaucoup de choses avant de pouvoir utiliser ce système.",
+        "en": "I needed to learn a lot of things before I could get going with this system."
+    }
+}
+
+
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
 st.title("📊 Analyse de questionnaire SUS")
+lang = st.radio("Choisissez la langue des libellés :", options=["fr", "en"], horizontal=True)
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
