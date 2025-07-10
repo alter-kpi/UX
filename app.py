@@ -208,7 +208,7 @@ if uploaded_file:
             st.markdown("#### Score SUS par question")
             question_means = df[questions].mean()
             
-            radar_labels = [sus_questions[q][lang] for q in questions]
+            #radar_labels = [sus_questions[q][lang] for q in questions]
             values = question_means.tolist() + [question_means.tolist()[0]]
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
