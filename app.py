@@ -204,22 +204,22 @@ if uploaded_file:
 
             st.markdown("---")
 
-            # Radar
-            st.markdown("#### Moyenne par question")
-            question_means = df[questions].mean()
-            radar_labels = questions
+            # Radar - Score SUS par question
+            st.markdown("#### Score SUS par question")
+            
+            radar_labels = [sus_questions[q][lang] for q in questions]
             values = question_means.tolist() + [question_means.tolist()[0]]
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
-            fig_radar, ax = plt.subplots(figsize=(3, 3), subplot_kw=dict(polar=True))
-            fig_radar.patch.set_alpha(0)           # fond transparent
-            ax.set_facecolor("none")               # fond transparent
+            fig_radar, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+            fig_radar.patch.set_alpha(0)
+            ax.set_facecolor("none")
             
             ax.plot(angles, values, color='cyan', linewidth=1)
             ax.fill(angles, values, color='cyan', alpha=0.25)
             
             ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(radar_labels, fontsize=6, color='white')
+            ax.set_xticklabels(radar_labels, fontsize=8, color='white')
             
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='white')
@@ -230,6 +230,7 @@ if uploaded_file:
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
+
 
              # Statistiques par question
             with st.container():
