@@ -206,6 +206,7 @@ if uploaded_file:
 
             # Radar - Score SUS par question
             st.markdown("#### Score SUS par question")
+            question_means = df[questions].mean()
             
             radar_labels = [sus_questions[q][lang] for q in questions]
             values = question_means.tolist() + [question_means.tolist()[0]]
