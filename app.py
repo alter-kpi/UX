@@ -236,7 +236,7 @@ if uploaded_file:
             st.markdown("##### Légende des questions")
             
             legend_df = pd.DataFrame({
-                "Question": [f"Q{i}" for i in range(1, 11)],
+                "Question": [f"Question{i}" for i in range(1, 11)],
                 "Français": [sus_questions[q][lang] for q in questions]
             })
             
