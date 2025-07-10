@@ -13,7 +13,7 @@ st.sidebar.title("Paramètres")
 # Choix de la langue
 lang = st.sidebar.selectbox(
     "Langue",
-    options=["Français", "English"],
+    options=["fr", "uk"],
     index=0
 )
 
