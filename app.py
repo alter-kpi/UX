@@ -7,6 +7,23 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
+# Menu latéral
+st.sidebar.title("Paramètres")
+
+# Choix de la langue
+lang = st.sidebar.selectbox(
+    "Langue",
+    options=["Français", "English"],
+    index=0
+)
+
+# Choix du questionnaire
+questionnaire_type = st.sidebar.radio(
+    "Type de questionnaire",
+    ["SUS", "Autre (à venir)"]
+)
+
+
 sus_questions = {
     "Question1": {
         "fr": "Je voudrais utiliser ce système fréquemment.",
@@ -54,7 +71,6 @@ sus_questions = {
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
 st.title("📊 Analyse de questionnaire SUS")
-lang = st.radio("Choisissez la langue des libellés :", options=["fr", "en"], horizontal=True)
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
