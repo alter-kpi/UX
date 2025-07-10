@@ -82,6 +82,17 @@ if uploaded_file:
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
             avg_score = df['SUS_Score'].mean()
+
+            # Légende des questions
+            st.markdown("##### Légende des questions")
+            
+            legend_df = pd.DataFrame({
+                "Question": [f"Question{i}" for i in range(1, 11)],
+                "Français": [sus_questions[q][lang] for q in questions]
+            })
+            
+            st.dataframe(legend_df)
+
             
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
@@ -231,16 +242,6 @@ if uploaded_file:
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
-
-            # Légende des questions
-            st.markdown("##### Légende des questions")
-            
-            legend_df = pd.DataFrame({
-                "Question": [f"Question{i}" for i in range(1, 11)],
-                "Français": [sus_questions[q][lang] for q in questions]
-            })
-            
-            st.dataframe(legend_df)
 
 
              # Statistiques par question
