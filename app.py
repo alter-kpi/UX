@@ -237,8 +237,7 @@ if uploaded_file:
             
             legend_df = pd.DataFrame({
                 "Question": [f"Q{i}" for i in range(1, 11)],
-                "Français": [sus_questions[q]["fr"] for q in questions],
-                "English": [sus_questions[q]["en"] for q in questions]
+                "Français": [sus_questions[q][lang] for q in questions]
             })
             
             st.dataframe(legend_df)
@@ -257,9 +256,6 @@ if uploaded_file:
                 st.dataframe(stats_df)
                  
             st.markdown("---")         
-
-            # Aperçu des données
-            st.write("#### Aperçu des données :", df.head())
 
             # Scores individuels
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
