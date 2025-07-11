@@ -104,7 +104,7 @@ if uploaded_file:
             st.markdown("##### Questions")
             
             legend_df = pd.DataFrame({
-                Lang: [sus_questions[q][lang] for q in questions]
+                lang: [sus_questions[q][lang] for q in questions]
             })
             
             # Redéfinir l'index pour qu’il commence à 1
