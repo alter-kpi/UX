@@ -10,60 +10,61 @@ import tempfile
 # Menu latéral
 st.sidebar.title("Paramètres")
 
-# Choix de la langue
-lang = st.sidebar.selectbox(
-    "Language",
-    options=["fr", "en"],
-    index=0
-)
+    # Choix de la langue
+    lang = st.sidebar.selectbox(
+        "Language",
+        options=["Français", "English"],
+        index=0
+    )
+    
+    # Choix du questionnaire
+    questionnaire_type = st.sidebar.radio(
+        "Type de questionnaire",
+        ["SUS", "Autre (à venir)"]
+    )
 
-# Choix du questionnaire
-questionnaire_type = st.sidebar.radio(
-    "Type de questionnaire",
-    ["SUS", "Autre (à venir)"]
-)
 
 
 sus_questions = {
     "Question1": {
-        "fr": "Je voudrais utiliser ce système fréquemment.",
-        "en": "I think that I would like to use this system frequently."
+        "Français": "Je voudrais utiliser ce système fréquemment.",
+        "English": "I think that I would like to use this system frequently."
     },
     "Question2": {
-        "fr": "Ce système est inutilement complexe.",
-        "en": "I found the system unnecessarily complex."
+        "Français": "Ce système est inutilement complexe.",
+        "English": "I found the system unnecessarily complex."
     },
     "Question3": {
-        "fr": "Ce système est facile à utiliser.",
-        "en": "I thought the system was easy to use."
+        "Français": "Ce système est facile à utiliser.",
+        "English": "I thought the system was easy to use."
     },
     "Question4": {
-        "fr": "J'aurais besoin du soutien d’un technicien pour être capable d’utiliser ce système.",
-        "en": "I think that I would need the support of a technical person to be able to use this system."
+        "Français": "J'aurais besoin du soutien d’un technicien pour être capable d’utiliser ce système.",
+        "English": "I think that I would need the support of a technical person to be able to use this system."
     },
     "Question5": {
-        "fr": "Les différentes fonctionnalités de ce système sont bien intégrées.",
-        "en": "I found the various functions in this system were well integrated."
+        "Français": "Les différentes fonctionnalités de ce système sont bien intégrées.",
+        "English": "I found the various functions in this system were well integrated."
     },
     "Question6": {
-        "fr": "Il y a trop d’incohérences dans ce système.",
-        "en": "I thought there was too much inconsistency in this system."
+        "Français": "Il y a trop d’incohérences dans ce système.",
+        "English": "I thought there was too much inconsistency in this system."
     },
     "Question7": {
-        "fr": "La plupart des gens apprendront à utiliser ce système très rapidement.",
-        "en": "I would imagine that most people would learn to use this system very quickly."
+        "Français": "La plupart des gens apprendront à utiliser ce système très rapidement.",
+        "English": "I would imagine that most people would learn to use this system very quickly."
     },
     "Question8": {
-        "fr": "Ce système est très lourd à utiliser.",
-        "en": "I found the system very cumbersome to use."
+        "Français": "Ce système est très lourd à utiliser.",
+        "English": "I found the system very cumbersome to use."
     },
     "Question9": {
-        "fr": "Je me suis senti(e) très en confiance en utilisant ce système.",
-        "en": "I felt very confident using the system."
+        "Français": "Je me suis senti(e) très en confiance en utilisant ce système.",
+        "English": "I felt very confident using the system."
     },
     "Question10": {
-        "fr": "J’ai eu besoin d’apprendre beaucoup de choses avant de pouvoir utiliser ce système.",
-        "en": "I needed to learn a lot of things before I could get going with this system."
+        "Français": "J’ai eu besoin d’apprendre beaucoup de choses avant de pouvoir utiliser ce système.",
+        "English": "I needed to learn a lot of things before I could get going with this system."
     }
 }
 
