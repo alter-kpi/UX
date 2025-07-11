@@ -10,18 +10,18 @@ import tempfile
 # Menu latéral
 st.sidebar.title("Paramètres")
 
-    # Choix de la langue
-    lang = st.sidebar.selectbox(
-        "Language",
-        options=["Français", "English"],
-        index=0
-    )
-    
-    # Choix du questionnaire
-    questionnaire_type = st.sidebar.radio(
-        "Type de questionnaire",
-        ["SUS", "Autre (à venir)"]
-    )
+# Choix de la langue
+lang = st.sidebar.selectbox(
+    "Language",
+    options=["Français", "English"],
+    index=0
+)
+
+# Choix du questionnaire
+questionnaire_type = st.sidebar.radio(
+    "Type de questionnaire",
+    ["SUS", "Autre (à venir)"]
+)
 
 
 
