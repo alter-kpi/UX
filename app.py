@@ -24,6 +24,7 @@ questionnaire_type = st.sidebar.radio(
 )
 
 # Choix des catégories
+custom_columns = []
 st.sidebar.title("Filtres")
 selected_filter = st.sidebar.selectbox("Filtrer par catégorie :", ["Aucun filtre"] + custom_columns)
 
