@@ -23,6 +23,14 @@ questionnaire_type = st.sidebar.radio(
     ["SUS", "Autre (à venir)"]
 )
 
+# Choix des catégories
+st.sidebar.title("Filtres")
+selected_filter = st.sidebar.selectbox("Filtrer par catégorie :", ["Aucun filtre"] + custom_columns)
+
+if selected_filter != "Aucun filtre":
+    valeurs_disponibles = sorted(df[selected_filter].dropna().unique())
+    selected_value = st.sidebar.selectbox(f"Valeur de {selected_filter} :", valeurs_disponibles)
+    df = df[df[selected_filter] == selected_value]
 
 
 sus_questions = {
@@ -79,8 +87,14 @@ uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
-
         questions = [f"Question{i}" for i in range(1, 11)]
+        custom_columns = ["Category 1", "Category 2", "Category 3", "Category 4"]
+        custom_columns = [col for col in custom_columns if col in df.columns and df[col].notna().any()]
+        category_info = {
+        col: "Num" if pd.api.types.is_numeric_dtype(df[col]) else "Text"
+        for col in custom_columns
+        }
+
         if not all(col in df.columns for col in questions):
             st.error("❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.")
         else:
