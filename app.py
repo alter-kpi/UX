@@ -23,17 +23,6 @@ questionnaire_type = st.sidebar.radio(
     ["SUS", "Autre (à venir)"]
 )
 
-# Choix des catégories
-custom_columns = []
-st.sidebar.title("Filtres")
-selected_filter = st.sidebar.selectbox("Filtrer par catégorie :", ["Aucun filtre"] + custom_columns)
-
-if selected_filter != "Aucun filtre":
-    valeurs_disponibles = sorted(df[selected_filter].dropna().unique())
-    selected_value = st.sidebar.selectbox(f"Valeur de {selected_filter} :", valeurs_disponibles)
-    df = df[df[selected_filter] == selected_value]
-
-
 sus_questions = {
     "Question1": {
         "Français": "Je voudrais utiliser ce système fréquemment.",
@@ -125,6 +114,16 @@ if uploaded_file:
 
             avg_score = df['SUS_Score'].mean()
 
+            # Choix des catégories (sidebar)
+
+            st.sidebar.title("Filtres")
+            selected_filter = st.sidebar.selectbox("Filtrer par catégorie :", ["Aucun filtre"] + custom_columns)
+            
+            if selected_filter != "Aucun filtre":
+                valeurs_disponibles = sorted(df[selected_filter].dropna().unique())
+                selected_value = st.sidebar.selectbox(f"Valeur de {selected_filter} :", valeurs_disponibles)
+                df = df[df[selected_filter] == selected_value]
+            
             # Légende des questions
             st.markdown("##### Questions")
             
