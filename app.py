@@ -116,14 +116,21 @@ if uploaded_file:
 
             # Choix des catégories (sidebar)
 
-            st.sidebar.title("Filtres")
-            selected_filter = st.sidebar.selectbox("Filtrer par catégorie :", ["Aucun filtre"] + custom_columns)
+            with st.sidebar:
+                st.markdown("### Filtres")
+                filtered_df = df.copy()  # base de travail pour les filtres
             
-            if selected_filter != "Aucun filtre":
-                valeurs_disponibles = sorted(df[selected_filter].dropna().unique())
-                selected_value = st.sidebar.selectbox(f"Valeur de {selected_filter} :", valeurs_disponibles)
-                df = df[df[selected_filter] == selected_value]
-            
+                for col in custom_columns:
+                    if category_info[col] == "Texte":
+                        options = df[col].dropna().unique().tolist()
+                        selected = st.multiselect(f"{col} :", options, default=options)
+                        filtered_df = filtered_df[filtered_df[col].isin(selected)]
+                    else:  # numérique
+                        min_val = float(df[col].min())
+                        max_val = float(df[col].max())
+                        selected_range = st.slider(f"{col} :", min_val, max_val, (min_val, max_val))
+                        filtered_df = filtered_df[(df[col] >= selected_range[0]) & (df[col] <= selected_range[1])]
+
             # Légende des questions
             st.markdown("##### Questions")
             
