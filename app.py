@@ -97,7 +97,7 @@ if uploaded_file:
         if not all(col in df.columns for col in questions):
             st.error("❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.")
         else:
-            df_sus = filtered_df[questions]
+            df_sus = df[questions]
 
 
             def calculate_sus(row):
