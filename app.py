@@ -101,10 +101,10 @@ if uploaded_file:
             avg_score = df['SUS_Score'].mean()
 
             # Légende des questions
-            st.markdown("##### Légende des questions")
+            st.markdown("##### Questions")
             
             legend_df = pd.DataFrame({
-                "Français": [sus_questions[q][lang] for q in questions]
+                Lang: [sus_questions[q][lang] for q in questions]
             })
             
             # Redéfinir l'index pour qu’il commence à 1
