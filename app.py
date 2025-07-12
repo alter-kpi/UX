@@ -127,15 +127,11 @@ if uploaded_file:
 
             avg_score = df['SUS_Score'].mean()
            
-            # Légende des questions
-            st.markdown("##### Questions")
-            
-            legend_df = pd.DataFrame({
-                lang: [sus_questions[q][lang] for q in questions]
-            })
-            
-            legend_df.index = range(1, len(legend_df) + 1)
-            st.table(legend_df)
+            # Légende des questions dans la sidebar
+            with st.sidebar.expander("📋 Questions du questionnaire"):
+                for i, q in enumerate(questions, 1):
+                    st.markdown(f"**Q{i}** : {sus_questions[q][lang]}")
+
 
             # Jauge
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
