@@ -163,7 +163,6 @@ if uploaded_file:
             
             st.pyplot(fig, use_container_width=False)
 
-            st.markdown("---")
             
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
