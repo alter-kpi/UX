@@ -282,7 +282,7 @@ if uploaded_file:
                     # Traitement spécial pour les colonnes numériques
                     if category_info[selected_category] == "Numérique":
                         try:
-                            binned = pd.cut(df[selected_category], bins='auto')  # 5 tranches auto
+                            binned = pd.cut(df[selected_category], bins=auto)  # 5 tranches auto
                             group_means = df.groupby(binned)["SUS_Score"].mean().sort_values()
                         except Exception as e:
                             st.warning(f"Erreur lors du regroupement par tranches : {e}")
