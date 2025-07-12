@@ -91,7 +91,7 @@ if uploaded_file:
         df = pd.read_excel(uploaded_file, sheet_name=0)
 
         # Colonnes de questions
-        questions = [f"Question {i}" for i in range(1, 11)]
+        questions = [f"Question{i}" for i in range(1, 11)]
 
         # Colonnes personnalisables définies dans le template
         potential_custom_columns = ["Category 1", "Category 2", "Category 3", "Category 4"]
