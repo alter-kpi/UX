@@ -292,7 +292,7 @@ if uploaded_file:
                     group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
 
                     # Tri croissant par libellé de catégorie
-                    group_means = group_means.sort_index()
+                    #group_means = group_means.sort_index()
             
                     fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
                     fig_cat.patch.set_alpha(0)
