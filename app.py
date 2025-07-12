@@ -43,8 +43,8 @@ labels = {
         "subjects_count": "sujets",
         "sidebar_title": "Paramètres",
         "sidebar_language": "Langue",
-        "sidebar_questionnaire": labels[lang]["sidebar_questionnaire"],
-        "questionnaire_choices": labels[lang]["questionnaire_choices"]
+        "sidebar_questionnaire": "sidebar_questionnaire",
+        "questionnaire_choices": "questionnaire_choices"
     },
     "English": {
         "zones_labels": ["Worst imaginable", "Poor", "Acceptable", "Good", "Excellent", "Best imaginable"],
@@ -77,7 +77,7 @@ labels = {
         "error_columns": "❌ File must include columns 'Question1' to 'Question10'.",
         "subjects_count": "subjects",
         "sidebar_title": "Settings",
-        "sidebar_language": labels[lang]["sidebar_language"],
+        "sidebar_language": "sidebar_language",
         "sidebar_questionnaire": "Questionnaire type",
         "questionnaire_choices": ["SUS", "Other (coming soon)"]
     }
