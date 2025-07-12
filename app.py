@@ -279,7 +279,17 @@ if uploaded_file:
 
                 if selected_category:
                     # Calcul des moyennes
-                    group_means = df.groupby(selected_category)["SUS_Score"].mean().sort_values()
+                    # Traitement spécial pour les colonnes numériques
+                    if category_info[selected_category] == "Numérique":
+                        try:
+                            binned = pd.cut(df[selected_category], bins=5)  # 5 tranches auto
+                            group_means = df.groupby(binned)["SUS_Score"].mean().sort_values()
+                        except Exception as e:
+                            st.warning(f"Erreur lors du regroupement par tranches : {e}")
+                            group_means = pd.Series()
+                    else:
+                        group_means = df.groupby(selected_category)["SUS_Score"].mean().sort_values()
+
 
                     fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
                     fig_cat.patch.set_alpha(0)
