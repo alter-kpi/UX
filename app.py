@@ -126,24 +126,6 @@ if uploaded_file:
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
             avg_score = df['SUS_Score'].mean()
-
-            # Choix des catégories (sidebar)
-
-            with st.sidebar:
-                st.markdown("### Filtres")
-                filtered_df = df.copy()  # base de travail pour les filtres
-            
-                for col in custom_columns:
-                    if category_info[col] == "Texte":
-                        options = df[col].dropna().unique().tolist()
-                        selected = st.multiselect(f"{col} :", options, default=options)
-                        filtered_df = filtered_df[filtered_df[col].isin(selected)]
-                    else:  # numérique
-                        min_val = float(df[col].min())
-                        max_val = float(df[col].max())
-                        selected_range = st.slider(f"{col} :", min_val, max_val, (min_val, max_val))
-                        filtered_df = filtered_df[(df[col] >= selected_range[0]) & (df[col] <= selected_range[1])]
-
            
             # Légende des questions
             st.markdown("##### Questions")
@@ -227,8 +209,8 @@ if uploaded_file:
 
             st.markdown("---")
 
-            # Histogramme ---
-            st.markdown("#### Répartition des sujets par catégorie")
+            # Histogramme
+            st.markdown("#### Répartition des sujets par résultat")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
