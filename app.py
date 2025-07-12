@@ -1,5 +1,3 @@
-st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-
 import streamlit as st
 from PIL import Image
 import pandas as pd
@@ -26,14 +24,7 @@ zones = [
 # Menu latéral
 st.sidebar.title(Paramètres)
 
-# Choix de la langue
-    [sidebar_language],
-    options=["Français", "English"],
-    index=0
-)
-
-
-
+# Zones et couleurs
 zones = [
     (0, 25, zone_colors[0], "Pire imaginable"),
     (25, 39, zone_colors[1], "Mauvais"),
@@ -42,16 +33,6 @@ zones = [
     (73, 86, zone_colors[4], "Excellent"),
     (86, 100, zone_colors[5], "Meilleur imaginable")
 ]
-
-# Menu latéral
-st.sidebar.title(Paramètres)
-
-# Choix de la langue
-lang = st.sidebar.selectbox(
-    [sidebar_language],
-    options=["Français", "English"],
-    index=0
-)
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
 zones = [
     (0, 25, zone_colors[0], [zones_labels][0]),
