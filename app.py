@@ -7,7 +7,6 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
-st.mardown("Wilhelmina")
 #Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
@@ -82,7 +81,8 @@ sus_questions = {
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-st.title("📊 Analyse de questionnaire SUS")
+#st.title("📊 Analyse de questionnaire SUS")
+st.title("Willie ❤️🩷🧡💛💚💙")
 st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
