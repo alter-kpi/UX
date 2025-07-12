@@ -7,8 +7,6 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
-st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-
 #Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
@@ -22,32 +20,19 @@ zones = [
 ]
 
 # Menu latéral
-st.sidebar.title(Paramètres)
+st.sidebar.title("Paramètres")
 
-# Zones et couleurs
-zones = [
-    (0, 25, zone_colors[0], "Pire imaginable"),
-    (25, 39, zone_colors[1], "Mauvais"),
-    (39, 52, zone_colors[2], "Acceptable"),
-    (52, 73, zone_colors[3], "Bon"),
-    (73, 86, zone_colors[4], "Excellent"),
-    (86, 100, zone_colors[5], "Meilleur imaginable")
-]
-zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
-zones = [
-    (0, 25, zone_colors[0], [zones_labels][0]),
-    (25, 39, zone_colors[1], [zones_labels][1]),
-    (39, 52, zone_colors[2], [zones_labels][2]),
-    (52, 73, zone_colors[3], [zones_labels][3]),
-    (73, 86, zone_colors[4], [zones_labels][4]),
-    (86, 100, zone_colors[5], [zones_labels][5])
-]
-
+# Choix de la langue
+lang = st.sidebar.selectbox(
+    "Language",
+    options=["Français", "English"],
+    index=0
+)
 
 # Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
-    [sidebar_questionnaire],
-    [questionnaire_choices]
+    "Type de questionnaire",
+    ["SUS", "Autre (à venir)"]
 )
 
 sus_questions = {
@@ -94,10 +79,12 @@ sus_questions = {
 }
 
 
-st.title([title])
-st.markdown(Chargez un fichier **Excel (.xlsx)** contenant une ligne d en-tête avec les colonnes **Question1** à **Question10**.)
+st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-uploaded_file = st.file_uploader(Charger le fichier Excel, type=["xlsx"])
+st.title("📊 Analyse de questionnaire SUS")
+st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
+
+uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
 if uploaded_file:
     try:
@@ -121,7 +108,7 @@ if uploaded_file:
 
         # Vérification des colonnes de questions
         if not all(col in df.columns for col in questions):
-            st.error(❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.)
+            st.error("❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.")
         else:
             df_sus = df[questions]
 
@@ -141,13 +128,13 @@ if uploaded_file:
             avg_score = df['SUS_Score'].mean()
            
             # Légende des questions dans la sidebar
-            with st.sidebar.expander(📋 Questions du questionnaire):
+            with st.sidebar.expander("📋 Questions du questionnaire"):
                 for i, q in enumerate(questions, 1):
                     st.markdown(f"**Q{i}** : {sus_questions[q][lang]}")
 
 
             # Jauge
-            st.markdown(f"{labels[lang]['score']} {avg_score:.1f}")
+            st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
             fig, ax = plt.subplots(figsize=(6, 1.5))
             fig.patch.set_alpha(0)         # fond transparent
@@ -183,7 +170,17 @@ if uploaded_file:
             iqr = q3 - q1
             
             stats_df = pd.DataFrame({
-                "Indicateur": [stats_labels],
+                "Indicateur": [
+                    "Score SUS moyen",
+                    "Taille de l’échantillon",
+                    "Score minimum",
+                    "Score maximum",
+                    "Écart-type",
+                    "Médiane",
+                    "1er quartile (Q1)",
+                    "3e quartile (Q3)",
+                    "IQR"
+                ],
                 "Valeur": [
                     f"{avg_score:.1f}",
                     len(df),
@@ -200,7 +197,7 @@ if uploaded_file:
             
             st.markdown("---")
             
-            st.markdown(#### Statistiques)
+            st.markdown("#### Statistiques")
             st.table(stats_df)
 
             avg_score = df['SUS_Score'].mean()
@@ -208,7 +205,7 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme
-            st.markdown(#### Répartition des sujets par résultat)
+            st.markdown("#### Répartition des sujets par résultat")
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
@@ -250,10 +247,10 @@ if uploaded_file:
 
             # Histogramme des scores SUS par catégorie
             if category_info:
-                st.markdown(#### Score SUS par catégorie)
+                st.markdown("#### Score SUS par catégorie")
             
                 if len(category_info) > 1:
-                    selected_category = st.selectbox(Choisissez une catégorie :, list(category_info.keys()))
+                    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
                 else:
                     selected_category = list(category_info.keys())[0]
             
@@ -311,7 +308,7 @@ if uploaded_file:
             st.markdown("---")
 
             # Radar - Score SUS par question
-            st.markdown(#### Score SUS par question)
+            st.markdown("#### Score SUS par question")
             question_means = df[questions].mean()
                        
             radar_labels = [f"Q{i}" for i in range(1, 11)]
@@ -355,7 +352,7 @@ if uploaded_file:
             st.markdown("---")         
 
             # Scores individuels
-            st.markdown(f"{labels[lang]['individual_scores']} : {len(df)} {labels[lang]['subjects_count']}")
+            st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # PDF
@@ -392,7 +389,7 @@ if uploaded_file:
 
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
             st.download_button(
-                label=📄 Télécharger le rapport PDF,
+                label="📄 Télécharger le rapport PDF",
                 data=pdf_bytes,
                 file_name="rapport_sus.pdf",
                 mime="application/pdf"
@@ -402,13 +399,13 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 
 st.markdown("---")
-st.markdown(Template Excel des résultats à charger dans cette application disponible ici :)
+st.markdown("Template Excel des résultats à charger dans cette application disponible ici :")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
 
 st.download_button(
-    label=⬇️ Template Excel (SUS),
+    label="⬇️ Template Excel (SUS)",
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
