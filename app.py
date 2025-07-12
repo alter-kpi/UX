@@ -95,7 +95,7 @@ sus_questions = {
 
 
 st.title([title])
-st.markdown(Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.)
+st.markdown(Chargez un fichier **Excel (.xlsx)** contenant une ligne d en-tête avec les colonnes **Question1** à **Question10**.)
 
 uploaded_file = st.file_uploader(Charger le fichier Excel, type=["xlsx"])
 
