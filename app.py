@@ -351,6 +351,7 @@ if uploaded_file:
             ax.set_yticks([1, 2, 3, 4, 5])
             ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='white')
             ax.set_ylim(1, 5)
+            ax.set_theta_direction(-1)
             
             ax.tick_params(colors='white')
             ax.spines['polar'].set_color('white')
