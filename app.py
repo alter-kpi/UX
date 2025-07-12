@@ -1,5 +1,3 @@
-st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-
 import streamlit as st
 from PIL import Image
 import pandas as pd
