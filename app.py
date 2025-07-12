@@ -22,13 +22,6 @@ zones = [
 # Menu latéral
 st.sidebar.title("Paramètres")
 
-# Choix de la langue
-lang = st.sidebar.selectbox(
-    "Language",
-    options=["Français", "English"],
-    index=0
-)
-
 # Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
     "Type de questionnaire",
@@ -130,7 +123,7 @@ if uploaded_file:
             # Légende des questions dans la sidebar
             with st.sidebar.expander("📋 Questions du questionnaire"):
                 for i, q in enumerate(questions, 1):
-                    st.markdown(f"**Q{i}** : {sus_questions[q][lang]}")
+                    st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
 
 
             # Jauge
