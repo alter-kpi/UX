@@ -267,6 +267,51 @@ if uploaded_file:
 
             st.markdown("---")
 
+            # Histogramme des scores SUS par catégorie
+            if category_info:
+                st.markdown("#### Score SUS par catégorie")
+
+                if len(category_info) > 1:
+                    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
+                else:
+                    selected_category = list(category_info.keys())[0]
+
+                if selected_category:
+                    # Calcul des moyennes
+                    group_means = df.groupby(selected_category)["SUS_Score"].mean().sort_values()
+
+                    fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
+                    fig_cat.patch.set_alpha(0)
+                    ax_cat.set_facecolor("none")
+
+                    bars = ax_cat.bar(group_means.index.astype(str), group_means.values, color="#5bc0de")
+                    ax_cat.set_ylabel("Score SUS moyen")
+
+                    for bar in bars:
+                        height = bar.get_height()
+                        ax_cat.text(
+                            bar.get_x() + bar.get_width() / 2,
+                            height + 0.5,
+                            f"{height:.1f}",
+                            ha='center',
+                            fontsize=9,
+                            color='white'
+                        )
+
+                    ax_cat.set_ylim(0, min(100, max(group_means.values) + 10))
+                    ax_cat.tick_params(axis='x', rotation=30, colors='white')
+                    ax_cat.spines['top'].set_visible(False)
+                    ax_cat.spines['right'].set_visible(False)
+                    ax_cat.spines['left'].set_color('white')
+                    ax_cat.spines['bottom'].set_color('white')
+                    ax_cat.yaxis.label.set_color('white')
+                    ax_cat.tick_params(axis='y', colors='white')
+
+                    fig_cat.tight_layout()
+                    st.pyplot(fig_cat)
+
+            st.markdown("---")
+
             # Radar - Score SUS par question
             st.markdown("#### Score SUS par question")
             question_means = df[questions].mean()
