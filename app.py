@@ -271,33 +271,36 @@ if uploaded_file:
             # Histogramme des scores SUS par catégorie
             if category_info:
                 st.markdown("#### Score SUS par catégorie")
-
+            
                 if len(category_info) > 1:
                     selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
                 else:
                     selected_category = list(category_info.keys())[0]
-
+            
                 if selected_category:
-                    # Calcul des moyennes
-                    # Traitement spécial pour les colonnes numériques
                     if category_info[selected_category] == "Numérique":
                         try:
-                            binned = pd.cut(df[selected_category], bins=5)  # 5 tranches auto
-                            group_means = df.groupby(binned)["SUS_Score"].mean().sort_values()
+                            binned = pd.cut(df[selected_category], bins=5)
+                            df["_cat_display"] = binned.astype(str)
                         except Exception as e:
                             st.warning(f"Erreur lors du regroupement par tranches : {e}")
-                            group_means = pd.Series()
+                            df["_cat_display"] = df[selected_category].astype(str)
                     else:
-                        group_means = df.groupby(selected_category)["SUS_Score"].mean().sort_values()
-
-
+                        df["_cat_display"] = df[selected_category].astype(str)
+            
+                    # Calcul de la moyenne SUS par groupe
+                    group_means = df.groupby("_cat_display")["SUS_Score"].mean()
+            
+                    # Tri croissant par libellé de catégorie
+                    group_means = group_means.sort_index()
+            
                     fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
                     fig_cat.patch.set_alpha(0)
                     ax_cat.set_facecolor("none")
-
-                    bars = ax_cat.bar(group_means.index.astype(str), group_means.values, color="#5bc0de")
+            
+                    bars = ax_cat.bar(group_means.index, group_means.values, color="#5bc0de")
                     ax_cat.set_ylabel("Score SUS moyen")
-
+            
                     for bar in bars:
                         height = bar.get_height()
                         ax_cat.text(
@@ -308,7 +311,7 @@ if uploaded_file:
                             fontsize=9,
                             color='white'
                         )
-
+            
                     ax_cat.set_ylim(0, min(100, max(group_means.values) + 10))
                     ax_cat.tick_params(axis='x', rotation=30, colors='white')
                     ax_cat.spines['top'].set_visible(False)
@@ -317,9 +320,13 @@ if uploaded_file:
                     ax_cat.spines['bottom'].set_color('white')
                     ax_cat.yaxis.label.set_color('white')
                     ax_cat.tick_params(axis='y', colors='white')
-
+            
                     fig_cat.tight_layout()
                     st.pyplot(fig_cat)
+            
+                    # Nettoyage de colonne temporaire
+                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+
 
             st.markdown("---")
 
