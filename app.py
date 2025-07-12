@@ -9,6 +9,8 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
+st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
+
 #Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
@@ -186,8 +188,6 @@ sus_questions = {
     }
 }
 
-
-st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
 st.title(labels[lang]["title"])
 st.markdown(labels[lang]["upload_prompt"])
