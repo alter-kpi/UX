@@ -289,8 +289,8 @@ if uploaded_file:
                         df["_cat_display"] = df[selected_category].astype(str)
             
                     # Calcul de la moyenne SUS par groupe
-                    group_means = df.groupby("_cat_display")["SUS_Score"].mean()
-            
+                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+
                     # Tri croissant par libellé de catégorie
                     group_means = group_means.sort_index()
             
