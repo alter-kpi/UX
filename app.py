@@ -1,3 +1,5 @@
+st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
+
 import streamlit as st
 from PIL import Image
 import pandas as pd
@@ -8,80 +10,6 @@ from datetime import date
 import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-
-# Dictionnaire de traduction complet
-labels = {
-    "Français": {
-        "zones_labels": ["Pire imaginable", "Mauvais", "Acceptable", "Bon", "Excellent", "Meilleur imaginable"],
-        "stats_labels": [
-            "Score SUS moyen",
-            "Taille de l’échantillon",
-            "Score minimum",
-            "Score maximum",
-            "Écart-type",
-            "Médiane",
-            "1er quartile (Q1)",
-            "3e quartile (Q3)",
-            "IQR"
-        ],
-        "title": "📊 Analyse de questionnaire SUS",
-        "upload_prompt": "Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.",
-        "upload_label": "Charger le fichier Excel",
-        "filters": "### Filtres",
-        "questions": "📋 Questions du questionnaire",
-        "score": "#### Score SUS :",
-        "distribution": "#### Répartition des sujets par résultat",
-        "by_category": "#### Score SUS par catégorie",
-        "by_question": "#### Score SUS par question",
-        "statistics": "#### Statistiques",
-        "individual_scores": "#### Scores individuels",
-        "download_pdf": "📄 Télécharger le rapport PDF",
-        "download_template": "⬇️ Template Excel (SUS)",
-        "template_intro": "Template Excel des résultats à charger dans cette application disponible ici :",
-        "select_category": "Choisissez une catégorie :",
-        "error_columns": "❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.",
-        "subjects_count": "sujets",
-        "sidebar_title": "Paramètres",
-        "sidebar_language": "Langue",
-        "sidebar_questionnaire": "sidebar_questionnaire",
-        "questionnaire_choices": "questionnaire_choices"
-    },
-    "English": {
-        "zones_labels": ["Worst imaginable", "Poor", "Acceptable", "Good", "Excellent", "Best imaginable"],
-        "stats_labels": [
-            "Average SUS score",
-            "Sample size",
-            "Minimum score",
-            "Maximum score",
-            "Standard deviation",
-            "Median",
-            "1st quartile (Q1)",
-            "3rd quartile (Q3)",
-            "IQR"
-        ],
-        "title": "📊 SUS Questionnaire Analysis",
-        "upload_prompt": "Upload an **Excel (.xlsx)** file with a header row containing **Question1** to **Question10**.",
-        "upload_label": "Upload Excel file",
-        "filters": "### Filters",
-        "questions": "📋 Questionnaire questions",
-        "score": "#### SUS Score:",
-        "distribution": "#### Distribution of subjects by score",
-        "by_category": "#### SUS score by category",
-        "by_question": "#### SUS score per question",
-        "statistics": "#### Statistics",
-        "individual_scores": "#### Individual scores",
-        "download_pdf": "📄 Download PDF report",
-        "download_template": "⬇️ Excel Template (SUS)",
-        "template_intro": "Excel template for results to upload into this application:",
-        "select_category": "Select a category:",
-        "error_columns": "❌ File must include columns 'Question1' to 'Question10'.",
-        "subjects_count": "subjects",
-        "sidebar_title": "Settings",
-        "sidebar_language": "sidebar_language",
-        "sidebar_questionnaire": "Questionnaire type",
-        "questionnaire_choices": ["SUS", "Other (coming soon)"]
-    }
-}
 
 #Paramètres des couleurs
 
@@ -96,11 +24,10 @@ zones = [
 ]
 
 # Menu latéral
-st.sidebar.title(labels[lang]["sidebar_title"])
+st.sidebar.title(Paramètres)
 
 # Choix de la langue
-lang = st.sidebar.selectbox(
-    labels[lang]["sidebar_language"],
+    [sidebar_language],
     options=["Français", "English"],
     index=0
 )
@@ -117,31 +44,29 @@ zones = [
 ]
 
 # Menu latéral
-st.sidebar.title(labels[lang]["sidebar_title"])
+st.sidebar.title(Paramètres)
 
 # Choix de la langue
 lang = st.sidebar.selectbox(
-    labels[lang]["sidebar_language"],
+    [sidebar_language],
     options=["Français", "English"],
     index=0
 )
-
-# Définition dynamique des zones
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
 zones = [
-    (0, 25, zone_colors[0], labels[lang]["zones_labels"][0]),
-    (25, 39, zone_colors[1], labels[lang]["zones_labels"][1]),
-    (39, 52, zone_colors[2], labels[lang]["zones_labels"][2]),
-    (52, 73, zone_colors[3], labels[lang]["zones_labels"][3]),
-    (73, 86, zone_colors[4], labels[lang]["zones_labels"][4]),
-    (86, 100, zone_colors[5], labels[lang]["zones_labels"][5])
+    (0, 25, zone_colors[0], [zones_labels][0]),
+    (25, 39, zone_colors[1], [zones_labels][1]),
+    (39, 52, zone_colors[2], [zones_labels][2]),
+    (52, 73, zone_colors[3], [zones_labels][3]),
+    (73, 86, zone_colors[4], [zones_labels][4]),
+    (86, 100, zone_colors[5], [zones_labels][5])
 ]
 
 
 # Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
-    labels[lang]["sidebar_questionnaire"],
-    labels[lang]["questionnaire_choices"]
+    [sidebar_questionnaire],
+    [questionnaire_choices]
 )
 
 sus_questions = {
@@ -188,10 +113,10 @@ sus_questions = {
 }
 
 
-st.title(labels[lang]["title"])
-st.markdown(labels[lang]["upload_prompt"])
+st.title([title])
+st.markdown(Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.)
 
-uploaded_file = st.file_uploader(labels[lang]["upload_label"], type=["xlsx"])
+uploaded_file = st.file_uploader(Charger le fichier Excel, type=["xlsx"])
 
 if uploaded_file:
     try:
@@ -215,7 +140,7 @@ if uploaded_file:
 
         # Vérification des colonnes de questions
         if not all(col in df.columns for col in questions):
-            st.error(labels[lang]["error_columns"])
+            st.error(❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.)
         else:
             df_sus = df[questions]
 
@@ -235,7 +160,7 @@ if uploaded_file:
             avg_score = df['SUS_Score'].mean()
            
             # Légende des questions dans la sidebar
-            with st.sidebar.expander(labels[lang]["questions"]):
+            with st.sidebar.expander(📋 Questions du questionnaire):
                 for i, q in enumerate(questions, 1):
                     st.markdown(f"**Q{i}** : {sus_questions[q][lang]}")
 
@@ -277,7 +202,7 @@ if uploaded_file:
             iqr = q3 - q1
             
             stats_df = pd.DataFrame({
-                "Indicateur": labels[lang]["stats_labels"],
+                "Indicateur": [stats_labels],
                 "Valeur": [
                     f"{avg_score:.1f}",
                     len(df),
@@ -294,7 +219,7 @@ if uploaded_file:
             
             st.markdown("---")
             
-            st.markdown(labels[lang]["statistics"])
+            st.markdown(#### Statistiques)
             st.table(stats_df)
 
             avg_score = df['SUS_Score'].mean()
@@ -302,7 +227,7 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme
-            st.markdown(labels[lang]["distribution"])
+            st.markdown(#### Répartition des sujets par résultat)
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
@@ -344,10 +269,10 @@ if uploaded_file:
 
             # Histogramme des scores SUS par catégorie
             if category_info:
-                st.markdown(labels[lang]["by_category"])
+                st.markdown(#### Score SUS par catégorie)
             
                 if len(category_info) > 1:
-                    selected_category = st.selectbox(labels[lang]["select_category"], list(category_info.keys()))
+                    selected_category = st.selectbox(Choisissez une catégorie :, list(category_info.keys()))
                 else:
                     selected_category = list(category_info.keys())[0]
             
@@ -405,7 +330,7 @@ if uploaded_file:
             st.markdown("---")
 
             # Radar - Score SUS par question
-            st.markdown(labels[lang]["by_question"])
+            st.markdown(#### Score SUS par question)
             question_means = df[questions].mean()
                        
             radar_labels = [f"Q{i}" for i in range(1, 11)]
@@ -486,7 +411,7 @@ if uploaded_file:
 
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
             st.download_button(
-                label=labels[lang]["download_pdf"],
+                label=📄 Télécharger le rapport PDF,
                 data=pdf_bytes,
                 file_name="rapport_sus.pdf",
                 mime="application/pdf"
@@ -496,13 +421,13 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 
 st.markdown("---")
-st.markdown(labels[lang]["template_intro"])
+st.markdown(Template Excel des résultats à charger dans cette application disponible ici :)
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
 
 st.download_button(
-    label=labels[lang]["download_template"],
+    label=⬇️ Template Excel (SUS),
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
