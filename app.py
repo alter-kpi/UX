@@ -93,11 +93,17 @@ if uploaded_file:
         # Colonnes de questions
         questions = [f"Question{i}" for i in range(1, 11)]
 
-        # Colonnes personnalisables définies dans le template
-        potential_custom_columns = ["Category 1", "Category 2", "Category 3", "Category 4"]
-
-        # Conserver uniquement celles qui existent et qui ne sont pas vides
-        custom_columns = [col for col in potential_custom_columns if col in df.columns and df[col].notna().any()]
+        # Colonnes de questions
+        questions = [f"Question{i}" for i in range(1, 11)]
+        
+        # Colonnes candidates = toutes sauf les questions
+        custom_columns = [col for col in df.columns if col not in questions and df[col].notna().any()]
+        
+        # Identifier leur type
+        category_info = {
+            col: "Numérique" if pd.api.types.is_numeric_dtype(df[col]) else "Texte"
+            for col in custom_columns
+        }
 
         # Identifier le type : numérique ou texte
         category_info = {
