@@ -8,46 +8,34 @@ from datetime import date
 import tempfile
 
 # Titre
+
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Analyse de questionnaire SUS")
 
-# Bandeau explicatif en haut de l'application
-
-st.title("Analysez vos questionnaires UX (SUS) facilement")
-
+# Bandeau explicatif simplifié
 st.write(
-    "Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire "
+    "Déposez votre fichier Excel contenant les réponses à un questionnaire "
     "SUS (System Usability Scale). La plateforme calcule automatiquement les scores, "
-    "génère des visualisations interactives et permet d’exporter un rapport."
+    "affiche les résultats sous forme de graphiques interactifs, et permet d’exporter un rapport PDF."
 )
 
-st.subheader("Fonctionnalités")
+st.subheader("Comment ça marche ?")
 st.markdown("""
-- Calcul automatique des scores SUS (par participant et moyenne générale)  
-- Visualisations des résultats (histogrammes, radar, filtres dynamiques)  
-- Filtres personnalisés (genre, pays, équipe…)  
-- Export des résultats au format PDF
+1. Préparez votre fichier de réponses (Excel ou CSV)  
+2. Déposez-le sur la plateforme  
+3. Analysez les résultats grâce aux visualisations dynamiques  
+4. Exportez un rapport PDF si besoin
 """)
-
-st.subheader("Pour commencer")
-st.markdown("1. Préparez votre fichier de réponses au format Excel (vous pouvez partir du modèle ci-dessous)")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
 
 st.download_button(
-    label="⬇️ Télécharger le modèle de fichier",
+    label="⬇️ Télécharger le modèle de fichier Excel",
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
-
-st.markdown("""
-2. Déposez votre fichier sur la plateforme  
-3. Analysez et filtrez les résultats  
-4. Exportez un rapport PDF si besoin
-""")
-
 
 #Paramètres des couleurs
 
