@@ -58,16 +58,15 @@ zones = [
 # Menu latéral
 st.sidebar.title("Paramètres")
 
-# Logo bas de page
-logo = Image.open("Logo.png")
-st.sidebar.image(logo, width=80)
-
-
 # Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
     "Type de questionnaire",
     ["SUS", "Autre (à venir)"]
 )
+# Logo
+st.sidebar.markdown("---")
+logo = Image.open("Logo.png")
+st.sidebar.image(logo, width=80)
 
 sus_questions = {
     "Question1": {
