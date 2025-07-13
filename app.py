@@ -12,6 +12,8 @@ import tempfile
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Analyse de questionnaires UX")
 
+st.markdown("---")
+
 st.write(
     "Cette application permet d’analyser des questionnaires liés à l’expérience utilisateur (UX). "
     "Après importation du fichier Excel, les résultats sont traités automatiquement, visualisés sous forme de graphiques, "
@@ -431,5 +433,3 @@ if uploaded_file:
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
-
-st.markdown("---")
