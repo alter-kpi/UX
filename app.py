@@ -8,36 +8,33 @@ from datetime import date
 import tempfile
 
 # Bandeau explicatif en haut de l'application
+
+st.title("Analysez facilement vos questionnaires UX (SUS)")
+
+st.write(
+    "Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire "
+    "SUS (System Usability Scale). La plateforme calcule automatiquement les scores, "
+    "génère des visualisations interactives et permet d’exporter un rapport."
+)
+
+st.subheader("Fonctionnalités")
 st.markdown("""
-<div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem; max-width: 900px;">
-  <h2 style="color: #1f2937; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
-    Analysez facilement vos questionnaires UX (SUS)
-  </h2>
-  <p style="color: #374151; margin-bottom: 1rem;">
-    Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire SUS (System Usability Scale). 
-    La plateforme calcule automatiquement les scores, génère des visualisations interactives et permet d’exporter un rapport.
-  </p>
+- Calcul automatique des scores SUS (par participant et moyenne générale)
+- Visualisations des résultats (histogrammes, radar, filtres dynamiques)
+- Filtres personnalisés (genre, pays, équipe…)
+- Export des résultats au format PDF
+""")
 
-  <ul style="color: #374151; margin-bottom: 1rem; padding-left: 1.25rem;">
-    <li>Calcul automatique des scores SUS (par participant et moyenne générale)</li>
-    <li>Visualisations des résultats (histogrammes, radar, filtres dynamiques)</li>
-    <li>Filtres personnalisés (genre, pays, équipe…)</li>
-    <li>Export des résultats au format PDF</li>
-  </ul>
+st.subheader("Pour commencer")
+st.markdown("""
+1. Préparez votre fichier de réponses au format Excel ou CSV  
+2. Déposez-le sur la plateforme  
+3. Analysez et filtrez les résultats  
+4. Exportez si besoin un rapport PDF
+""")
 
-  <h3 style="color: #1f2937; font-weight: 500; margin-bottom: 0.5rem;">Pour commencer :</h3>
-  <ol style="color: #374151; padding-left: 1.25rem; margin-bottom: 1rem;">
-    <li>Préparez votre fichier de réponses au format Excel ou CSV</li>
-    <li>Déposez-le sur la plateforme</li>
-    <li>Analysez et filtrez les résultats</li>
-    <li>Exportez si besoin un rapport PDF</li>
-  </ol>
+st.markdown("[📥 Télécharger le modèle de fichier](LIEN_VERS_TEMPLATE)", unsafe_allow_html=True)
 
-  <a href="LIEN_VERS_TEMPLATE" target="_blank" style="display: inline-block; background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
-    📥 Télécharger le modèle de fichier
-  </a>
-</div>
-""", unsafe_allow_html=True)
 
 #Paramètres des couleurs
 
