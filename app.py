@@ -391,7 +391,7 @@ if uploaded_file:
             
                 pdf.set_font("Arial", "B", 16)
                 pdf.ln(15)
-                pdf.cell(0, 10, "Rapport – Questionnaire SUS", ln=True, align='C')
+                pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
             
                 pdf.set_font("Arial", "", 12)
                 pdf.ln(5)
