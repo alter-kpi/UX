@@ -17,7 +17,7 @@ st.write("Après importation du fichier Excel, les résultats sont traités auto
     "et un rapport PDF peut être généré."
 )
 
-st.markdown("---")
+st.markdown("fonctionnement ---")
 
 # Étapes sans emoji, version professionnelle
 st.markdown("##### 1️⃣ Préparer le fichier de réponses")
