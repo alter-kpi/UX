@@ -408,12 +408,12 @@ if uploaded_file:
                 pdf.ln(5)
             
                 # Statistiques
-                pdf.set_font("Arial", "B", 14)
-                pdf.cell(0, 10, "Statistiques descriptives", ln=True)
-                pdf.set_font("Arial", "", 11)
-                for idx, row in stats_df.iterrows():
-                    pdf.cell(80, 8, f"- {row['Indicateur']}", border=0)
-                    pdf.cell(40, 8, str(row['Valeur']), ln=True)
+                #pdf.set_font("Arial", "B", 14)
+                #pdf.cell(0, 10, "Statistiques descriptives", ln=True)
+                #pdf.set_font("Arial", "", 11)
+                #for idx, row in stats_df.iterrows():
+                #    pdf.cell(80, 8, f"- {row['Indicateur']}", border=0)
+                #    pdf.cell(40, 8, str(row['Valeur']), ln=True)
             
                 def add_figure(fig, title, width=180):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
