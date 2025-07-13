@@ -380,32 +380,40 @@ if uploaded_file:
             # PDF
             def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
                 pdf = FPDF()
+                pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
+            
+                # Logo
                 try:
                     pdf.image("Logo.png", x=10, y=8, w=20)
                 except RuntimeError:
                     pass
-                pdf.ln(20)
+            
                 pdf.set_font("Arial", "B", 16)
-                pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
+                pdf.ln(15)
+                pdf.cell(0, 10, "Rapport – Questionnaire SUS", ln=True, align='C')
+            
                 pdf.set_font("Arial", "", 12)
+                pdf.ln(5)
                 pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 10, f"Nombre de sujets : {num_subjects}", ln=True)
-                pdf.cell(0, 10, f"Score moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(10)
-
-                def add_fig(fig, title, width):
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                        fig.savefig(tmp.name, format='png', bbox_inches='tight')
+                pdf.cell(0, 10, f"Nombre de répondants : {num_subjects}", ln=True)
+                pdf.cell(0, 10, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+            
+                def add_fig(fig, title, width=180):
+                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                        fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
+                        pdf.ln(10)
                         pdf.set_font("Arial", "B", 12)
                         pdf.cell(0, 10, title, ln=True)
                         x = (pdf.w - width) / 2
-                        pdf.image(tmp.name, x=x, w=width)
-                        pdf.ln(5)
-
-                add_fig(fig_jauge, "Jauge", 180)
-                add_fig(fig_dist, "Histogramme", 180)
-                add_fig(fig_radar, "Radar - Moyenne par question", 120)
+                        pdf.image(tmpfile.name, x=x, w=width)
+            
+                # Ajouter les figures
+                add_fig(fig_jauge, "Évaluation globale (jauge)")
+                add_fig(fig_dist, "Répartition des scores")
+                add_fig(fig_radar, "Analyse moyenne par question (radar)", width=120)
+            
+                return pdf.output(dest='S').encode('latin1')
 
                 return pdf.output(dest='S').encode('latin1')
 
