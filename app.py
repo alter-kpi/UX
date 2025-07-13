@@ -10,7 +10,7 @@ import tempfile
 # Titre
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-st.title("Analyse de questionnaire SUS")
+st.title("📊 Analyse de questionnaire SUS")
 
 # Introduction
 st.write(
