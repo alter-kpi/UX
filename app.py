@@ -21,7 +21,7 @@ st.write(
 st.markdown("---")
 
 # Étapes sans emoji, version professionnelle
-st.markdown("###### 1️⃣ Préparer le fichier de réponses")
+st.markdown("##### 1️⃣ Préparer le fichier de réponses")
 st.write("Utilisez le modèle ci-dessous pour structurer vos données conformément au format attendu.")
 
 with open("template_sus.xlsx", "rb") as f:
