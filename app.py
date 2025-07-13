@@ -7,6 +7,38 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
+# Bandeau explicatif en haut de l'application
+st.markdown("""
+<div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem; max-width: 900px;">
+  <h2 style="color: #1f2937; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
+    Analysez facilement vos questionnaires UX (SUS)
+  </h2>
+  <p style="color: #374151; margin-bottom: 1rem;">
+    Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire SUS (System Usability Scale). 
+    La plateforme calcule automatiquement les scores, génère des visualisations interactives et permet d’exporter un rapport.
+  </p>
+
+  <ul style="color: #374151; margin-bottom: 1rem; padding-left: 1.25rem;">
+    <li>Calcul automatique des scores SUS (par participant et moyenne générale)</li>
+    <li>Visualisations des résultats (histogrammes, radar, filtres dynamiques)</li>
+    <li>Filtres personnalisés (genre, pays, équipe…)</li>
+    <li>Export des résultats au format PDF</li>
+  </ul>
+
+  <h3 style="color: #1f2937; font-weight: 500; margin-bottom: 0.5rem;">Pour commencer :</h3>
+  <ol style="color: #374151; padding-left: 1.25rem; margin-bottom: 1rem;">
+    <li>Préparez votre fichier de réponses au format Excel ou CSV</li>
+    <li>Déposez-le sur la plateforme</li>
+    <li>Analysez et filtrez les résultats</li>
+    <li>Exportez si besoin un rapport PDF</li>
+  </ol>
+
+  <a href="LIEN_VERS_TEMPLATE" target="_blank" style="display: inline-block; background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none;">
+    📥 Télécharger le modèle de fichier
+  </a>
+</div>
+""", unsafe_allow_html=True)
+
 #Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
