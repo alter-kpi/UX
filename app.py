@@ -10,7 +10,7 @@ import tempfile
 # Titre
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-st.title("📊 Analyse de questionnaire SUS")
+st.title("Analyse de questionnaire SUS")
 
 # Introduction
 st.write(
@@ -19,31 +19,33 @@ st.write(
     "affiche les résultats sous forme de graphiques interactifs, et permet d’exporter un rapport PDF."
 )
 
-# Étapes avec icônes
-st.subheader("🛠️ Comment ça marche ?")
+# Étapes sans emoji, version professionnelle
+st.subheader("Comment utiliser l'application")
 
-st.markdown("### 📝 1. Complétez le modèle de fichier Excel")
+st.markdown("#### Étape 1 – Préparer le fichier de réponses")
+st.write("Utilisez le modèle ci-dessous pour structurer vos données conformément au format attendu.")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
 
 st.download_button(
-    label="⬇️ Télécharger le modèle Excel",
+    label="Télécharger le modèle Excel",
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
 st.markdown("""
-### 📤 2. Déposez votre fichier complété  
-Téléversez le fichier sur la plateforme pour commencer l’analyse.
+#### Étape 2 – Importer le fichier  
+Déposez votre fichier Excel complété sur la plateforme.
 
-### 📊 3. Visualisez les résultats  
-Découvrez les scores SUS individuels et globaux à l’aide de graphiques interactifs.
+#### Étape 3 – Analyser les résultats  
+Visualisez automatiquement les scores SUS par participant et les résultats agrégés à l’aide de graphiques interactifs.
 
-### 🧾 4. Exportez un rapport PDF  
-Générez un rapport prêt à partager.
+#### Étape 4 – Exporter le rapport  
+Téléchargez un rapport PDF contenant les résultats pour partage ou archivage.
 """)
+
 
 #Paramètres des couleurs
 
