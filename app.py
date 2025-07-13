@@ -7,15 +7,14 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
+# Titre
+st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
+st.title("📊 Analyse de questionnaire SUS")
+st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
+
 # Bandeau explicatif en haut de l'application
 
 st.title("Analysez facilement vos questionnaires UX (SUS)")
-
-st.write(
-    "Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire "
-    "SUS (System Usability Scale). La plateforme calcule automatiquement les scores, "
-    "génère des visualisations interactives et permet d’exporter un rapport."
-)
 
 st.subheader("Fonctionnalités")
 st.markdown("""
@@ -99,12 +98,6 @@ sus_questions = {
         "English": "I needed to learn a lot of things before I could get going with this system."
     }
 }
-
-
-st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-
-st.title("📊 Analyse de questionnaire SUS")
-st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
