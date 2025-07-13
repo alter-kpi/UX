@@ -23,13 +23,20 @@ st.markdown("""
 
 st.subheader("Pour commencer")
 st.markdown("""
-1. Préparez votre fichier de réponses au format Excel ou CSV  
+1. Préparez votre fichier de réponses au format Excel
 2. Déposez-le sur la plateforme  
 3. Analysez et filtrez les résultats  
 4. Exportez si besoin un rapport PDF
 """)
 
 st.markdown("[📥 Télécharger le modèle de fichier](LIEN_VERS_TEMPLATE)", unsafe_allow_html=True)
+
+st.download_button(
+    label="⬇️ Template Excel (SUS)",
+    data=template_bytes,
+    file_name="template_sus.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
 
 #Paramètres des couleurs
@@ -415,13 +422,6 @@ st.markdown("Template Excel des résultats à charger dans cette application dis
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
-
-st.download_button(
-    label="⬇️ Template Excel (SUS)",
-    data=template_bytes,
-    file_name="template_sus.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
 
 # Logo bas de page
 logo = Image.open("Logo.png")
