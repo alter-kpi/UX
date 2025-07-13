@@ -66,7 +66,7 @@ questionnaire_type = st.sidebar.radio(
 # Logo
 st.sidebar.markdown("---")
 logo = Image.open("Logo.png")
-st.sidebar.image(logo, width=80)
+st.sidebar.image(logo, width=100)
 
 sus_questions = {
     "Question1": {
