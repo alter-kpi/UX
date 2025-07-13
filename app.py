@@ -70,6 +70,8 @@ questionnaire_type = st.sidebar.radio(
     ["SUS", "Autre (à venir)"]
 )
 
+st.sidebar.markdown("---")
+
 # RGPD
 with st.sidebar.expander("🔒 Données et confidentialité (RGPD)"):
     st.markdown(
@@ -79,7 +81,6 @@ with st.sidebar.expander("🔒 Données et confidentialité (RGPD)"):
     )
 
 # Logo
-st.sidebar.markdown("---")
 logo = Image.open("Logo.png")
 st.sidebar.image(logo, width=100)
 
