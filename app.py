@@ -33,7 +33,7 @@ st.download_button(
 )
 
 st.markdown("""
-#### Étape 2 – Importer le fichier  
+##### Étape 2 – Importer le fichier  
 Déposez votre fichier Excel complété sur la plateforme.
 
 #### Étape 3 – Analyser les résultats  
