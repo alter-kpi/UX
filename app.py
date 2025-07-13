@@ -58,6 +58,11 @@ zones = [
 # Menu latéral
 st.sidebar.title("Paramètres")
 
+# Logo bas de page
+logo = Image.open("Logo.png")
+st.sidebar.image(logo, width=80)
+
+
 # Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
     "Type de questionnaire",
@@ -429,7 +434,3 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 
 st.markdown("---")
-
-# Logo bas de page
-logo = Image.open("Logo.png")
-st.image(logo, width=80)
