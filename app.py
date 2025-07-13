@@ -10,7 +10,7 @@ import tempfile
 # Titre et introduction
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-st.title("📊 Analyse de questionnaires UX")
+st.subheader("📊 Analyse de questionnaires UX")
 
 st.markdown("---")
 
