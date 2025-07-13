@@ -20,8 +20,6 @@ st.write(
 )
 
 # Étapes sans emoji, version professionnelle
-st.subheader("Comment utiliser l'application")
-
 st.markdown("#### Étape 1 – Préparer le fichier de réponses")
 st.write("Utilisez le modèle ci-dessous pour structurer vos données conformément au format attendu.")
 
