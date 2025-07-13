@@ -13,34 +13,40 @@ st.title("📊 Analyse de questionnaire SUS")
 
 # Bandeau explicatif en haut de l'application
 
+st.title("Analysez vos questionnaires UX (SUS) facilement")
+
+st.write(
+    "Déposez votre fichier Excel ou CSV contenant les réponses à un questionnaire "
+    "SUS (System Usability Scale). La plateforme calcule automatiquement les scores, "
+    "génère des visualisations interactives et permet d’exporter un rapport."
+)
+
 st.subheader("Fonctionnalités")
 st.markdown("""
-- Calcul automatique des scores SUS (par participant et moyenne générale)
-- Visualisations des résultats (histogrammes, radar, filtres dynamiques)
-- Filtres personnalisés (genre, pays, équipe…)
+- Calcul automatique des scores SUS (par participant et moyenne générale)  
+- Visualisations des résultats (histogrammes, radar, filtres dynamiques)  
+- Filtres personnalisés (genre, pays, équipe…)  
 - Export des résultats au format PDF
 """)
 
 st.subheader("Pour commencer")
-st.markdown("""
-1. Préparez votre fichier de réponses au format Excel """)
+st.markdown("1. Préparez votre fichier de réponses au format Excel (vous pouvez partir du modèle ci-dessous)")
+
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
+
 st.download_button(
-    label="⬇️ Template disponible",
+    label="⬇️ Télécharger le modèle de fichier",
     data=template_bytes,
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 st.markdown("""
-2. Déposez-le sur la plateforme  
+2. Déposez votre fichier sur la plateforme  
 3. Analysez et filtrez les résultats  
-4. Exportez si besoin un rapport PDF
+4. Exportez un rapport PDF si besoin
 """)
-
-st.markdown("📥 Télécharger le modèle de fichier :")
-
-
 
 
 #Paramètres des couleurs
