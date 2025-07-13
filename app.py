@@ -12,9 +12,8 @@ import tempfile
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Analyse de questionnaires UX")
 
-st.write(
-    "Application d'analyse des questionnaires liés à l’expérience utilisateur (UX). "
-    "Après importation du fichier Excel, les résultats sont traités automatiquement, visualisés sous forme de graphiques, "
+st.write("Application d'analyse des questionnaires liés à l’expérience utilisateur (UX). ")
+st.write("Après importation du fichier Excel, les résultats sont traités automatiquement, visualisés sous forme de graphiques, "
     "et un rapport PDF peut être généré."
 )
 
