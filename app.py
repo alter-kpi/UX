@@ -60,12 +60,29 @@ zones = [
     (86, 100, zone_colors[5], "Meilleur imaginable")
 ]
 
-# Choix du questionnaire (sidebar)
+# Menu latéral
+st.sidebar.title("Paramètres")
+
+# Choix du questionnaire
 questionnaire_type = st.sidebar.radio(
     "Type de questionnaire",
     ["SUS", "Autre (à venir)"]
 )
-# Chargement des questions
+
+st.sidebar.markdown("---")
+
+# RGPD
+with st.sidebar.expander("🔒 Données et confidentialité (RGPD)"):
+    st.markdown(
+        "Les fichiers que vous importez ne sont **jamais stockés**.\n\n"
+        "Ils sont traités **temporairement en mémoire**, uniquement le temps de l’analyse.\n\n"
+        "Aucune donnée personnelle n’est conservée ou transmise à des tiers."
+    )
+
+# Logo
+logo = Image.open("Logo.png")
+st.sidebar.image(logo, width=100)
+
 sus_questions = {
     "Question1": {
         "Français": "Je voudrais utiliser ce système fréquemment.",
@@ -109,26 +126,6 @@ sus_questions = {
     }
 }
 
-# Légende des questions
-with st.sidebar.expander("📋 Questions du questionnaire"):
-    for i, q in enumerate(questions, 1):
-        st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
-
-st.sidebar.markdown("---")
-
-# RGPD
-with st.sidebar.expander("🔒 Données et confidentialité (RGPD)"):
-    st.markdown(
-        "Les fichiers que vous importez ne sont **jamais stockés**.\n\n"
-        "Ils sont traités **temporairement en mémoire**, uniquement le temps de l’analyse.\n\n"
-        "Aucune donnée personnelle n’est conservée ou transmise à des tiers."
-    )
-
-# Logo
-logo = Image.open("Logo.png")
-st.sidebar.image(logo, width=100)
-
-
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
@@ -168,6 +165,11 @@ if uploaded_file:
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
             avg_score = df['SUS_Score'].mean()
+           
+            # Légende des questions dans la sidebar
+            with st.sidebar.expander("📋 Questions du questionnaire"):
+                for i, q in enumerate(questions, 1):
+                    st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
 
             # Jauge
             st.markdown("---")
