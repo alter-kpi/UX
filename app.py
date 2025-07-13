@@ -13,9 +13,7 @@ st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Questionnaire SUS – Analyse et rapport automatisés")
 
 st.write(
-    "Cette application vous permet d’évaluer l’expérience utilisateur à partir d’un questionnaire SUS. "
-    "Téléversez un fichier Excel avec les réponses : les scores sont calculés automatiquement, les résultats visualisés, "
-    "et un rapport PDF peut être généré."
+    "Cette application vous permet d’analyser un questionnaire SUS à partir d’un fichier Excel. Les scores sont calculés automatiquement, les résultats sont visualisables sous forme de graphiques, et un rapport PDF peut être généré en un clic."
 )
 
 # Étapes sans emoji, version professionnelle
