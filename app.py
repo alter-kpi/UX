@@ -10,11 +10,8 @@ import tempfile
 # Titre
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Analyse de questionnaire SUS")
-st.markdown("Chargez un fichier **Excel (.xlsx)** contenant une ligne d'en-tête avec les colonnes **Question1** à **Question10**.")
 
 # Bandeau explicatif en haut de l'application
-
-st.title("Analysez facilement vos questionnaires UX (SUS)")
 
 st.subheader("Fonctionnalités")
 st.markdown("""
