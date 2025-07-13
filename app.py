@@ -7,16 +7,15 @@ from fpdf import FPDF
 from datetime import date
 import tempfile
 
-# Titre
+# Titre et introduction
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
-st.title("📊 Analyse de questionnaire SUS")
+st.title("📊 Questionnaire SUS – Analyse et rapport automatisés")
 
-# Introduction
 st.write(
-    "Déposez votre fichier Excel contenant les réponses à un questionnaire "
-    "SUS (System Usability Scale). L'application calcule automatiquement les scores, "
-    "affiche les résultats sous forme de graphiques interactifs, et permet d’exporter un rapport PDF."
+    "Cette application vous permet d’évaluer l’expérience utilisateur à partir d’un questionnaire SUS. "
+    "Téléversez un fichier Excel avec les réponses : les scores sont calculés automatiquement, les résultats visualisés, "
+    "et un rapport PDF peut être généré."
 )
 
 # Étapes sans emoji, version professionnelle
