@@ -12,16 +12,17 @@ import tempfile
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 st.title("📊 Analyse de questionnaire SUS")
 
-# Introduction simple
+# Introduction
 st.write(
     "Déposez votre fichier Excel contenant les réponses à un questionnaire "
     "SUS (System Usability Scale). L'application calcule automatiquement les scores, "
     "affiche les résultats sous forme de graphiques interactifs, et permet d’exporter un rapport PDF."
 )
 
-# Etapes claires
-st.subheader("Comment ça marche ?")
-st.markdown("**1. Téléchargez le modèle de fichier Excel et complétez-le avec vos réponses**")
+# Étapes avec icônes
+st.subheader("🛠️ Comment ça marche ?")
+
+st.markdown("### 📝 1. Complétez le modèle de fichier Excel")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
@@ -34,11 +35,15 @@ st.download_button(
 )
 
 st.markdown("""
-**2. Déposez votre fichier complété sur la plateforme**  
-**3. Analysez les résultats via les graphiques interactifs**  
-**4. Exportez un rapport PDF si besoin**
-""")
+### 📤 2. Déposez votre fichier complété  
+Téléversez le fichier sur la plateforme pour commencer l’analyse.
 
+### 📊 3. Visualisez les résultats  
+Découvrez les scores SUS individuels et globaux à l’aide de graphiques interactifs.
+
+### 🧾 4. Exportez un rapport PDF  
+Générez un rapport prêt à partager.
+""")
 
 #Paramètres des couleurs
 
