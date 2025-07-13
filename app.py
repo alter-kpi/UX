@@ -43,7 +43,6 @@ Visualisez automatiquement les scores SUS par participant et les résultats agr�
 Téléchargez un rapport PDF contenant les résultats pour partage ou archivage.
 """)
 
-
 #Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
@@ -110,8 +109,6 @@ sus_questions = {
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
-st.markdown("---")
-
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
@@ -157,8 +154,8 @@ if uploaded_file:
                 for i, q in enumerate(questions, 1):
                     st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
 
-
             # Jauge
+            st.markdown("---")
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
             fig, ax = plt.subplots(figsize=(6, 1.5))
