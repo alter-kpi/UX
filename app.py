@@ -19,7 +19,7 @@ st.write(
 )
 
 # Étapes sans emoji, version professionnelle
-st.markdown("##### Étape 1 – Préparer le fichier de réponses")
+st.markdown("##### 1️⃣ Préparer le fichier de réponses")
 st.write("Utilisez le modèle ci-dessous pour structurer vos données conformément au format attendu.")
 
 with open("template_sus.xlsx", "rb") as f:
@@ -33,13 +33,13 @@ st.download_button(
 )
 
 st.markdown("""
-##### 1️⃣ Étape 2 – Importer le fichier  
+##### 2️⃣ Importer le fichier  
 Déposez votre fichier Excel complété sur la plateforme.
 
-##### Étape 3 – Analyser les résultats  
+##### 3️⃣ Analyser les résultats  
 Visualisez automatiquement les scores SUS par participant et les résultats agrégés à l’aide de graphiques interactifs.
 
-##### Étape 4 – Exporter le rapport  
+##### 4️⃣ Exporter le rapport  
 Téléchargez un rapport PDF contenant les résultats pour partage ou archivage.
 """)
 
