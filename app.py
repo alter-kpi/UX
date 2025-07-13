@@ -386,43 +386,64 @@ if uploaded_file:
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # PDF
-            def generate_pdf(avg_score, fig_jauge, fig_dist, fig_radar, num_subjects):
+            from fpdf import FPDF
+            from datetime import date
+            import tempfile
+            
+            def clean_latin1(text):
+                return (text
+                        .replace("–", "-")
+                        .replace("’", "'")
+                        .replace("“", '"')
+                        .replace("”", '"')
+                        .replace("…", "...")
+                        )
+
+            def generate_sus_pdf(avg_score, num_subjects, stats_df, fig_jauge, fig_dist, fig_radar, fig_cat=None):
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
             
-                # Logo
-                try:
-                    pdf.image("Logo.png", x=10, y=8, w=20)
-                except RuntimeError:
-                    pass
-            
+                # Titre
                 pdf.set_font("Arial", "B", 16)
-                pdf.ln(15)
-                pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
-            
-                pdf.set_font("Arial", "", 12)
+                pdf.cell(0, 10, clean_latin1("Rapport - Questionnaire SUS"), ln=True, align='C')
                 pdf.ln(5)
-                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 10, f"Nombre de répondants : {num_subjects}", ln=True)
-                pdf.cell(0, 10, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
             
-                def add_fig(fig, title, width=180):
+                # Informations générales
+                pdf.set_font("Arial", "", 12)
+                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.cell(0, 10, f"Nombre de repondants : {num_subjects}", ln=True)
+                pdf.cell(0, 10, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.ln(5)
+            
+                # Statistiques
+                pdf.set_font("Arial", "B", 14)
+                pdf.cell(0, 10, clean_latin1("Statistiques descriptives"), ln=True)
+                pdf.set_font("Arial", "", 11)
+                for idx, row in stats_df.iterrows():
+                    indicateur = clean_latin1(str(row['Indicateur']))
+                    valeur = clean_latin1(str(row['Valeur']))
+                    pdf.cell(80, 8, f"- {indicateur}", border=0)
+                    pdf.cell(40, 8, valeur, ln=True)
+            
+                # Fonction d'ajout de figures
+                def add_figure(fig, title, width=180):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
-                        pdf.ln(10)
-                        pdf.set_font("Arial", "B", 12)
-                        pdf.cell(0, 10, title, ln=True)
+                        pdf.add_page()
+                        pdf.set_font("Arial", "B", 14)
+                        pdf.cell(0, 10, clean_latin1(title), ln=True)
+                        pdf.ln(5)
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
             
-                # Ajouter les figures
-                add_fig(fig_jauge, "Évaluation globale (jauge)")
-                add_fig(fig_dist, "Répartition des scores")
-                add_fig(fig_radar, "Analyse moyenne par question (radar)", width=120)
+                # Ajout des visualisations
+                add_figure(fig_jauge, "Evaluation globale (jauge)")
+                add_figure(fig_dist, "Repartition des scores")
+                if fig_cat is not None:
+                    add_figure(fig_cat, "Score SUS par categorie")
+                add_figure(fig_radar, "Analyse moyenne par question (radar)")
             
-                return pdf.output(dest='S').encode('latin1')
-
                 return pdf.output(dest='S').encode('latin1')
 
             pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
