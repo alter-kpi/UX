@@ -446,13 +446,25 @@ if uploaded_file:
             
                 return pdf.output(dest='S').encode('latin1')
 
-            pdf_bytes = generate_pdf(avg_score, fig, fig_dist, fig_radar, len(df))
-            st.download_button(
-                label="📄 Télécharger le rapport PDF",
-                data=pdf_bytes,
-                file_name="rapport_sus.pdf",
-                mime="application/pdf"
-            )
+            # Génération du rapport PDF complet
+            if st.button("📄 Générer le rapport PDF"):
+                pdf_bytes = generate_sus_pdf(
+                    avg_score=avg_score,
+                    num_subjects=len(df),
+                    stats_df=stats_df,
+                    fig_jauge=fig,
+                    fig_dist=fig_dist,
+                    fig_radar=fig_radar,
+                    fig_cat=fig_cat if 'fig_cat' in locals() else None
+                )
+            
+                st.download_button(
+                    label="📥 Télécharger le rapport PDF",
+                    data=pdf_bytes,
+                    file_name="rapport_sus.pdf",
+                    mime="application/pdf"
+                )
+
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
