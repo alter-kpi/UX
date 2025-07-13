@@ -45,7 +45,11 @@ Visualisez automatiquement les scores SUS par participant et les résultats agr�
 Téléchargez un rapport PDF contenant les résultats pour partage ou archivage.
 """)
 
-#Paramètres des couleurs
+# Chargement du fichier
+st.markdown("---")
+uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
+
+# Paramètres des couleurs
 
 zone_colors = ["#d9534f", "#f0ad4e", "#f7ec13", "#5bc0de", "#5cb85c", "#3c763d"]
 zones = [
@@ -112,8 +116,6 @@ sus_questions = {
         "English": "I needed to learn a lot of things before I could get going with this system."
     }
 }
-
-uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
 if uploaded_file:
     try:
