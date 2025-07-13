@@ -32,7 +32,7 @@ st.download_button(
     file_name="template_sus.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
-st.mardown("""
+st.markdown("""
 2. Déposez-le sur la plateforme  
 3. Analysez et filtrez les résultats  
 4. Exportez si besoin un rapport PDF
