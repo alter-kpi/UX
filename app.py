@@ -31,6 +31,10 @@ st.markdown("""
 
 st.markdown("[📥 Télécharger le modèle de fichier](LIEN_VERS_TEMPLATE)", unsafe_allow_html=True)
 
+st.markdown("Template Excel des résultats à charger dans cette application disponible ici :")
+
+with open("template_sus.xlsx", "rb") as f:
+    template_bytes = f.read()
 st.download_button(
     label="⬇️ Template Excel (SUS)",
     data=template_bytes,
@@ -418,10 +422,6 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 
 st.markdown("---")
-st.markdown("Template Excel des résultats à charger dans cette application disponible ici :")
-
-with open("template_sus.xlsx", "rb") as f:
-    template_bytes = f.read()
 
 # Logo bas de page
 logo = Image.open("Logo.png")
