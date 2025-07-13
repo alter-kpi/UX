@@ -29,9 +29,7 @@ st.markdown("""
 4. Exportez si besoin un rapport PDF
 """)
 
-st.markdown("[📥 Télécharger le modèle de fichier](LIEN_VERS_TEMPLATE)", unsafe_allow_html=True)
-
-st.markdown("Template Excel des résultats à charger dans cette application disponible ici :")
+st.markdown("📥 Télécharger le modèle de fichier :")
 
 with open("template_sus.xlsx", "rb") as f:
     template_bytes = f.read()
