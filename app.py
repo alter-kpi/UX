@@ -110,6 +110,8 @@ sus_questions = {
 
 uploaded_file = st.file_uploader("Charger le fichier Excel", type=["xlsx"])
 
+st.markdown("---")
+
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name=0)
@@ -128,7 +130,6 @@ if uploaded_file:
             col: "Numérique" if pd.api.types.is_numeric_dtype(df[col]) else "Texte"
             for col in custom_columns
         }
-
 
         # Vérification des colonnes de questions
         if not all(col in df.columns for col in questions):
