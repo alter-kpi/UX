@@ -424,7 +424,7 @@ if uploaded_file:
 
             # PDF            
 
-            def generate_sus_pdf(avg_score, num_subjects, stats_df, fig_jauge, fig_dist, fig_radar, fig_cat=None):
+            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None):
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=12)
                 pdf.add_page()
@@ -452,10 +452,41 @@ if uploaded_file:
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
             
-                # Figures à la suite
+                # Création des figures pour le PDF (en mode 'white')
+                fig_jauge = create_gauge(avg_score, zones, mode="white")
+            
+                # Répartition des scores
+                bins = [0, 25, 39, 52, 73, 86, 100]
+                labels = [z[3] for z in zones]
+                colors = [z[2] for z in zones]
+                categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
+                distribution = categories.value_counts().sort_index()
+                fig_dist = create_distribution(distribution, colors, mode="white")
+            
+                # Radar
+                fig_radar = create_radar_chart(df, questions, mode="white")
+            
+                # Catégories
+                fig_cat = None
+                if category_info:
+                    first_category = list(category_info.keys())[0]
+                    if category_info[first_category] == "Numérique":
+                        try:
+                            binned = pd.cut(df[first_category], bins=5)
+                            df["_cat_display"] = binned.astype(str)
+                        except:
+                            df["_cat_display"] = df[first_category].astype(str)
+                    else:
+                        df["_cat_display"] = df[first_category].astype(str)
+            
+                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+                    fig_cat = create_category_chart(group_means, mode="white")
+                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+            
+                # Ajout dans le PDF
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 add_figure_inline(fig_dist, "Répartition des scores")
-                if fig_cat is not None:
+                if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
             
@@ -464,24 +495,6 @@ if uploaded_file:
                 except UnicodeEncodeError:
                     return None
 
-            # Génération du rapport PDF complet
-            if st.button("📄 Générer le rapport PDF"):
-                pdf_bytes = generate_sus_pdf(
-                    avg_score=avg_score,
-                    num_subjects=len(df),
-                    stats_df=stats_df,
-                    fig_jauge=fig,
-                    fig_dist=fig_dist,
-                    fig_radar=fig_radar,
-                    fig_cat=fig_cat if 'fig_cat' in locals() else None
-                )
-            
-                st.download_button(
-                    label="📥 Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name="rapport_sus.pdf",
-                    mime="application/pdf"
-                )
 
 
     except Exception as e:
