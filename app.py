@@ -206,7 +206,7 @@ if uploaded_file:
                 return fig
             
             
-            fig_jauge = create_gauge(avg_score, zones, mode="dark")
+            fig_jauge = create_gauge(avg_score, zones, mode="white")
             st.pyplot(fig_jauge)
             
              # Statistiques descriptives
