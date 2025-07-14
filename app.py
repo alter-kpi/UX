@@ -394,57 +394,54 @@ if uploaded_file:
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            # PDF
-            from fpdf import FPDF
-            from datetime import date
-            import tempfile
-            
+            # PDF            
+
             def generate_sus_pdf(avg_score, num_subjects, stats_df, fig_jauge, fig_dist, fig_radar, fig_cat=None):
                 pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=15)
+                pdf.set_auto_page_break(auto=True, margin=12)
                 pdf.add_page()
             
                 # Titre
-                pdf.set_font("Arial", "B", 16)
-                pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
-                pdf.ln(5)
+                pdf.set_font("Arial", "B", 14)
+                pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
+                pdf.ln(3)
             
-                # Informations générales
-                pdf.set_font("Arial", "", 12)
-                pdf.cell(0, 10, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 10, f"Nombre de repondants : {num_subjects}", ln=True)
-                pdf.cell(0, 10, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(5)
+                # Informations générales (interligne réduit)
+                pdf.set_font("Arial", "", 9)
+                pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
+                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.ln(3)
             
-                # Statistiques
-                #pdf.set_font("Arial", "B", 14)
-                #pdf.cell(0, 10, "Statistiques descriptives", ln=True)
-                #pdf.set_font("Arial", "", 11)
-                #for idx, row in stats_df.iterrows():
-                #    pdf.cell(80, 8, f"- {row['Indicateur']}", border=0)
-                #    pdf.cell(40, 8, str(row['Valeur']), ln=True)
+                # --- Si tu veux réactiver les stats compactes aussi ---
+                # pdf.set_font("Arial", "B", 11)
+                # pdf.cell(0, 6, "Statistiques descriptives", ln=True)
+                # pdf.set_font("Arial", "", 9)
+                # for idx, row in stats_df.iterrows():
+                #     pdf.cell(80, 5, f"- {row['Indicateur']}", border=0)
+                #     pdf.cell(40, 5, str(row['Valeur']), ln=True)
+                # pdf.ln(2)
             
                 def add_figure(fig, title, width=180):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
                         pdf.add_page()
-                        pdf.set_font("Arial", "B", 14)
-                        pdf.cell(0, 10, title, ln=True)
-                        pdf.ln(5)
+                        pdf.set_font("Arial", "B", 11)
+                        pdf.cell(0, 6, title, ln=True)
+                        pdf.ln(2)
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
             
-                add_figure(fig_jauge, "Evaluation globale (jauge)")
-                add_figure(fig_dist, "Repartition des scores")
+                add_figure(fig_jauge, "Évaluation globale (jauge)")
+                add_figure(fig_dist, "Répartition des scores")
                 if fig_cat is not None:
-                    add_figure(fig_cat, "Score SUS par categorie")
+                    add_figure(fig_cat, "Score SUS par catégorie")
                 add_figure(fig_radar, "Analyse moyenne par question (radar)")
             
                 try:
                     return pdf.output(dest='S').encode('latin1')
                 except UnicodeEncodeError:
                     return None
-
 
             # Génération du rapport PDF complet
             if st.button("📄 Générer le rapport PDF"):
