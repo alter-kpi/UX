@@ -495,22 +495,22 @@ if uploaded_file:
                 except UnicodeEncodeError:
                     return None
 
-                if st.button("📄 Générer le rapport PDF"):
-                    pdf_bytes = generate_sus_pdf(
-                        avg_score=avg_score,
-                        num_subjects=len(df),
-                        df=df,
-                        zones=zones,
-                        questions=questions,
-                        category_info=category_info if 'category_info' in locals() else None
-                    )
-                
-                    st.download_button(
-                        label="📥 Télécharger le rapport PDF",
-                        data=pdf_bytes,
-                        file_name="rapport_sus.pdf",
-                        mime="application/pdf"
-                    )
+            if st.button("📄 Générer le rapport PDF"):
+                pdf_bytes = generate_sus_pdf(
+                    avg_score=avg_score,
+                    num_subjects=len(df),
+                    df=df,
+                    zones=zones,
+                    questions=questions,
+                    category_info=category_info if 'category_info' in locals() else None
+                )
+            
+                st.download_button(
+                    label="📥 Télécharger le rapport PDF",
+                    data=pdf_bytes,
+                    file_name="rapport_sus.pdf",
+                    mime="application/pdf"
+                )
         
 
     except Exception as e:
