@@ -506,7 +506,6 @@ if uploaded_file:
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()  # saut de page avant le radar
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
             
                 if question_stats_df is not None:
@@ -520,6 +519,15 @@ if uploaded_file:
 
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
+            
+                # Calcul du tableau des statistiques par question
+                question_stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
+                question_stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
+                question_stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
+                question_stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
+                question_stats_df = question_stats_df.round(2)
+            
+                # Appel de la génération du PDF
                 pdf_bytes = generate_sus_pdf(
                     avg_score=avg_score,
                     num_subjects=len(df),
@@ -527,7 +535,8 @@ if uploaded_file:
                     zones=zones,
                     questions=questions,
                     category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df
+                    stats_df=stats_df,  # tableau global (moyenne, médiane, etc.)
+                    question_stats_df=question_stats_df  # tableau par question
                 )
             
                 st.download_button(
@@ -536,6 +545,7 @@ if uploaded_file:
                     file_name="rapport_sus.pdf",
                     mime="application/pdf"
                 )
+
 
 
     except Exception as e:
