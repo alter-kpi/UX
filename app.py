@@ -176,20 +176,20 @@ if uploaded_file:
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
             fig, ax = plt.subplots(figsize=(6, 1.5))
-            fig.patch.set_alpha(0)         # fond transparent
-            ax.set_facecolor("none")       # fond transparent
+            #fig.patch.set_alpha(0)         # fond transparent
+            ax.set_facecolor("white")       # fond transparent
             
             for start, end, color, label in zones:
-                ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
+                ax.barh(0, width=end - start, left=start, color=color, edgecolor='black', height=0.5)
             
             ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
             ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
-                    bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
+                    bbox=dict(facecolor='black', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
             
             for start, end, color, label in zones:
                 center = (start + end) / 2
-                ax.text(center, 0.35, label, ha='center', fontsize=9, color='white',
-                        bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'),rotation=30)
+                ax.text(center, 0.35, label, ha='center', fontsize=9, color='black',
+                        bbox=dict(facecolor='white', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'),rotation=30)
             
             for start, end, _, _ in zones:
                 ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color='gray')
