@@ -346,10 +346,12 @@ if uploaded_file:
                 if category_info:
                     st.markdown("#### Score SUS par catégorie")
                 
-                    if len(category_info) > 1:
-                        selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
-                    else:
-                        selected_category = list(category_info.keys())[0]
+                    # Choix de la catégorie dans un menu déroulant
+                    selected_category = (
+                        st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
+                        if len(category_info) > 1
+                        else list(category_info.keys())[0]
+                    )
                 
                     if selected_category:
                         # Construction de la colonne _cat_display
@@ -366,7 +368,7 @@ if uploaded_file:
                         # Moyenne SUS par groupe
                         group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
                 
-                        # Affichage
+                        # Graphique avec fond noir pour l'écran
                         fig_cat = create_category_chart(group_means, mode="dark")
                         st.pyplot(fig_cat)
                 
