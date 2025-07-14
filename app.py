@@ -255,7 +255,6 @@ if uploaded_file:
                 text_color = "black" if mode == "white" else "white"
             
                 fig, ax = plt.subplots(figsize=(6, 3))
-                fig.patch.set_facecolor(bg_color)
                 fig.patch.set_alpha(0)
                 ax.set_facecolor(bg_color)
             
