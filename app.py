@@ -528,15 +528,45 @@ if uploaded_file:
 
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
-
-                # Calcul des stats par question
+            
+                # Statistiques descriptives globales
+                q1 = df['SUS_Score'].quantile(0.25)
+                q3 = df['SUS_Score'].quantile(0.75)
+                iqr = q3 - q1
+            
+                stats_df = pd.DataFrame({
+                    "Indicateur": [
+                        "Score SUS moyen",
+                        "Taille de l’échantillon",
+                        "Score minimum",
+                        "Score maximum",
+                        "Écart-type",
+                        "Médiane",
+                        "1er quartile (Q1)",
+                        "3e quartile (Q3)",
+                        "IQR"
+                    ],
+                    "Valeur": [
+                        f"{avg_score:.1f}",
+                        len(df),
+                        df["SUS_Score"].min(),
+                        df["SUS_Score"].max(),
+                        f"{df['SUS_Score'].std():.2f}",
+                        f"{df['SUS_Score'].median():.1f}",
+                        f"{q1:.1f}",
+                        f"{q3:.1f}",
+                        f"{iqr:.1f}"
+                    ]
+                }).set_index("Indicateur")
+            
+                # Statistiques par question
                 question_stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
                 question_stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
                 question_stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
                 question_stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
                 question_stats_df = question_stats_df.round(2)
             
-                # Génération du PDF
+                # Appel de la génération du PDF
                 pdf_bytes = generate_sus_pdf(
                     avg_score=avg_score,
                     num_subjects=len(df),
@@ -548,6 +578,7 @@ if uploaded_file:
                     question_stats_df=question_stats_df
                 )
             
+                # Téléchargement
                 st.download_button(
                     label="📥 Télécharger le rapport PDF",
                     data=pdf_bytes,
