@@ -421,6 +421,7 @@ if uploaded_file:
 
             # PDF            
             def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
+           
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=12)
                 pdf.add_page()
@@ -437,7 +438,6 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
             
-                # --- Fonction pour insérer un graphique ---
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
@@ -448,10 +448,9 @@ if uploaded_file:
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
             
-                # --- Fonction pour insérer un tableau ---
                 def add_stats_table(pdf, df_stats, title):
                     pdf.set_font("Arial", "B", 11)
-                    pdf.cell(0, 6, title, ln=True)
+                    pdf.cell(0, 6, title, ln=True, align='C')
                     pdf.ln(1)
             
                     index_col_width = 60
@@ -471,11 +470,52 @@ if uploaded_file:
                         for val in row:
                             pdf.cell(col_width, row_height, str(val), border=1)
                         pdf.ln()
-            
                     pdf.ln(4)
             
-                # --- Création des graphiques ---
+                def create_gauge(avg_score, zones, mode="white"):
+                    fig, ax = plt.subplots(figsize=(6, 1.5))
+                    for start, end, color, label in zones:
+                        ax.barh(0, width=end - start, left=start, color=color, edgecolor='white', height=0.5)
+                    ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
+                    ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
+                            bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
+                    ax.set_xlim(0, 100)
+                    ax.axis('off')
+                    fig.tight_layout()
+                    return fig
+            
+                def create_distribution(distribution, colors, mode="white"):
+                    fig, ax = plt.subplots(figsize=(6, 3))
+                    bars = ax.bar(distribution.index, distribution.values, color=colors)
+                    for bar in bars:
+                        height = bar.get_height()
+                        ax.text(bar.get_x() + bar.get_width() / 2, height + 0.2, int(height), ha='center', fontsize=10)
+                    ax.set_ylim(0, max(distribution.values) + 2)
+                    ax.set_ylabel("Nombre")
+                    fig.tight_layout()
+                    return fig
+            
+                def create_radar_chart(df, questions, mode="white"):
+                    question_means = df[questions].mean()
+                    labels = [f"Q{i}" for i in range(1, 11)]
+                    values = question_means.tolist() + [question_means.tolist()[0]]
+                    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist() + [0]
+                    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+                    ax.plot(angles, values, color='cyan', linewidth=1)
+                    ax.fill(angles, values, color='cyan', alpha=0.25)
+                    ax.set_xticks(angles[:-1])
+                    ax.set_xticklabels(labels)
+                    ax.set_yticks([1, 2, 3, 4, 5])
+                    ax.set_ylim(1, 5)
+                    fig.tight_layout()
+                    return fig
+            
+                # Visuels
                 fig_jauge = create_gauge(avg_score, zones, mode="white")
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
+            
+                if stats_df is not None:
+                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
             
                 bins = [0, 25, 39, 52, 73, 86, 100]
                 labels = [z[3] for z in zones]
@@ -483,48 +523,18 @@ if uploaded_file:
                 categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
                 distribution = categories.value_counts().sort_index()
                 fig_dist = create_distribution(distribution, colors, mode="white")
-            
-                fig_radar = create_radar_chart(df, questions, mode="white")
-            
-                fig_cat = None
-                if category_info:
-                    first_category = list(category_info.keys())[0]
-                    if category_info[first_category] == "Numérique":
-                        try:
-                            binned = pd.cut(df[first_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except:
-                            df["_cat_display"] = df[first_category].astype(str)
-                    else:
-                        df["_cat_display"] = df[first_category].astype(str)
-            
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-                    fig_cat = create_category_chart(group_means, mode="white")
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
-                # --- Ajout dans le PDF ---
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
-            
-                if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
                 add_figure_inline(fig_dist, "Répartition des scores")
             
-                if fig_cat:
-                    add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()
-            
+                fig_radar = create_radar_chart(df, questions, mode="white")
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
             
                 if question_stats_df is not None:
                     add_stats_table(pdf, question_stats_df, "Statistiques par question")
             
                 try:
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
+                    return pdf.output(dest='S').encode('latin1', 'replace')
+                except Exception:
                     return None
-
-
 
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
