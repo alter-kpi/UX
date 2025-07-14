@@ -370,12 +370,8 @@ if uploaded_file:
             st.markdown("#### Score SUS par question")
             
             def create_radar_chart(df, questions, mode="dark"):
-                if mode == "transparent":
-                    bg_color = "none"
-                    text_color = "white"
-                else:
-                    bg_color = "white" if mode == "white" else "black"
-                    text_color = "black" if mode == "white" else "white"
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
                 question_means = df[questions].mean()
                 radar_labels = [f"Q{i}" for i in range(1, 11)]
@@ -404,9 +400,9 @@ if uploaded_file:
                 fig.tight_layout()
                 return fig
 
-                st.markdown("#### Score SUS par question")
-                fig_radar = create_radar_chart(df, questions, mode="dark")
-                st.pyplot(fig_radar)
+            st.markdown("#### Score SUS par question")
+            fig_radar = create_radar_chart(df, questions, mode="dark")
+            st.pyplot(fig_radar)
 
 
              # Statistiques par question
