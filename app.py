@@ -346,34 +346,30 @@ if uploaded_file:
                 if category_info:
                     st.markdown("#### Score SUS par catégorie")
                 
-                    # Choix de la catégorie dans un menu déroulant
-                    selected_category = (
-                        st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
-                        if len(category_info) > 1
-                        else list(category_info.keys())[0]
-                    )
+                    # 1. Sélection de la catégorie (toujours affichée, même s’il n’y en a qu’une)
+                    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
                 
-                    if selected_category:
-                        # Construction de la colonne _cat_display
-                        if category_info[selected_category] == "Numérique":
-                            try:
-                                binned = pd.cut(df[selected_category], bins=5)
-                                df["_cat_display"] = binned.astype(str)
-                            except Exception as e:
-                                st.warning(f"Erreur lors du regroupement par tranches : {e}")
-                                df["_cat_display"] = df[selected_category].astype(str)
-                        else:
+                    # 2. Création de la colonne temporaire pour affichage
+                    if category_info[selected_category] == "Numérique":
+                        try:
+                            binned = pd.cut(df[selected_category], bins=5)
+                            df["_cat_display"] = binned.astype(str)
+                        except Exception as e:
+                            st.warning(f"Erreur lors du regroupement par tranches : {e}")
                             df["_cat_display"] = df[selected_category].astype(str)
+                    else:
+                        df["_cat_display"] = df[selected_category].astype(str)
                 
-                        # Moyenne SUS par groupe
-                        group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+                    # 3. Calcul des moyennes par groupe
+                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
                 
-                        # Graphique avec fond noir pour l'écran
-                        fig_cat = create_category_chart(group_means, mode="dark")
-                        st.pyplot(fig_cat)
+                    # 4. Affichage du graphique
+                    fig_cat = create_category_chart(group_means, mode="dark")
+                    st.pyplot(fig_cat)
                 
-                        # Nettoyage
-                        df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+                    # 5. Nettoyage
+                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+
 
 
             st.markdown("---")
