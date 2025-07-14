@@ -206,7 +206,7 @@ if uploaded_file:
                 return fig
             
             
-            fig_jauge = create_gauge(avg_score, zones, mode="white")
+            fig_jauge = create_gauge(avg_score, zones, mode="dark")
             st.pyplot(fig_jauge)
             
              # Statistiques descriptives
@@ -250,44 +250,44 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme
-            st.markdown("#### Répartition des sujets par résultat")
-            bins = [0, 25, 39, 52, 73, 86, 100]
-            labels = [z[3] for z in zones]
-            colors = [z[2] for z in zones]
-            categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
-            distribution = categories.value_counts().sort_index()
+            def create_distribution(distribution, colors, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
-            fig_dist, ax_dist = plt.subplots(figsize=(6, 3))
-            #fig_dist.patch.set_alpha(0)           # fond transparent
-            ax_dist.set_facecolor("white")         # fond transparent
+                fig, ax = plt.subplots(figsize=(6, 3))
+                fig.patch.set_facecolor(bg_color)
+                fig.patch.set_alpha(0)
+                ax.set_facecolor(bg_color)
             
-            bars = ax_dist.bar(distribution.index, distribution.values, color=colors)
+                bars = ax.bar(distribution.index, distribution.values, color=colors)
             
-            for bar in bars:
-                height = bar.get_height()
-                ax_dist.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    height + 0.2,
-                    int(height),
-                    ha='center',
-                    fontsize=10,
-                    color='black'
-                )
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height + 0.2,
+                        int(height),
+                        ha='center',
+                        fontsize=10,
+                        color=text_color,
+                        bbox=dict(facecolor='none', edgecolor='none')
+                    )
             
-            ax_dist.set_ylim(0, max(distribution.values) + 2)
-            ax_dist.get_yaxis().set_visible(False)
+                ax.set_ylim(0, max(distribution.values) + 2)
+                ax.get_yaxis().set_visible(False)
             
-            for spine in ['top', 'right', 'left']:
-                ax_dist.spines[spine].set_visible(False)
+                for spine in ['top', 'right', 'left']:
+                    ax.spines[spine].set_visible(False)
             
-            ax_dist.spines['bottom'].set_color('black')
-            ax_dist.tick_params(axis='x', colors='black')
+                ax.spines['bottom'].set_color(text_color)
+                ax.tick_params(axis='x', colors=text_color)
+                plt.xticks(rotation=30)
             
-            plt.xticks(rotation=30)
-            
-            fig_dist.tight_layout()
-            st.pyplot(fig_dist, use_container_width=False)
+                fig.tight_layout()
+                return fig
+            fig_dist = create_distribution(distribution, colors, mode="dark")
 
+            st.pyplot(fig_dist)
             st.markdown("---")
 
             # Histogramme des scores SUS par catégorie
@@ -419,7 +419,7 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
             
-                # Fonction utilitaire pour ajouter une figure sans changement de page
+                # Fonction utilitaire pour ajouter une figure
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
@@ -430,7 +430,7 @@ if uploaded_file:
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
             
-                # Figures à la suite, sur la même page
+                # Figures à la suite
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat is not None:
