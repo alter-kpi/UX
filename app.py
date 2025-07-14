@@ -367,7 +367,6 @@ if uploaded_file:
             st.markdown("---")
 
             # Radar - Score SUS par question
-            st.markdown("#### Score SUS par question")
             
             def create_radar_chart(df, questions, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
