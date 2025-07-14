@@ -307,7 +307,7 @@ if uploaded_file:
             
                 fig, ax = plt.subplots(figsize=(6, 3))
                 fig.patch.set_alpha(0)
-                ax.set_facecolor(bg_color)
+                ax.set_facecolor("none")
             
                 bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
                 ax.set_ylabel("Score SUS moyen", color=text_color)
