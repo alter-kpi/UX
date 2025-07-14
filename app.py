@@ -424,7 +424,7 @@ if uploaded_file:
 
             # PDF            
 
-            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None):
+            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=12)
                 pdf.add_page()
@@ -441,7 +441,6 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
             
-                # Fonction utilitaire pour ajouter une figure
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
@@ -452,21 +451,31 @@ if uploaded_file:
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
             
-                # Création des figures pour le PDF (en mode 'white')
-                fig_jauge = create_gauge(avg_score, zones, mode="white")
+                def add_stats_table(pdf, df_stats, title):
+                    pdf.set_font("Arial", "B", 11)
+                    pdf.cell(0, 6, title, ln=True)
+                    pdf.ln(1)
+                    pdf.set_font("Arial", "B", 9)
+                    for col in df_stats.columns:
+                        pdf.cell(40, 5, str(col), border=1)
+                    pdf.ln()
+                    pdf.set_font("Arial", "", 9)
+                    for idx, row in df_stats.iterrows():
+                        for val in row:
+                            pdf.cell(40, 5, str(val), border=1)
+                        pdf.ln()
+                    pdf.ln(4)
             
-                # Répartition des scores
+                # Figures
+                fig_jauge = create_gauge(avg_score, zones, mode="white")
                 bins = [0, 25, 39, 52, 73, 86, 100]
                 labels = [z[3] for z in zones]
                 colors = [z[2] for z in zones]
                 categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
                 distribution = categories.value_counts().sort_index()
                 fig_dist = create_distribution(distribution, colors, mode="white")
-            
-                # Radar
                 fig_radar = create_radar_chart(df, questions, mode="white")
             
-                # Catégories
                 fig_cat = None
                 if category_info:
                     first_category = list(category_info.keys())[0]
@@ -483,39 +492,44 @@ if uploaded_file:
                     fig_cat = create_category_chart(group_means, mode="white")
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
             
-                # Ajout dans le PDF
+                # Ajout des figures et stats
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
-                pdf.add_page()
+                    pdf.add_page()  # saut de page avant le radar
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
+            
                 if stats_df is not None:
-                add_stats_table(pdf, stats_df)
-
+                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
+                if question_stats_df is not None:
+                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
             
                 try:
                     return pdf.output(dest='S').encode('latin1')
                 except UnicodeEncodeError:
                     return None
-
-            if st.button("📄 Générer le rapport PDF"):
-                pdf_bytes = generate_sus_pdf(
-                    avg_score=avg_score,
-                    num_subjects=len(df),
-                    df=df,
-                    zones=zones,
-                    questions=questions,
-                    category_info=category_info if 'category_info' in locals() else None
-                )
             
-                st.download_button(
-                    label="📥 Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name="rapport_sus.pdf",
-                    mime="application/pdf"
-                )
+        # Appel depuis Streamlit
+        if st.button("📄 Générer le rapport PDF"):
+            pdf_bytes = generate_sus_pdf(
+                avg_score=avg_score,
+                num_subjects=len(df),
+                df=df,
+                zones=zones,
+                questions=questions,
+                category_info=category_info if 'category_info' in locals() else None,
+                stats_df=stats_df,
+                question_stats_df=stats_df if 'stats_df' in locals() else None
+            )
         
+            st.download_button(
+                label="📥 Télécharger le rapport PDF",
+                data=pdf_bytes,
+                file_name="rapport_sus.pdf",
+                mime="application/pdf"
+            )
+
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
