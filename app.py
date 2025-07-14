@@ -329,7 +329,7 @@ if uploaded_file:
                         )
             
                     ax_cat.set_ylim(0, min(100, max(group_means.values) + 10))
-                    ax_cat.tick_params(axis='x', rotation=30, colors='white')
+                    ax_cat.tick_params(axis='x', rotation=30, colors='black')
                     ax_cat.spines['top'].set_visible(False)
                     ax_cat.spines['right'].set_visible(False)
                     ax_cat.spines['left'].set_color('black')
@@ -362,15 +362,15 @@ if uploaded_file:
             ax.fill(angles, values, color='cyan', alpha=0.25)
             
             ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(radar_labels, fontsize=8, color='white')
+            ax.set_xticklabels(radar_labels, fontsize=8, color='black')
             
             ax.set_yticks([1, 2, 3, 4, 5])
-            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='white')
+            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=6, color='black')
             ax.set_ylim(1, 5)
             ax.set_theta_direction(-1)
             
-            ax.tick_params(colors='white')
-            ax.spines['polar'].set_color('white')
+            ax.tick_params(colors='black')
+            ax.spines['polar'].set_color('black')
             
             fig_radar.tight_layout()
             st.pyplot(fig_radar, use_container_width=False)
