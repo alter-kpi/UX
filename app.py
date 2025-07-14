@@ -175,33 +175,39 @@ if uploaded_file:
             st.markdown("---")
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
-            fig, ax = plt.subplots(figsize=(6, 1.5))
-            #fig.patch.set_alpha(0)         # fond transparent
-            ax.set_facecolor("white")       # fond transparent
+            def create_gauge(avg_score, zones, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
-            for start, end, color, label in zones:
-                ax.barh(0, width=end - start, left=start, color=color, edgecolor='black', height=0.5)
+                fig, ax = plt.subplots(figsize=(6, 1.5))
+                fig.patch.set_facecolor(bg_color)
+                ax.set_facecolor(bg_color)
             
-            ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
-            ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
-                    bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
+                for start, end, zone_color, label in zones:
+                    ax.barh(0, width=end - start, left=start, color=zone_color, edgecolor='white', height=0.5)
             
-            for start, end, color, label in zones:
-                center = (start + end) / 2
-                ax.text(center, 0.35, label, ha='center', fontsize=9, color='black',
-                        bbox=dict(facecolor='white', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'),rotation=30)
+                ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
+                ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
+                        bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
             
-            for start, end, _, _ in zones:
-                ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color='gray')
-            ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color='gray')
+                for start, end, _, label in zones:
+                    center = (start + end) / 2
+                    ax.text(center, 0.35, label, ha='center', fontsize=9, color=text_color,
+                            bbox=dict(facecolor=bg_color, alpha=0.6, edgecolor='none', boxstyle='round,pad=0.2'), rotation=30)
             
-            ax.set_xlim(0, 100)
-            ax.set_ylim(-0.7, 0.8)
-            ax.axis('off')
-            fig.tight_layout()
+                for start, end, _, _ in zones:
+                    ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color=text_color)
+                ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color=text_color)
             
-            st.pyplot(fig, use_container_width=False)
-
+                ax.set_xlim(0, 100)
+                ax.set_ylim(-0.7, 0.8)
+                ax.axis('off')
+                fig.tight_layout()
+                return fig
+            
+            
+            fig_jauge = create_gauge(avg_score, zones, mode="dark")
+            st.pyplot(fig_jauge)
             
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
