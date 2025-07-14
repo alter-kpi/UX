@@ -300,64 +300,50 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme des scores SUS par catégorie
-            if category_info:
-                st.markdown("#### Score SUS par catégorie")
+            st.markdown("#### Score SUS par catégorie")
             
-                if len(category_info) > 1:
-                    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
+            def create_category_chart(group_means, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
+            
+                fig, ax = plt.subplots(figsize=(6, 3))
+            
+                if mode == "transparent":
+                    fig.patch.set_alpha(0)
+                    ax.set_facecolor("none")
                 else:
-                    selected_category = list(category_info.keys())[0]
+                    fig.patch.set_facecolor(bg_color)
+                    ax.set_facecolor(bg_color)
             
-                if selected_category:
-                    if category_info[selected_category] == "Numérique":
-                        try:
-                            binned = pd.cut(df[selected_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except Exception as e:
-                            st.warning(f"Erreur lors du regroupement par tranches : {e}")
-                            df["_cat_display"] = df[selected_category].astype(str)
-                    else:
-                        df["_cat_display"] = df[selected_category].astype(str)
+                bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
+                ax.set_ylabel("Score SUS moyen", color=text_color)
             
-                    # Calcul de la moyenne SUS par groupe
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height + 0.5,
+                        f"{height:.1f}",
+                        ha='center',
+                        fontsize=9,
+                        color=text_color,
+                        bbox=dict(facecolor='none', edgecolor='none')
+                    )
+            
+                ax.set_ylim(0, min(100, max(group_means.values) + 10))
+                ax.tick_params(axis='x', rotation=30, colors=text_color)
+                ax.tick_params(axis='y', colors=text_color)
+            
+                for spine in ['top', 'right']:
+                    ax.spines[spine].set_visible(False)
+                ax.spines['left'].set_color(text_color)
+                ax.spines['bottom'].set_color(text_color)
+            
+                fig.tight_layout()
+                return fig
 
-                    # Tri croissant par libellé de catégorie
-                    #group_means = group_means.sort_index()
-            
-                    fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
-                    #fig_cat.patch.set_alpha(0)
-                    ax_cat.set_facecolor("white")
-            
-                    bars = ax_cat.bar(group_means.index, group_means.values, color="#5bc0de")
-                    ax_cat.set_ylabel("Score SUS moyen")
-            
-                    for bar in bars:
-                        height = bar.get_height()
-                        ax_cat.text(
-                            bar.get_x() + bar.get_width() / 2,
-                            height + 0.5,
-                            f"{height:.1f}",
-                            ha='center',
-                            fontsize=9,
-                            color='black'
-                        )
-            
-                    ax_cat.set_ylim(0, min(100, max(group_means.values) + 10))
-                    ax_cat.tick_params(axis='x', rotation=30, colors='black')
-                    ax_cat.spines['top'].set_visible(False)
-                    ax_cat.spines['right'].set_visible(False)
-                    ax_cat.spines['left'].set_color('black')
-                    ax_cat.spines['bottom'].set_color('black')
-                    ax_cat.yaxis.label.set_color('black')
-                    ax_cat.tick_params(axis='y', colors='black')
-            
-                    fig_cat.tight_layout()
-                    st.pyplot(fig_cat)
-            
-                    # Nettoyage de colonne temporaire
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-
+            fig_cat = create_category_chart(group_means, mode="dark")
+            st.pyplot(fig_cat)
 
             st.markdown("---")
 
