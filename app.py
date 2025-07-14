@@ -285,8 +285,7 @@ if uploaded_file:
             
                 fig.tight_layout()
                 return fig
-            fig_dist = create_distribution(distribution, colors, mode="dark")
-
+           
             # Calcul de la distribution
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
@@ -295,6 +294,7 @@ if uploaded_file:
             categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
             distribution = categories.value_counts().sort_index()
             
+            fig_dist = create_distribution(distribution, colors, mode="dark")
             st.pyplot(fig_dist)
             st.markdown("---")
 
