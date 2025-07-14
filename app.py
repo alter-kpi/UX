@@ -250,6 +250,8 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme
+            st.markdown("#### Distribution")
+            
             def create_distribution(distribution, colors, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
