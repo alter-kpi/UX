@@ -300,7 +300,6 @@ if uploaded_file:
             st.markdown("---")
 
             # Histogramme des scores SUS par catégorie
-            st.markdown("#### Score SUS par catégorie")
             
             def create_category_chart(group_means, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
@@ -341,36 +340,34 @@ if uploaded_file:
             
                 fig.tight_layout()
                 return fig
-
-                # Affichage
-                if category_info:
-                    st.markdown("#### Score SUS par catégorie")
-                
-                    # 1. Sélection de la catégorie (toujours affichée, même s’il n’y en a qu’une)
-                    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
-                
-                    # 2. Création de la colonne temporaire pour affichage
-                    if category_info[selected_category] == "Numérique":
-                        try:
-                            binned = pd.cut(df[selected_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except Exception as e:
-                            st.warning(f"Erreur lors du regroupement par tranches : {e}")
-                            df["_cat_display"] = df[selected_category].astype(str)
-                    else:
+            
+            #Affichage dans Streamlit
+            if category_info:
+                st.markdown("#### Score SUS par catégorie")
+            
+                # 1. Sélection de la catégorie
+                selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
+            
+                # 2. Préparation des groupes
+                if category_info[selected_category] == "Numérique":
+                    try:
+                        binned = pd.cut(df[selected_category], bins=5)
+                        df["_cat_display"] = binned.astype(str)
+                    except Exception as e:
+                        st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
-                
-                    # 3. Calcul des moyennes par groupe
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-                
-                    # 4. Affichage du graphique
-                    fig_cat = create_category_chart(group_means, mode="dark")
-                    st.pyplot(fig_cat)
-                
-                    # 5. Nettoyage
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-
-
+                else:
+                    df["_cat_display"] = df[selected_category].astype(str)
+            
+                # 3. Moyennes par groupe
+                group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+            
+                # 4. Affichage
+                fig_cat = create_category_chart(group_means, mode="dark")
+                st.pyplot(fig_cat)
+            
+                # 5. Nettoyage
+                df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
 
             st.markdown("---")
 
