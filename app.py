@@ -252,8 +252,8 @@ if uploaded_file:
             distribution = categories.value_counts().sort_index()
             
             fig_dist, ax_dist = plt.subplots(figsize=(6, 3))
-            fig_dist.patch.set_alpha(0)           # fond transparent
-            ax_dist.set_facecolor("none")         # fond transparent
+            #fig_dist.patch.set_alpha(0)           # fond transparent
+            ax_dist.set_facecolor("white")         # fond transparent
             
             bars = ax_dist.bar(distribution.index, distribution.values, color=colors)
             
@@ -265,7 +265,7 @@ if uploaded_file:
                     int(height),
                     ha='center',
                     fontsize=10,
-                    color='white'
+                    color='black'
                 )
             
             ax_dist.set_ylim(0, max(distribution.values) + 2)
@@ -274,8 +274,8 @@ if uploaded_file:
             for spine in ['top', 'right', 'left']:
                 ax_dist.spines[spine].set_visible(False)
             
-            ax_dist.spines['bottom'].set_color('white')
-            ax_dist.tick_params(axis='x', colors='white')
+            ax_dist.spines['bottom'].set_color('black')
+            ax_dist.tick_params(axis='x', colors='black')
             
             plt.xticks(rotation=30)
             
@@ -311,8 +311,8 @@ if uploaded_file:
                     #group_means = group_means.sort_index()
             
                     fig_cat, ax_cat = plt.subplots(figsize=(6, 3))
-                    fig_cat.patch.set_alpha(0)
-                    ax_cat.set_facecolor("none")
+                    #fig_cat.patch.set_alpha(0)
+                    ax_cat.set_facecolor("white")
             
                     bars = ax_cat.bar(group_means.index, group_means.values, color="#5bc0de")
                     ax_cat.set_ylabel("Score SUS moyen")
@@ -325,17 +325,17 @@ if uploaded_file:
                             f"{height:.1f}",
                             ha='center',
                             fontsize=9,
-                            color='white'
+                            color='black'
                         )
             
                     ax_cat.set_ylim(0, min(100, max(group_means.values) + 10))
                     ax_cat.tick_params(axis='x', rotation=30, colors='white')
                     ax_cat.spines['top'].set_visible(False)
                     ax_cat.spines['right'].set_visible(False)
-                    ax_cat.spines['left'].set_color('white')
-                    ax_cat.spines['bottom'].set_color('white')
-                    ax_cat.yaxis.label.set_color('white')
-                    ax_cat.tick_params(axis='y', colors='white')
+                    ax_cat.spines['left'].set_color('black')
+                    ax_cat.spines['bottom'].set_color('black')
+                    ax_cat.yaxis.label.set_color('black')
+                    ax_cat.tick_params(axis='y', colors='black')
             
                     fig_cat.tight_layout()
                     st.pyplot(fig_cat)
@@ -355,8 +355,8 @@ if uploaded_file:
             angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
             fig_radar, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-            fig_radar.patch.set_alpha(0)
-            ax.set_facecolor("none")
+            #fig_radar.patch.set_alpha(0)
+            ax.set_facecolor("white")
             
             ax.plot(angles, values, color='cyan', linewidth=1)
             ax.fill(angles, values, color='cyan', alpha=0.25)
