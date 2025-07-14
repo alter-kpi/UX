@@ -180,7 +180,7 @@ if uploaded_file:
                 text_color = "black" if mode == "white" else "white"
             
                 fig, ax = plt.subplots(figsize=(6, 1.5))
-                fig.patch.set_alpha(0
+                fig.patch.set_alpha(0)
                 ax.set_facecolor(bg_color)
             
                 for start, end, zone_color, label in zones:
