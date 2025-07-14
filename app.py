@@ -256,7 +256,7 @@ if uploaded_file:
             
                 fig, ax = plt.subplots(figsize=(6, 3))
                 fig.patch.set_alpha(0)
-                ax.set_facecolor(bg_color)
+                ax.set_facecolor("none")
             
                 bars = ax.bar(distribution.index, distribution.values, color=colors)
             
