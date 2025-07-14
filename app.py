@@ -455,16 +455,33 @@ if uploaded_file:
                     pdf.set_font("Arial", "B", 11)
                     pdf.cell(0, 6, title, ln=True)
                     pdf.ln(1)
+                
+                    # Dimensions des colonnes
+                    index_col_width = 50
+                    col_width = 40
+                    row_height = 5
+                
+                    # Couleur d’arrière-plan de l’en-tête
+                    pdf.set_fill_color(220, 220, 220)
+                
+                    # En-têtes
                     pdf.set_font("Arial", "B", 9)
+                    pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)  # Index
+                
                     for col in df_stats.columns:
-                        pdf.cell(40, 5, str(col), border=1)
+                        pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
                     pdf.ln()
+                
+                    # Lignes de données
                     pdf.set_font("Arial", "", 9)
                     for idx, row in df_stats.iterrows():
+                        pdf.cell(index_col_width, row_height, str(idx), border=1)
                         for val in row:
-                            pdf.cell(40, 5, str(val), border=1)
+                            pdf.cell(col_width, row_height, str(val), border=1)
                         pdf.ln()
+                
                     pdf.ln(4)
+
             
                 # Figures
                 fig_jauge = create_gauge(avg_score, zones, mode="white")
