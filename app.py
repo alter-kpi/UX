@@ -437,6 +437,7 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
             
+                # --- Fonction pour insérer un graphique ---
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
@@ -447,6 +448,7 @@ if uploaded_file:
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
             
+                # --- Fonction pour insérer un tableau ---
                 def add_stats_table(pdf, df_stats, title):
                     pdf.set_font("Arial", "B", 11)
                     pdf.cell(0, 6, title, ln=True)
@@ -472,14 +474,16 @@ if uploaded_file:
             
                     pdf.ln(4)
             
-                # Figures
+                # --- Création des graphiques ---
                 fig_jauge = create_gauge(avg_score, zones, mode="white")
+            
                 bins = [0, 25, 39, 52, 73, 86, 100]
                 labels = [z[3] for z in zones]
                 colors = [z[2] for z in zones]
                 categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
                 distribution = categories.value_counts().sort_index()
                 fig_dist = create_distribution(distribution, colors, mode="white")
+            
                 fig_radar = create_radar_chart(df, questions, mode="white")
             
                 fig_cat = None
@@ -498,14 +502,18 @@ if uploaded_file:
                     fig_cat = create_category_chart(group_means, mode="white")
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
             
-                # Ajout des éléments au PDF
+                # --- Ajout dans le PDF ---
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
+            
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
             
                 add_figure_inline(fig_dist, "Répartition des scores")
+            
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
+                    pdf.add_page()
+            
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
             
                 if question_stats_df is not None:
@@ -517,26 +525,27 @@ if uploaded_file:
                     return None
 
 
+
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
-            
-                # Calcul du tableau des statistiques par question
+
+                # Calcul des stats par question
                 question_stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
                 question_stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
                 question_stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
                 question_stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
                 question_stats_df = question_stats_df.round(2)
             
-                # Appel de la génération du PDF
+                # Génération du PDF
                 pdf_bytes = generate_sus_pdf(
                     avg_score=avg_score,
                     num_subjects=len(df),
                     df=df,
                     zones=zones,
                     questions=questions,
-                    category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df,  # tableau global (moyenne, médiane, etc.)
-                    question_stats_df=question_stats_df  # tableau par question
+                    category_info=category_info,
+                    stats_df=stats_df,
+                    question_stats_df=question_stats_df
                 )
             
                 st.download_button(
@@ -545,8 +554,6 @@ if uploaded_file:
                     file_name="rapport_sus.pdf",
                     mime="application/pdf"
                 )
-
-
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
