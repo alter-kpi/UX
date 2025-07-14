@@ -406,37 +406,30 @@ if uploaded_file:
                 pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
                 pdf.ln(3)
             
-                # Informations générales (interligne réduit)
+                # Informations générales
                 pdf.set_font("Arial", "", 9)
                 pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
             
-                # --- Si tu veux réactiver les stats compactes aussi ---
-                # pdf.set_font("Arial", "B", 11)
-                # pdf.cell(0, 6, "Statistiques descriptives", ln=True)
-                # pdf.set_font("Arial", "", 9)
-                # for idx, row in stats_df.iterrows():
-                #     pdf.cell(80, 5, f"- {row['Indicateur']}", border=0)
-                #     pdf.cell(40, 5, str(row['Valeur']), ln=True)
-                # pdf.ln(2)
-            
-                def add_figure(fig, title, width=180):
+                # Fonction utilitaire pour ajouter une figure sans changement de page
+                def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
-                        pdf.add_page()
                         pdf.set_font("Arial", "B", 11)
                         pdf.cell(0, 6, title, ln=True)
                         pdf.ln(2)
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
+                        pdf.ln(4)
             
-                add_figure(fig_jauge, "Évaluation globale (jauge)")
-                add_figure(fig_dist, "Répartition des scores")
+                # Figures à la suite, sur la même page
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
+                add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat is not None:
-                    add_figure(fig_cat, "Score SUS par catégorie")
-                add_figure(fig_radar, "Analyse moyenne par question (radar)")
+                    add_figure_inline(fig_cat, "Score SUS par catégorie")
+                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
             
                 try:
                     return pdf.output(dest='S').encode('latin1')
