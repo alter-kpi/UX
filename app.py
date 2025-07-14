@@ -132,13 +132,10 @@ if uploaded_file:
 
         # Colonnes de questions
         questions = [f"Question{i}" for i in range(1, 11)]
-        
         # Colonnes de catégories de L à O (index 11 à 14)
         category_columns = df.columns[11:15]
-        
         # Conserver celles qui existent et ne sont pas vides
         custom_columns = [col for col in category_columns if col in df.columns and df[col].notna().any()]
-        
         # Identifier leur type
         category_info = {
             col: "Numérique" if pd.api.types.is_numeric_dtype(df[col]) else "Texte"
@@ -519,7 +516,8 @@ if uploaded_file:
                     return pdf.output(dest='S').encode('latin1')
                 except UnicodeEncodeError:
                     return None
-            
+
+
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
                 pdf_bytes = generate_sus_pdf(
@@ -529,8 +527,7 @@ if uploaded_file:
                     zones=zones,
                     questions=questions,
                     category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df,
-                    question_stats_df=stats_df if 'stats_df' in locals() else None
+                    stats_df=stats_df
                 )
             
                 st.download_button(
