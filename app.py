@@ -368,32 +368,45 @@ if uploaded_file:
 
             # Radar - Score SUS par question
             st.markdown("#### Score SUS par question")
-            question_means = df[questions].mean()
-                       
-            radar_labels = [f"Q{i}" for i in range(1, 11)]
-            values = question_means.tolist() + [question_means.tolist()[0]]
-            angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
-            fig_radar, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-            #fig_radar.patch.set_alpha(0)
-            ax.set_facecolor("white")
+            def create_radar_chart(df, questions, mode="dark"):
+                if mode == "transparent":
+                    bg_color = "none"
+                    text_color = "white"
+                else:
+                    bg_color = "white" if mode == "white" else "black"
+                    text_color = "black" if mode == "white" else "white"
             
-            ax.plot(angles, values, color='cyan', linewidth=1)
-            ax.fill(angles, values, color='cyan', alpha=0.25)
+                question_means = df[questions].mean()
+                radar_labels = [f"Q{i}" for i in range(1, 11)]
+                values = question_means.tolist() + [question_means.tolist()[0]]
+                angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
-            ax.set_xticks(angles[:-1])
-            ax.set_xticklabels(radar_labels, fontsize=8, color='black')
+                fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
             
-            ax.set_yticks([1, 2, 3, 4, 5])
-            ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=8, color='black')
-            ax.set_ylim(1, 5)
-            ax.set_theta_direction(-1)
+                fig.patch.set_alpha(0)
+                ax.set_facecolor("none")
+          
+                ax.plot(angles, values, color='cyan', linewidth=1)
+                ax.fill(angles, values, color='cyan', alpha=0.25)
             
-            ax.tick_params(colors='black')
-            ax.spines['polar'].set_color('black')
+                ax.set_xticks(angles[:-1])
+                ax.set_xticklabels(radar_labels, fontsize=8, color=text_color)
             
-            fig_radar.tight_layout()
-            st.pyplot(fig_radar, use_container_width=False)
+                ax.set_yticks([1, 2, 3, 4, 5])
+                ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=8, color=text_color)
+                ax.set_ylim(1, 5)
+                ax.set_theta_direction(-1)
+            
+                ax.tick_params(colors=text_color)
+                ax.spines['polar'].set_color(text_color)
+            
+                fig.tight_layout()
+                return fig
+
+                st.markdown("#### Score SUS par question")
+                fig_radar = create_radar_chart(df, questions, mode="dark")
+                st.pyplot(fig_radar)
 
 
              # Statistiques par question
