@@ -208,7 +208,7 @@ if uploaded_file:
             
             fig_jauge = create_gauge(avg_score, zones, mode="dark")
             st.pyplot(fig_jauge)
-            
+            st.pyplot(fig_jauge)
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
             q3 = df['SUS_Score'].quantile(0.75)
