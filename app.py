@@ -306,13 +306,8 @@ if uploaded_file:
                 text_color = "black" if mode == "white" else "white"
             
                 fig, ax = plt.subplots(figsize=(6, 3))
-            
-                if mode == "transparent":
-                    fig.patch.set_alpha(0)
-                    ax.set_facecolor("none")
-                else:
-                    fig.patch.set_facecolor(bg_color)
-                    ax.set_facecolor(bg_color)
+                fig.patch.set_alpha(0)
+                ax.set_facecolor(bg_color)
             
                 bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
                 ax.set_ylabel("Score SUS moyen", color=text_color)
