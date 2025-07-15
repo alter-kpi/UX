@@ -421,7 +421,7 @@ if uploaded_file:
 
             # PDF            
             
-            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
+            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None, question_stats_df=question_stats_df):
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
