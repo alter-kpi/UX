@@ -4,8 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from fpdf import FPDF
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 import tempfile
 
 # Titre et introduction
@@ -455,30 +454,41 @@ if uploaded_file:
             
 
             # Appel depuis Streamlit
+            
+            # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                    gauge_path = "gauge.png"
-                    radar_path = "radar.png"
-                    # Sauvegarder les figures matplotlib
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = f"{tmpdir}/gauge.png"
+                    radar_path = f"{tmpdir}/radar.png"
+
                     fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge)
+
                     fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar)
 
-                    generate_pdf(
-                        output_path=tmp.name,
-                        sus_score=avg_score,
-                        nb_respondents=len(df),
-                        gauge_img=gauge_path,
-                        radar_img=radar_path,
-                        stats_df=stats_df
-                    )
+                    from os.path import getsize
+                    if getsize(gauge_path) == 0 or getsize(radar_path) == 0:
+                        st.error("❌ Les images n'ont pas été générées correctement. Vérifiez les graphiques.")
+                    else:
+                        pdf_path = f"{tmpdir}/rapport_sus.pdf"
 
-                    tmp.seek(0)
-                    st.download_button(
-                        label="📥 Télécharger le rapport PDF",
-                        data=tmp.read(),
-                        file_name="rapport_sus.pdf",
-                        mime="application/pdf"
-                    )
+                        generate_pdf(
+                            output_path=pdf_path,
+                            sus_score=avg_score,
+                            nb_respondents=len(df),
+                            gauge_img=gauge_path,
+                            radar_img=radar_path,
+                            stats_df=stats_df
+                        )
+
+                        with open(pdf_path, "rb") as f:
+                            st.download_button(
+                                label="📥 Télécharger le rapport PDF",
+                                data=f.read(),
+                                file_name="rapport_sus.pdf",
+                                mime="application/pdf"
+                            )
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
