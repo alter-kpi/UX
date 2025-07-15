@@ -513,7 +513,6 @@ if uploaded_file:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
                     pdf.add_page()
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-                pdf.add_page()
                 
 
                 
