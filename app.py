@@ -501,7 +501,6 @@ if uploaded_file:
                 # Ajout des éléments au PDF
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 if stats_df is not None:
-    if stats_df is not None:
             
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
