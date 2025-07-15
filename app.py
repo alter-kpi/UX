@@ -515,7 +515,13 @@ if uploaded_file:
 
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques par question")
-                
+                if question_stats_df is not None:
+                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
+            
+                try:
+                    return pdf.output(dest='S').encode('latin1')
+                except UnicodeEncodeError:
+                    return None
 
 
             # Appel depuis Streamlit
