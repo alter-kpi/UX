@@ -435,7 +435,7 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.cell(0, 5, f"Score minimum : {df["SUS_Score"].min()}", ln=True)
                 pdf.ln(3)
             
                 def add_figure_inline(fig, title, width=160):
