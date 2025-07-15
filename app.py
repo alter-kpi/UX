@@ -496,7 +496,33 @@ if uploaded_file:
             pdf.cell(col_width, row_height, str(val), border=1)
         pdf.ln()
 
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 8, title, ln=True, align='C')
+    pdf.ln(2)
+
+    total_width = 190  # largeur max de la zone imprimable
+    index_col_width = 60
+    remaining_width = total_width - index_col_width
+    col_width = remaining_width / len(df_stats.columns)
+    row_height = 6
+
+    pdf.set_fill_color(220, 220, 220)
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
+    for col in df_stats.columns:
+        pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 10)
+    for idx, row in df_stats.iterrows():
+        pdf.cell(index_col_width, row_height, str(idx), border=1)
+        for val in row:
+            pdf.cell(col_width, row_height, str(val), border=1)
+        pdf.ln()
+
     pdf.ln(6)
+
 
 
                 # Figures
