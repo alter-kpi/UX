@@ -7,6 +7,8 @@ from fpdf import FPDF
 from datetime import date
 from datetime import datetime
 import tempfile
+from pathlib import Path
+
 
 # Titre et introduction
 
