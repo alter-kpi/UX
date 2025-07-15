@@ -432,6 +432,7 @@ if uploaded_file:
             
                 # Informations générales
                 pdf.set_font("Arial", "", 9)
+                pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                 pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
@@ -506,14 +507,16 @@ if uploaded_file:
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
             
                 # Ajout des éléments au PDF
-                
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")           
+                pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")  
+                pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                 add_figure_inline(fig_dist, "Répartition des scores")
 
                 pdf.add_page()
                 if fig_cat:
+                    pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
-
+                pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
                 pdf.add_page()
                 if stats_df is not None:
