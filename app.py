@@ -453,14 +453,14 @@ if uploaded_file:
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
-            
+                #tableau des stats par question
                 def add_stats_table(pdf, df_stats, title):
                     pdf.set_font("Arial", "B", 11)
                     pdf.cell(0, 6, title, ln=True)
                     pdf.ln(1)
             
-                    index_col_width = 60
-                    col_width = 35
+                    index_col_width = 40
+                    col_width = 20
                     row_height = 5
             
                     pdf.set_fill_color(220, 220, 220)
