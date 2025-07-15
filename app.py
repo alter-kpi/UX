@@ -345,35 +345,6 @@ if uploaded_file:
                     try:
                         binned = pd.cut(df[selected_category], bins=5)
                         df["_cat_display"] = binned.astype(str)
-
-            # Export Excel
-            if st.button("📥 Télécharger le rapport Excel"):
-                import os
-                import tempfile
-                fig_jauge_white = create_gauge(avg_score, zones, mode="white")
-                fig_radar_white = create_radar_chart(df, questions, mode="white")
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    gauge_path = os.path.join(tmpdir, "gauge.png")
-                    radar_path = os.path.join(tmpdir, "radar.png")
-                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
-                    fig_jauge_white.savefig(gauge_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_jauge_white)
-                    fig_radar_white.savefig(radar_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_radar_white)
-                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=True)
-                        workbook = writer.book
-                        worksheet = writer.sheets["Statistiques générales"]
-                        worksheet.insert_image("H2", gauge_path)
-                        worksheet.insert_image("H25", radar_path)
-                    with open(excel_path, "rb") as f:
-                        st.download_button(
-                            label="📥 Télécharger le rapport Excel",
-                            data=f.read(),
-                            file_name="rapport_sus.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-
                     except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
@@ -447,6 +418,124 @@ if uploaded_file:
             # Scores individuels
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
+
+            # PDF            
+            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
+                pdf = FPDF()
+                pdf.set_auto_page_break(auto=True, margin=12)
+                pdf.add_page()
+            
+                # Titre
+                pdf.set_font("Arial", "B", 14)
+                pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
+                pdf.ln(3)
+            
+                # Informations générales
+                pdf.set_font("Arial", "", 9)
+                pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
+                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.ln(3)
+            
+                def add_figure_inline(fig, title, width=160):
+                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                        fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
+                        pdf.set_font("Arial", "B", 11)
+                        pdf.cell(0, 6, title, ln=True)
+                        pdf.ln(2)
+                        x = (pdf.w - width) / 2
+                        pdf.image(tmpfile.name, x=x, w=width)
+                        pdf.ln(4)
+            
+                def add_stats_table(pdf, df_stats, title):
+                    pdf.set_font("Arial", "B", 11)
+                    pdf.cell(0, 6, title, ln=True)
+                    pdf.ln(1)
+            
+                    index_col_width = 60
+                    col_width = 40
+                    row_height = 5
+            
+                    pdf.set_fill_color(220, 220, 220)
+                    pdf.set_font("Arial", "B", 9)
+                    pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
+                    for col in df_stats.columns:
+                        pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
+                    pdf.ln()
+            
+                    pdf.set_font("Arial", "", 9)
+                    for idx, row in df_stats.iterrows():
+                        pdf.cell(index_col_width, row_height, str(idx), border=1)
+                        for val in row:
+                            pdf.cell(col_width, row_height, str(val), border=1)
+                        pdf.ln()
+            
+                    pdf.ln(4)
+            
+                # Figures
+                fig_jauge = create_gauge(avg_score, zones, mode="white")
+                bins = [0, 25, 39, 52, 73, 86, 100]
+                labels = [z[3] for z in zones]
+                colors = [z[2] for z in zones]
+                categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
+                distribution = categories.value_counts().sort_index()
+                fig_dist = create_distribution(distribution, colors, mode="white")
+                fig_radar = create_radar_chart(df, questions, mode="white")
+            
+                fig_cat = None
+                if category_info:
+                    first_category = list(category_info.keys())[0]
+                    if category_info[first_category] == "Numérique":
+                        try:
+                            binned = pd.cut(df[first_category], bins=5)
+                            df["_cat_display"] = binned.astype(str)
+                        except:
+                            df["_cat_display"] = df[first_category].astype(str)
+                    else:
+                        df["_cat_display"] = df[first_category].astype(str)
+            
+                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+                    fig_cat = create_category_chart(group_means, mode="white")
+                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+            
+                # Ajout des éléments au PDF
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
+                if stats_df is not None:
+                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
+            
+                add_figure_inline(fig_dist, "Répartition des scores")
+                if fig_cat:
+                    add_figure_inline(fig_cat, "Score SUS par catégorie")
+                    pdf.add_page()  # saut de page avant le radar
+                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
+            
+                if question_stats_df is not None:
+                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
+            
+                try:
+                    return pdf.output(dest='S').encode('latin1')
+                except UnicodeEncodeError:
+                    return None
+
+
+            # Appel depuis Streamlit
+            if st.button("📄 Générer le rapport PDF"):
+                pdf_bytes = generate_sus_pdf(
+                    avg_score=avg_score,
+                    num_subjects=len(df),
+                    df=df,
+                    zones=zones,
+                    questions=questions,
+                    category_info=category_info if 'category_info' in locals() else None,
+                    stats_df=stats_df
+                )
+            
+                st.download_button(
+                    label="📥 Télécharger le rapport PDF",
+                    data=pdf_bytes,
+                    file_name="rapport_sus.pdf",
+                    mime="application/pdf"
+                )
 
 
     except Exception as e:
