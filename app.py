@@ -6,7 +6,6 @@ import numpy as np
 from fpdf import FPDF
 from datetime import date
 import tempfile
-import os
 
 # Titre et introduction
 
@@ -129,289 +128,224 @@ sus_questions = {
 
 if uploaded_file:
     try:
-    # Export Excel
-    if st.button("📥 Télécharger le rapport Excel"):
-    with tempfile.TemporaryDirectory() as tmpdir:
-    gauge_path = os.path.join(tmpdir, "gauge.png")
-    radar_path = os.path.join(tmpdir, "radar.png")
-    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+        df = pd.read_excel(uploaded_file, sheet_name=0)
 
-    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
-    plt.close(fig_jauge)
+        # Colonnes de questions
+        questions = [f"Question{i}" for i in range(1, 11)]
+        # Colonnes de catégories de L à O (index 11 à 14)
+        category_columns = df.columns[11:15]
+        # Conserver celles qui existent et ne sont pas vides
+        custom_columns = [col for col in category_columns if col in df.columns and df[col].notna().any()]
+        # Identifier leur type
+        category_info = {
+            col: "Numérique" if pd.api.types.is_numeric_dtype(df[col]) else "Texte"
+            for col in custom_columns
+        }
 
-    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
-    plt.close(fig_radar)
-
-    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-    stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
-
-    workbook = writer.book
-    worksheet = writer.sheets["Statistiques générales"]
-
-    worksheet.insert_image("D2", gauge_path)
-    worksheet.insert_image("D20", radar_path)
-
-    with open(excel_path, "rb") as f:
-    st.download_button(
-    label="📥 Télécharger le rapport Excel",
-    data=f.read(),
-    file_name="rapport_sus.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        # Vérification des colonnes de questions
+        if not all(col in df.columns for col in questions):
+            st.error("❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.")
+        else:
+            df_sus = df[questions]
 
 
-    
-    df = pd.read_excel(uploaded_file, sheet_name=0)
+            def calculate_sus(row):
+                score = 0
+                for i in range(10):
+                    val = row[i]
+                    if i % 2 == 0:
+                        score += val - 1
+                    else:
+                        score += 5 - val
+                return score * 2.5
 
-    # Colonnes de questions
-    questions = [f"Question{i}" for i in range(1, 11)]
-    # Colonnes de catégories de L à O (index 11 à 14)
-    category_columns = df.columns[11:15]
-    # Conserver celles qui existent et ne sont pas vides
-    custom_columns = [col for col in category_columns if col in df.columns and df[col].notna().any()]
-    # Identifier leur type
-    category_info = {
-    col: "Numérique" if pd.api.types.is_numeric_dtype(df[col]) else "Texte"
-    for col in custom_columns
-    }
+            df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
-    # Vérification des colonnes de questions
-    if not all(col in df.columns for col in questions):
-    st.error("❌ Le fichier doit contenir les colonnes 'Question1' à 'Question10'.")
-    else:
-    df_sus = df[questions]
-
-
-    def calculate_sus(row):
-    score = 0
-    for i in range(10):
-    val = row[i]
-    if i % 2 == 0:
-    score += val - 1
-    else:
-    score += 5 - val
-    return score * 2.5
-
-    df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
-
-    avg_score = df['SUS_Score'].mean()
+            avg_score = df['SUS_Score'].mean()
            
-    # Légende des questions dans la sidebar
-    with st.sidebar.expander("📋 Questions du questionnaire"):
-    for i, q in enumerate(questions, 1):
-    st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
+            # Légende des questions dans la sidebar
+            with st.sidebar.expander("📋 Questions du questionnaire"):
+                for i, q in enumerate(questions, 1):
+                    st.markdown(f"**Q{i}** : {sus_questions[q]["Français"]}")
 
-    # Jauge
-    st.markdown("---")
-    st.markdown(f"#### Score SUS : {avg_score:.1f}")
+            # Jauge
+            st.markdown("---")
+            st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
-    def create_gauge(avg_score, zones, mode="dark"):
-    bg_color = "white" if mode == "white" else "black"
-    text_color = "black" if mode == "white" else "white"
+            def create_gauge(avg_score, zones, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
-    fig, ax = plt.subplots(figsize=(6, 1.5))
-    fig.patch.set_alpha(0)
-    ax.set_facecolor(bg_color)
+                fig, ax = plt.subplots(figsize=(6, 1.5))
+                fig.patch.set_alpha(0)
+                ax.set_facecolor(bg_color)
             
-    for start, end, zone_color, label in zones:
-    ax.barh(0, width=end - start, left=start, color=zone_color, edgecolor='white', height=0.5)
+                for start, end, zone_color, label in zones:
+                    ax.barh(0, width=end - start, left=start, color=zone_color, edgecolor='white', height=0.5)
             
-    ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
-    ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
-    bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
+                ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
+                ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
+                        bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
             
-    for start, end, _, label in zones:
-    center = (start + end) / 2
-    ax.text(center, 0.35, label, ha='center', fontsize=9, color=text_color,
-    bbox=dict(facecolor=bg_color, alpha=0, edgecolor='none', boxstyle='round,pad=0.2'), rotation=30)
+                for start, end, _, label in zones:
+                    center = (start + end) / 2
+                    ax.text(center, 0.35, label, ha='center', fontsize=9, color=text_color,
+                            bbox=dict(facecolor=bg_color, alpha=0, edgecolor='none', boxstyle='round,pad=0.2'), rotation=30)
             
-    for start, end, _, _ in zones:
-    ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color=text_color)
-    ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color=text_color)
+                for start, end, _, _ in zones:
+                    ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color=text_color)
+                ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color=text_color)
             
-    ax.set_xlim(0, 100)
-    ax.set_ylim(-0.7, 0.8)
-    ax.axis('off')
-    fig.tight_layout()
-    return fig
+                ax.set_xlim(0, 100)
+                ax.set_ylim(-0.7, 0.8)
+                ax.axis('off')
+                fig.tight_layout()
+                return fig
             
             
-    fig_jauge = create_gauge(avg_score, zones, mode="dark")
-    st.pyplot(fig_jauge)
+            fig_jauge = create_gauge(avg_score, zones, mode="dark")
+            st.pyplot(fig_jauge)
             
-    # Statistiques descriptives
-    q1 = df['SUS_Score'].quantile(0.25)
-    q3 = df['SUS_Score'].quantile(0.75)
-    iqr = q3 - q1
+             # Statistiques descriptives
+            q1 = df['SUS_Score'].quantile(0.25)
+            q3 = df['SUS_Score'].quantile(0.75)
+            iqr = q3 - q1
             
-    stats_df = pd.DataFrame({
-    "Indicateur": [
-    "Score SUS moyen",
-    "Taille de l’échantillon",
-    "Score minimum",
-    "Score maximum",
-    "Écart-type",
-    "Médiane",
-    "1er quartile (Q1)",
-    "3e quartile (Q3)",
-    "IQR"
-    ],
-    "Valeur": [
-    f"{avg_score:.1f}",
-    len(df),
-    df["SUS_Score"].min(),
-    df["SUS_Score"].max(),
-    f"{df['SUS_Score'].std():.2f}",
-    f"{df['SUS_Score'].median():.1f}",
-    f"{q1:.1f}",
-    f"{q3:.1f}",
-    f"{iqr:.1f}"
-    ]
-    })
-    stats_df.index = range(1, len(stats_df) + 1)
+            stats_df = pd.DataFrame({
+                "Indicateur": [
+                    "Score SUS moyen",
+                    "Taille de l’échantillon",
+                    "Score minimum",
+                    "Score maximum",
+                    "Écart-type",
+                    "Médiane",
+                    "1er quartile (Q1)",
+                    "3e quartile (Q3)",
+                    "IQR"
+                ],
+                "Valeur": [
+                    f"{avg_score:.1f}",
+                    len(df),
+                    df["SUS_Score"].min(),
+                    df["SUS_Score"].max(),
+                    f"{df['SUS_Score'].std():.2f}",
+                    f"{df['SUS_Score'].median():.1f}",
+                    f"{q1:.1f}",
+                    f"{q3:.1f}",
+                    f"{iqr:.1f}"
+                ]
+            })
+            stats_df.index = range(1, len(stats_df) + 1)
             
-    st.markdown("---")
+            st.markdown("---")
             
-    st.markdown("#### Statistiques")
-    st.table(stats_df)
+            st.markdown("#### Statistiques")
+            st.table(stats_df)
 
-    avg_score = df['SUS_Score'].mean()
+            avg_score = df['SUS_Score'].mean()
 
-    st.markdown("---")
+            st.markdown("---")
 
-    # Histogramme
-    st.markdown("#### Distribution")
+            # Histogramme
+            st.markdown("#### Distribution")
             
-    def create_distribution(distribution, colors, mode="dark"):
-    bg_color = "white" if mode == "white" else "black"
-    text_color = "black" if mode == "white" else "white"
+            def create_distribution(distribution, colors, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
-    fig, ax = plt.subplots(figsize=(6, 3))
-    fig.patch.set_alpha(0)
-    ax.set_facecolor("none")
+                fig, ax = plt.subplots(figsize=(6, 3))
+                fig.patch.set_alpha(0)
+                ax.set_facecolor("none")
             
-    bars = ax.bar(distribution.index, distribution.values, color=colors)
+                bars = ax.bar(distribution.index, distribution.values, color=colors)
             
-    for bar in bars:
-    height = bar.get_height()
-    ax.text(
-    bar.get_x() + bar.get_width() / 2,
-    height + 0.2,
-    int(height),
-    ha='center',
-    fontsize=10,
-    color=text_color,
-    bbox=dict(facecolor='none', edgecolor='none')
-    )
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height + 0.2,
+                        int(height),
+                        ha='center',
+                        fontsize=10,
+                        color=text_color,
+                        bbox=dict(facecolor='none', edgecolor='none')
+                    )
             
-    ax.set_ylim(0, max(distribution.values) + 2)
-    ax.get_yaxis().set_visible(False)
+                ax.set_ylim(0, max(distribution.values) + 2)
+                ax.get_yaxis().set_visible(False)
             
-    for spine in ['top', 'right', 'left']:
-    ax.spines[spine].set_visible(False)
+                for spine in ['top', 'right', 'left']:
+                    ax.spines[spine].set_visible(False)
             
-    ax.spines['bottom'].set_color(text_color)
-    ax.tick_params(axis='x', colors=text_color)
-    plt.xticks(rotation=30)
+                ax.spines['bottom'].set_color(text_color)
+                ax.tick_params(axis='x', colors=text_color)
+                plt.xticks(rotation=30)
             
-    fig.tight_layout()
-    return fig
+                fig.tight_layout()
+                return fig
            
-    # Calcul de la distribution
-    bins = [0, 25, 39, 52, 73, 86, 100]
-    labels = [z[3] for z in zones]
-    colors = [z[2] for z in zones]
+            # Calcul de la distribution
+            bins = [0, 25, 39, 52, 73, 86, 100]
+            labels = [z[3] for z in zones]
+            colors = [z[2] for z in zones]
             
-    categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
-    distribution = categories.value_counts().sort_index()
+            categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
+            distribution = categories.value_counts().sort_index()
             
-    fig_dist = create_distribution(distribution, colors, mode="dark")
-    st.pyplot(fig_dist)
-    st.markdown("---")
+            fig_dist = create_distribution(distribution, colors, mode="dark")
+            st.pyplot(fig_dist)
+            st.markdown("---")
 
-    # Histogramme des scores SUS par catégorie
+            # Histogramme des scores SUS par catégorie
             
-    def create_category_chart(group_means, mode="dark"):
-    bg_color = "white" if mode == "white" else "black"
-    text_color = "black" if mode == "white" else "white"
+            def create_category_chart(group_means, mode="dark"):
+                bg_color = "white" if mode == "white" else "black"
+                text_color = "black" if mode == "white" else "white"
             
-    fig, ax = plt.subplots(figsize=(6, 3))
-    fig.patch.set_alpha(0)
-    ax.set_facecolor("none")
+                fig, ax = plt.subplots(figsize=(6, 3))
+                fig.patch.set_alpha(0)
+                ax.set_facecolor("none")
             
-    bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
-    ax.set_ylabel("Score SUS moyen", color=text_color)
+                bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
+                ax.set_ylabel("Score SUS moyen", color=text_color)
             
-    for bar in bars:
-    height = bar.get_height()
-    ax.text(
-    bar.get_x() + bar.get_width() / 2,
-    height + 0.5,
-    f"{height:.1f}",
-    ha='center',
-    fontsize=9,
-    color=text_color,
-    bbox=dict(facecolor='none', edgecolor='none')
-    )
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height + 0.5,
+                        f"{height:.1f}",
+                        ha='center',
+                        fontsize=9,
+                        color=text_color,
+                        bbox=dict(facecolor='none', edgecolor='none')
+                    )
             
-    ax.set_ylim(0, min(100, max(group_means.values) + 10))
-    ax.tick_params(axis='x', rotation=30, colors=text_color)
-    ax.tick_params(axis='y', colors=text_color)
+                ax.set_ylim(0, min(100, max(group_means.values) + 10))
+                ax.tick_params(axis='x', rotation=30, colors=text_color)
+                ax.tick_params(axis='y', colors=text_color)
             
-    for spine in ['top', 'right']:
-    ax.spines[spine].set_visible(False)
-    ax.spines['left'].set_color(text_color)
-    ax.spines['bottom'].set_color(text_color)
+                for spine in ['top', 'right']:
+                    ax.spines[spine].set_visible(False)
+                ax.spines['left'].set_color(text_color)
+                ax.spines['bottom'].set_color(text_color)
             
-    fig.tight_layout()
-    return fig
+                fig.tight_layout()
+                return fig
             
-    #Affichage dans Streamlit
-    if category_info:
-    st.markdown("#### Score SUS par catégorie")
+            #Affichage dans Streamlit
+            if category_info:
+                st.markdown("#### Score SUS par catégorie")
             
-    # 1. Sélection de la catégorie
-    selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
+                # 1. Sélection de la catégorie
+                selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
             
-    # 2. Préparation des groupes
-    if category_info[selected_category] == "Numérique":
-    try:
-    # Export Excel
-    if st.button("📥 Télécharger le rapport Excel"):
-    with tempfile.TemporaryDirectory() as tmpdir:
-    gauge_path = os.path.join(tmpdir, "gauge.png")
-    radar_path = os.path.join(tmpdir, "radar.png")
-    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
-
-    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
-    plt.close(fig_jauge)
-
-    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
-    plt.close(fig_radar)
-
-    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-    stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
-
-    workbook = writer.book
-    worksheet = writer.sheets["Statistiques générales"]
-
-    worksheet.insert_image("D2", gauge_path)
-    worksheet.insert_image("D20", radar_path)
-
-    with open(excel_path, "rb") as f:
-    st.download_button(
-    label="📥 Télécharger le rapport Excel",
-    data=f.read(),
-    file_name="rapport_sus.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-
-    
-    binned = pd.cut(df[selected_category], bins=5)
-    df["_cat_display"] = binned.astype(str)
-                    
-except Exception as e:
+                # 2. Préparation des groupes
+                if category_info[selected_category] == "Numérique":
+                    try:
+                        binned = pd.cut(df[selected_category], bins=5)
+                        df["_cat_display"] = binned.astype(str)
+                    except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
                 else:
@@ -485,170 +419,6 @@ except Exception as e:
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            # PDF            
-            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
-                pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=12)
-                pdf.add_page()
-            
-                # Titre
-                pdf.set_font("Arial", "B", 14)
-                pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
-                pdf.ln(3)
-            
-                # Informations générales
-                pdf.set_font("Arial", "", 9)
-                pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
-                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(3)
-            
-                def add_figure_inline(fig, title, width=160):
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
-                        fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
-                        pdf.set_font("Arial", "B", 11)
-                        pdf.cell(0, 6, title, ln=True)
-                        pdf.ln(2)
-                        x = (pdf.w - width) / 2
-                        pdf.image(tmpfile.name, x=x, w=width)
-                        pdf.ln(4)
-            
-                def add_stats_table(pdf, df_stats, title):
-                    pdf.set_font("Arial", "B", 11)
-                    pdf.cell(0, 6, title, ln=True)
-                    pdf.ln(1)
-            
-                    index_col_width = 60
-                    col_width = 40
-                    row_height = 5
-            
-                    pdf.set_fill_color(220, 220, 220)
-                    pdf.set_font("Arial", "B", 9)
-                    pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
-                    for col in df_stats.columns:
-                        pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
-                    pdf.ln()
-            
-                    pdf.set_font("Arial", "", 9)
-                    for idx, row in df_stats.iterrows():
-                        pdf.cell(index_col_width, row_height, str(idx), border=1)
-                        for val in row:
-                            pdf.cell(col_width, row_height, str(val), border=1)
-                        pdf.ln()
-            
-                    pdf.ln(4)
-            
-                # Figures
-                fig_jauge = create_gauge(avg_score, zones, mode="white")
-                bins = [0, 25, 39, 52, 73, 86, 100]
-                labels = [z[3] for z in zones]
-                colors = [z[2] for z in zones]
-                categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
-                distribution = categories.value_counts().sort_index()
-                fig_dist = create_distribution(distribution, colors, mode="white")
-                fig_radar = create_radar_chart(df, questions, mode="white")
-            
-                fig_cat = None
-                if category_info:
-                    first_category = list(category_info.keys())[0]
-                    if category_info[first_category] == "Numérique":
-                        try:
-            # Export Excel
-            if st.button("📥 Télécharger le rapport Excel"):
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    gauge_path = os.path.join(tmpdir, "gauge.png")
-                    radar_path = os.path.join(tmpdir, "radar.png")
-                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
 
-                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_jauge)
-
-                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_radar)
-
-                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
-
-                        workbook = writer.book
-                        worksheet = writer.sheets["Statistiques générales"]
-
-                        worksheet.insert_image("D2", gauge_path)
-                        worksheet.insert_image("D20", radar_path)
-
-                    with open(excel_path, "rb") as f:
-                        st.download_button(
-                            label="📥 Télécharger le rapport Excel",
-                            data=f.read(),
-                            file_name="rapport_sus.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-
-
-    
-                            binned = pd.cut(df[first_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except:
-                            df["_cat_display"] = df[first_category].astype(str)
-                    else:
-                        df["_cat_display"] = df[first_category].astype(str)
-            
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-                    fig_cat = create_category_chart(group_means, mode="white")
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
-                # Ajout des éléments au PDF
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
-                if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
-                add_figure_inline(fig_dist, "Répartition des scores")
-                if fig_cat:
-                    add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()  # saut de page avant le radar
-                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
-                if question_stats_df is not None:
-                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
-                try:
-            # Export Excel
-            if st.button("📥 Télécharger le rapport Excel"):
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    gauge_path = os.path.join(tmpdir, "gauge.png")
-                    radar_path = os.path.join(tmpdir, "radar.png")
-                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
-
-                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_jauge)
-
-                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_radar)
-
-                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
-
-                        workbook = writer.book
-                        worksheet = writer.sheets["Statistiques générales"]
-
-                        worksheet.insert_image("D2", gauge_path)
-                        worksheet.insert_image("D20", radar_path)
-
-                    with open(excel_path, "rb") as f:
-                        st.download_button(
-                            label="📥 Télécharger le rapport Excel",
-                            data=f.read(),
-                            file_name="rapport_sus.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-
-
-    
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
-                    return None
-
-
-            # Appel depuis Streamlit
-            
-
-    
+    except Exception as e:
+        st.error(f"Une erreur est survenue : {str(e)}")
