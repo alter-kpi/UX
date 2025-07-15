@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from fpdf import FPDF
 from datetime import date
-from datetime import datetime
 import tempfile
 
 # Titre et introduction
@@ -468,35 +467,31 @@ if uploaded_file:
                     fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
                     plt.close(fig_radar)
 
-                    from os.path import getsize, exists
-                    if getsize(gauge_path) == 0 or getsize(radar_path) == 0:
-                        st.error("❌ Les images n'ont pas été générées correctement. Vérifiez les graphiques.")
-                    else:
-                        pdf_path = f"{tmpdir}/rapport_sus.pdf"
+                    pdf_path = f"{tmpdir}/rapport_sus.pdf"
 
-                        try:
-                            generate_pdf(
-                                output_path=pdf_path,
-                                sus_score=avg_score,
-                                nb_respondents=len(df),
-                                gauge_img=gauge_path,
-                                radar_img=radar_path,
-                                stats_df=stats_df
+                    try:
+                        generate_pdf(
+                            output_path=pdf_path,
+                            sus_score=avg_score,
+                            nb_respondents=len(df),
+                            gauge_img=gauge_path,
+                            radar_img=radar_path,
+                            stats_df=stats_df
+                        )
+                    except Exception as e:
+                        st.error(f"❌ Erreur lors de la génération du PDF : {e}")
+                        pdf_path = None
+
+                    if pdf_path and Path(pdf_path).exists():
+                        with open(pdf_path, "rb") as f:
+                            st.download_button(
+                                label="📥 Télécharger le rapport PDF",
+                                data=f.read(),
+                                file_name="rapport_sus.pdf",
+                                mime="application/pdf"
                             )
-                        except Exception as e:
-                            st.error(f"❌ Erreur lors de la génération du PDF : {e}")
-                            pdf_path = None
-
-                        if pdf_path and exists(pdf_path):
-                            with open(pdf_path, "rb") as f:
-                                st.download_button(
-                                    label="📥 Télécharger le rapport PDF",
-                                    data=f.read(),
-                                    file_name="rapport_sus.pdf",
-                                    mime="application/pdf"
-                                )
-                        else:
-                            st.error("❌ Le fichier PDF n’a pas été généré.")
+                    else:
+                        st.error("❌ Le fichier PDF n’a pas été généré.")
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
