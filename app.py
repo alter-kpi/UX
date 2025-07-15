@@ -420,58 +420,59 @@ if uploaded_file:
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # PDF            
+            
             def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
                 pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=12)
+                pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
-            
+
                 # Titre
-                pdf.set_font("Arial", "B", 14)
-                pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
-                pdf.ln(3)
-            
-                # Informations générales
-                pdf.set_font("Arial", "", 9)
-                pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
-                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(3)
-            
+                pdf.set_font("Arial", "B", 16)
+                pdf.cell(0, 10, "Rapport - Questionnaire SUS", ln=True, align='C')
+                pdf.ln(6)
+
+                # Infos générales
+                pdf.set_font("Arial", "", 11)
+                pdf.cell(0, 7, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
+                pdf.cell(0, 7, f"Nombre de répondants : {num_subjects}", ln=True)
+                pdf.cell(0, 7, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
+                pdf.ln(8)
+
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
-                        pdf.set_font("Arial", "B", 11)
-                        pdf.cell(0, 6, title, ln=True)
+                        pdf.set_font("Arial", "B", 12)
+                        pdf.cell(0, 8, title, ln=True, align='C')
                         pdf.ln(2)
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
-                        pdf.ln(4)
-            
+                        pdf.ln(8)
+
                 def add_stats_table(pdf, df_stats, title):
-                    pdf.set_font("Arial", "B", 11)
-                    pdf.cell(0, 6, title, ln=True)
-                    pdf.ln(1)
-            
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(0, 8, title, ln=True, align='C')
+                    pdf.ln(2)
+
                     index_col_width = 60
                     col_width = 40
-                    row_height = 5
-            
+                    row_height = 6
+
                     pdf.set_fill_color(220, 220, 220)
-                    pdf.set_font("Arial", "B", 9)
+                    pdf.set_font("Arial", "B", 10)
                     pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
                     for col in df_stats.columns:
                         pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
                     pdf.ln()
-            
-                    pdf.set_font("Arial", "", 9)
+
+                    pdf.set_font("Arial", "", 10)
                     for idx, row in df_stats.iterrows():
                         pdf.cell(index_col_width, row_height, str(idx), border=1)
                         for val in row:
                             pdf.cell(col_width, row_height, str(val), border=1)
                         pdf.ln()
-            
-                    pdf.ln(4)
-            
+
+                    pdf.ln(6)
+
                 # Figures
                 fig_jauge = create_gauge(avg_score, zones, mode="white")
                 bins = [0, 25, 39, 52, 73, 86, 100]
@@ -481,7 +482,7 @@ if uploaded_file:
                 distribution = categories.value_counts().sort_index()
                 fig_dist = create_distribution(distribution, colors, mode="white")
                 fig_radar = create_radar_chart(df, questions, mode="white")
-            
+
                 fig_cat = None
                 if category_info:
                     first_category = list(category_info.keys())[0]
@@ -493,27 +494,30 @@ if uploaded_file:
                             df["_cat_display"] = df[first_category].astype(str)
                     else:
                         df["_cat_display"] = df[first_category].astype(str)
-            
+
                     group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
                     fig_cat = create_category_chart(group_means, mode="white")
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
-                # Ajout des éléments au PDF
+
+                # Ajout au PDF
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
+
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()  # saut de page avant le radar
+                    pdf.add_page()
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
+
                 if question_stats_df is not None:
                     add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
+
                 try:
                     return pdf.output(dest='S').encode('latin1')
+                except UnicodeEncodeError:
+                    return None
+
                 except UnicodeEncodeError:
                     return None
 
