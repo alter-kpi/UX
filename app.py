@@ -549,4 +549,4 @@ if uploaded_file:
         st.error(f"Une erreur est survenue : {str(e)}")
 # Logo
 logo = Image.open("Logo.png")
-st.sidebar.image(logo, width=100)
+st.sidebar.image(logo, width=80)
