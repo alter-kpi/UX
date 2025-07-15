@@ -347,7 +347,8 @@ if uploaded_file:
                         df["_cat_display"] = binned.astype(str)
                     
             # Export Excel
-            if st.button("📥 Télécharger le rapport Excel"):
+            
+if st.button("📥 Télécharger le rapport Excel"):
                 import os
                 import tempfile
 
@@ -380,7 +381,8 @@ if uploaded_file:
                         )
 
 
-        except Exception as e:
+        
+except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
                 else:
@@ -490,5 +492,4 @@ if uploaded_file:
                         )
 
 
-        except Exception as e:
-        st.error(f"Une erreur est survenue : {str(e)}")
+        
