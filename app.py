@@ -162,7 +162,7 @@ if uploaded_file:
             df['SUS_Score'] = df_sus.apply(calculate_sus, axis=1)
 
             avg_score = df['SUS_Score'].mean()
-           
+
             # Légende des questions dans la sidebar
             with st.sidebar.expander("📋 Questions du questionnaire"):
                 for i, q in enumerate(questions, 1):
@@ -171,46 +171,46 @@ if uploaded_file:
             # Jauge
             st.markdown("---")
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
-            
+
             def create_gauge(avg_score, zones, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 1.5))
                 fig.patch.set_alpha(0)
                 ax.set_facecolor(bg_color)
-            
+
                 for start, end, zone_color, label in zones:
                     ax.barh(0, width=end - start, left=start, color=zone_color, edgecolor='white', height=0.5)
-            
+
                 ax.plot(avg_score, 0, marker='v', color='red', markersize=12)
                 ax.text(avg_score, -0.3, f"{avg_score:.1f}", ha='center', fontsize=12,
                         bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.2', alpha=0.9))
-            
+
                 for start, end, _, label in zones:
                     center = (start + end) / 2
                     ax.text(center, 0.35, label, ha='center', fontsize=9, color=text_color,
                             bbox=dict(facecolor=bg_color, alpha=0, edgecolor='none', boxstyle='round,pad=0.2'), rotation=30)
-            
+
                 for start, end, _, _ in zones:
                     ax.text(start, -0.6, f"{start}", ha='center', va='top', fontsize=8, color=text_color)
                 ax.text(100, -0.6, "100", ha='center', va='top', fontsize=8, color=text_color)
-            
+
                 ax.set_xlim(0, 100)
                 ax.set_ylim(-0.7, 0.8)
                 ax.axis('off')
                 fig.tight_layout()
                 return fig
-            
-            
+
+
             fig_jauge = create_gauge(avg_score, zones, mode="dark")
             st.pyplot(fig_jauge)
-            
+
              # Statistiques descriptives
             q1 = df['SUS_Score'].quantile(0.25)
             q3 = df['SUS_Score'].quantile(0.75)
             iqr = q3 - q1
-            
+
             stats_df = pd.DataFrame({
                 "Indicateur": [
                     "Score SUS moyen",
@@ -236,9 +236,9 @@ if uploaded_file:
                 ]
             })
             stats_df.index = range(1, len(stats_df) + 1)
-            
+
             st.markdown("---")
-            
+
             st.markdown("#### Statistiques")
             st.table(stats_df)
 
@@ -248,17 +248,17 @@ if uploaded_file:
 
             # Histogramme
             st.markdown("#### Distribution")
-            
+
             def create_distribution(distribution, colors, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 3))
                 fig.patch.set_alpha(0)
                 ax.set_facecolor("none")
-            
+
                 bars = ax.bar(distribution.index, distribution.values, color=colors)
-            
+
                 for bar in bars:
                     height = bar.get_height()
                     ax.text(
@@ -270,45 +270,45 @@ if uploaded_file:
                         color=text_color,
                         bbox=dict(facecolor='none', edgecolor='none')
                     )
-            
+
                 ax.set_ylim(0, max(distribution.values) + 2)
                 ax.get_yaxis().set_visible(False)
-            
+
                 for spine in ['top', 'right', 'left']:
                     ax.spines[spine].set_visible(False)
-            
+
                 ax.spines['bottom'].set_color(text_color)
                 ax.tick_params(axis='x', colors=text_color)
                 plt.xticks(rotation=30)
-            
+
                 fig.tight_layout()
                 return fig
-           
+
             # Calcul de la distribution
             bins = [0, 25, 39, 52, 73, 86, 100]
             labels = [z[3] for z in zones]
             colors = [z[2] for z in zones]
-            
+
             categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
             distribution = categories.value_counts().sort_index()
-            
+
             fig_dist = create_distribution(distribution, colors, mode="dark")
             st.pyplot(fig_dist)
             st.markdown("---")
 
             # Histogramme des scores SUS par catégorie
-            
+
             def create_category_chart(group_means, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 3))
                 fig.patch.set_alpha(0)
                 ax.set_facecolor("none")
-            
+
                 bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
                 ax.set_ylabel("Score SUS moyen", color=text_color)
-            
+
                 for bar in bars:
                     height = bar.get_height()
                     ax.text(
@@ -320,26 +320,26 @@ if uploaded_file:
                         color=text_color,
                         bbox=dict(facecolor='none', edgecolor='none')
                     )
-            
+
                 ax.set_ylim(0, min(100, max(group_means.values) + 10))
                 ax.tick_params(axis='x', rotation=30, colors=text_color)
                 ax.tick_params(axis='y', colors=text_color)
-            
+
                 for spine in ['top', 'right']:
                     ax.spines[spine].set_visible(False)
                 ax.spines['left'].set_color(text_color)
                 ax.spines['bottom'].set_color(text_color)
-            
+
                 fig.tight_layout()
                 return fig
-            
+
             #Affichage dans Streamlit
             if category_info:
                 st.markdown("#### Score SUS par catégorie")
-            
+
                 # 1. Sélection de la catégorie
                 selected_category = st.selectbox("Choisissez une catégorie :", list(category_info.keys()))
-            
+
                 # 2. Préparation des groupes
                 if category_info[selected_category] == "Numérique":
                     try:
@@ -350,49 +350,49 @@ if uploaded_file:
                         df["_cat_display"] = df[selected_category].astype(str)
                 else:
                     df["_cat_display"] = df[selected_category].astype(str)
-            
+
                 # 3. Moyennes par groupe
                 group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-            
+
                 # 4. Affichage
                 fig_cat = create_category_chart(group_means, mode="dark")
                 st.pyplot(fig_cat)
-            
+
                 # 5. Nettoyage
                 df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
 
             st.markdown("---")
 
             # Radar - Score SUS par question
-            
+
             def create_radar_chart(df, questions, mode="dark"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 question_means = df[questions].mean()
                 radar_labels = [f"Q{i}" for i in range(1, 11)]
                 values = question_means.tolist() + [question_means.tolist()[0]]
                 angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
-            
+
                 fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-            
+
                 fig.patch.set_alpha(0)
                 ax.set_facecolor("none")
-          
+
                 ax.plot(angles, values, color='cyan', linewidth=1)
                 ax.fill(angles, values, color='cyan', alpha=0.25)
-            
+
                 ax.set_xticks(angles[:-1])
                 ax.set_xticklabels(radar_labels, fontsize=8, color=text_color)
-            
+
                 ax.set_yticks([1, 2, 3, 4, 5])
                 ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=8, color=text_color)
                 ax.set_ylim(1, 5)
                 ax.set_theta_direction(-1)
-            
+
                 ax.tick_params(colors=text_color)
                 ax.spines['polar'].set_color(text_color)
-            
+
                 fig.tight_layout()
                 return fig
 
@@ -403,16 +403,16 @@ if uploaded_file:
 
              # Statistiques par question
             with st.container():
-            
+
                 stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
                 stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
-            
+
                 stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
                 stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
-            
+
                 stats_df = stats_df.round(2)
                 st.dataframe(stats_df)
-                 
+
             st.markdown("---")         
 
             # Scores individuels
@@ -424,19 +424,19 @@ if uploaded_file:
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=12)
                 pdf.add_page()
-            
+
                 # Titre
                 pdf.set_font("Arial", "B", 14)
                 pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
                 pdf.ln(3)
-            
+
                 # Informations générales
                 pdf.set_font("Arial", "", 9)
                 pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
                 pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.ln(3)
-            
+
                 def add_figure_inline(fig, title, width=160):
                     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
                         fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
@@ -446,32 +446,32 @@ if uploaded_file:
                         x = (pdf.w - width) / 2
                         pdf.image(tmpfile.name, x=x, w=width)
                         pdf.ln(4)
-            
+
                 def add_stats_table(pdf, df_stats, title):
                     pdf.set_font("Arial", "B", 11)
                     pdf.cell(0, 6, title, ln=True)
                     pdf.ln(1)
-            
+
                     index_col_width = 60
                     col_width = 40
                     row_height = 5
-            
+
                     pdf.set_fill_color(220, 220, 220)
                     pdf.set_font("Arial", "B", 9)
                     pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
                     for col in df_stats.columns:
                         pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
                     pdf.ln()
-            
+
                     pdf.set_font("Arial", "", 9)
                     for idx, row in df_stats.iterrows():
                         pdf.cell(index_col_width, row_height, str(idx), border=1)
                         for val in row:
                             pdf.cell(col_width, row_height, str(val), border=1)
                         pdf.ln()
-            
+
                     pdf.ln(4)
-            
+
                 # Figures
                 fig_jauge = create_gauge(avg_score, zones, mode="white")
                 bins = [0, 25, 39, 52, 73, 86, 100]
@@ -481,7 +481,7 @@ if uploaded_file:
                 distribution = categories.value_counts().sort_index()
                 fig_dist = create_distribution(distribution, colors, mode="white")
                 fig_radar = create_radar_chart(df, questions, mode="white")
-            
+
                 fig_cat = None
                 if category_info:
                     first_category = list(category_info.keys())[0]
@@ -493,25 +493,24 @@ if uploaded_file:
                             df["_cat_display"] = df[first_category].astype(str)
                     else:
                         df["_cat_display"] = df[first_category].astype(str)
-            
+
                     group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
                     fig_cat = create_category_chart(group_means, mode="white")
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
+
                 # Ajout des éléments au PDF
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
                 if stats_df is not None:
-        add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
+
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
                     pdf.add_page()  # saut de page avant le radar
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
+
                 if question_stats_df is not None:
                     add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
+
                 try:
                     return pdf.output(dest='S').encode('latin1')
                 except UnicodeEncodeError:
@@ -529,7 +528,7 @@ if uploaded_file:
                     category_info=category_info if 'category_info' in locals() else None,
                     stats_df=stats_df
                 )
-            
+
                 st.download_button(
                     label="📥 Télécharger le rapport PDF",
                     data=pdf_bytes,
