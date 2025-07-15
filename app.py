@@ -6,6 +6,7 @@ import numpy as np
 from fpdf import FPDF
 from datetime import date
 import tempfile
+import os
 
 # Titre et introduction
 
@@ -345,7 +346,39 @@ if uploaded_file:
                     try:
                         binned = pd.cut(df[selected_category], bins=5)
                         df["_cat_display"] = binned.astype(str)
-                    except Exception as e:
+                    
+            # Export Excel
+            if st.button("📥 Télécharger le rapport Excel"):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = os.path.join(tmpdir, "gauge.png")
+                    radar_path = os.path.join(tmpdir, "radar.png")
+                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+
+                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge)
+
+                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar)
+
+                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
+                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
+
+                        workbook = writer.book
+                        worksheet = writer.sheets["Statistiques générales"]
+
+                        worksheet.insert_image("D2", gauge_path)
+                        worksheet.insert_image("D20", radar_path)
+
+                    with open(excel_path, "rb") as f:
+                        st.download_button(
+                            label="📥 Télécharger le rapport Excel",
+                            data=f.read(),
+                            file_name="rapport_sus.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+
+
+    except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
                 else:
@@ -519,23 +552,38 @@ if uploaded_file:
 
 
             # Appel depuis Streamlit
-            if st.button("📄 Générer le rapport PDF"):
-                pdf_bytes = generate_sus_pdf(
-                    avg_score=avg_score,
-                    num_subjects=len(df),
-                    df=df,
-                    zones=zones,
-                    questions=questions,
-                    category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df
-                )
             
-                st.download_button(
-                    label="📥 Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name="rapport_sus.pdf",
-                    mime="application/pdf"
-                )
+
+    
+            # Export Excel
+            if st.button("📥 Télécharger le rapport Excel"):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = os.path.join(tmpdir, "gauge.png")
+                    radar_path = os.path.join(tmpdir, "radar.png")
+                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+
+                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge)
+
+                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar)
+
+                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
+                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
+
+                        workbook = writer.book
+                        worksheet = writer.sheets["Statistiques générales"]
+
+                        worksheet.insert_image("D2", gauge_path)
+                        worksheet.insert_image("D20", radar_path)
+
+                    with open(excel_path, "rb") as f:
+                        st.download_button(
+                            label="📥 Télécharger le rapport Excel",
+                            data=f.read(),
+                            file_name="rapport_sus.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
 
 
     except Exception as e:
