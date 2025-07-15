@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from fpdf import FPDF
 from datetime import date
+from datetime import datetime
+
 import tempfile
 
 # Titre et introduction
