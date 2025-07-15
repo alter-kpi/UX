@@ -456,6 +456,8 @@ if uploaded_file:
             # Appel depuis Streamlit
             
             # Appel depuis Streamlit
+            
+            # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
                 with tempfile.TemporaryDirectory() as tmpdir:
                     gauge_path = f"{tmpdir}/gauge.png"
@@ -468,7 +470,14 @@ if uploaded_file:
                     plt.close(fig_radar)
 
                     pdf_path = f"{tmpdir}/rapport.pdf"
-                    generate_pdf(pdf_path, avg_score, radar_path, gauge_path)
+                    generate_pdf(
+                        output_path=pdf_path,
+                        sus_score=avg_score,
+                        nb_respondents=len(df),
+                        gauge_img=gauge_path,
+                        radar_img=radar_path,
+                        stats_df=stats_df
+                    )
 
                     with open(pdf_path, "rb") as f:
                         st.download_button("📥 Télécharger le rapport PDF", f.read(), "rapport_sus.pdf", mime="application/pdf")
