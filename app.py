@@ -79,10 +79,6 @@ with st.sidebar.expander("🔒 Données et confidentialité (RGPD)"):
         "Aucune donnée personnelle n’est conservée ou transmise à des tiers."
     )
 
-# Logo
-logo = Image.open("Logo.png")
-st.sidebar.image(logo, width=100)
-
 sus_questions = {
     "Question1": {
         "Français": "Je voudrais utiliser ce système fréquemment.",
@@ -551,3 +547,6 @@ if uploaded_file:
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
+# Logo
+logo = Image.open("Logo.png")
+st.sidebar.image(logo, width=100)
