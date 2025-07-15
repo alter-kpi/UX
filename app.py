@@ -436,6 +436,12 @@ if uploaded_file:
                 pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
                 pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
                 pdf.cell(0, 5, f"Score minimum : {df["SUS_Score"].min()}", ln=True)
+                pdf.cell(0, 5, f"Score maximum : {df["SUS_Score"].max()}", ln=True)
+                pdf.cell(0, 5, f"Ecart-type : {df['SUS_Score'].std():.2f}", ln=True)
+                pdf.cell(0, 5, f"Mediane : {df['SUS_Score'].median():.1f}", ln=True)
+                pdf.cell(0, 5, f"1er quartile (Q1) : {q1:.1f}", ln=True)
+                pdf.cell(0, 5, f"3e quartile (Q3) : {q3:.1f}", ln=True)
+                pdf.cell(0, 5, f"IQR : {iqr:.1f}", ln=True)
                 pdf.ln(3)
             
                 def add_figure_inline(fig, title, width=160):
