@@ -452,43 +452,32 @@ if uploaded_file:
                 # Préparation des données du tableau
                 data = [stats_df.columns.tolist()] + stats_df.values.tolist()
             
-                # Convertir les éléments en chaînes pour éviter les erreurs avec reportlab
-                data = [[str(cell) for cell in row] for row in data]
-            
-                table = Table(data, repeatRows=1)
-                table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 8),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                    ('GRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ]))
-                elements.append(table)
-            
-                doc.build(elements)
-
 
             # Appel depuis Streamlit
             if st.button("📄 Générer le rapport PDF"):
-                pdf_bytes = generate_sus_pdf(
-                    avg_score=avg_score,
-                    num_subjects=len(df),
-                    df=df,
-                    zones=zones,
-                    questions=questions,
-                    category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df
-                )
-            
-                st.download_button(
-                    label="📥 Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name="rapport_sus.pdf",
-                    mime="application/pdf"
-                )
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                    gauge_path = "gauge.png"
+                    radar_path = "radar.png"
+                    # Sauvegarder les figures matplotlib
+                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
 
+                    generate_pdf(
+                        output_path=tmp.name,
+                        sus_score=avg_score,
+                        nb_respondents=len(df),
+                        gauge_img=gauge_path,
+                        radar_img=radar_path,
+                        stats_df=stats_df
+                    )
+
+                    tmp.seek(0)
+                    st.download_button(
+                        label="📥 Télécharger le rapport PDF",
+                        data=tmp.read(),
+                        file_name="rapport_sus.pdf",
+                        mime="application/pdf"
+                    )
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
