@@ -521,10 +521,17 @@ if uploaded_file:
 
                 
 
+                
                 try:
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+                        pdf.output(tmp_pdf.name)
+                        tmp_pdf_path = tmp_pdf.name
+                    with open(tmp_pdf_path, "rb") as f:
+                        return f.read()
+                except Exception as e:
+                    print(f"Erreur lors de la génération du PDF : {e}")
                     return None
+
 
                 except UnicodeEncodeError:
                     return None
