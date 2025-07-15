@@ -548,23 +548,39 @@ if uploaded_file:
             question_stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
             question_stats_df = question_stats_df.round(2)
 
-            if st.button("📄 Générer le rapport PDF"):
-                pdf_bytes = generate_sus_pdf(
-                    avg_score=avg_score,
-                    num_subjects=len(df),
-                    df=df,
-                    zones=zones,
-                    questions=questions,
-                    category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=global_stats_df
-                )
             
-                st.download_button(
-                    label="📥 Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name="rapport_sus.pdf",
-                    mime="application/pdf"
-                )
+            if st.button("📄 Générer le rapport PDF"):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
+                    tmp_pdf_path = tmpfile.name
+
+                try:
+                    result = generate_sus_pdf(
+                        avg_score=avg_score,
+                        num_subjects=len(df),
+                        df=df,
+                        zones=zones,
+                        questions=questions,
+                        category_info=category_info if 'category_info' in locals() else None,
+                        stats_df=global_stats_df,
+                        question_stats_df=question_stats_df
+                    )
+
+                    if result:
+                        with open(tmp_pdf_path, "wb") as f_out:
+                            f_out.write(result)
+
+                        with open(tmp_pdf_path, "rb") as f_in:
+                            st.download_button(
+                                label="📥 Télécharger le rapport PDF",
+                                data=f_in.read(),
+                                file_name="rapport_sus.pdf",
+                                mime="application/pdf"
+                            )
+                    else:
+                        st.error("❌ Le PDF n’a pas pu être généré (résultat vide).")
+                except Exception as e:
+                    st.error(f"❌ Erreur lors de la génération du PDF : {e}")
+
 
 
     except Exception as e:
