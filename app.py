@@ -508,6 +508,10 @@ if uploaded_file:
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
 
+                if question_stats_df is not None:
+                    pdf.add_page()
+                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
+
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
