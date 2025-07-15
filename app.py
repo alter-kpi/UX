@@ -211,9 +211,9 @@ if uploaded_file:
             q3 = df['SUS_Score'].quantile(0.75)
             iqr = q3 - q1
             
-            stats_df = pd.DataFrame({
-                "Indicateur": [
-                    "Score SUS moyen",
+            global_stats_df = pd.DataFrame({
+            "Indicateur": [
+            "Score SUS moyen",
                     "Taille de l’échantillon",
                     "Score minimum",
                     "Score maximum",
@@ -235,12 +235,12 @@ if uploaded_file:
                     f"{iqr:.1f}"
                 ]
             })
-            stats_df.index = range(1, len(stats_df) + 1)
+            global_stats_df.index = range(1, len(global_stats_df) + 1)
             
             st.markdown("---")
             
             st.markdown("#### Statistiques")
-            st.table(stats_df)
+            st.table(global_stats_df)
 
             avg_score = df['SUS_Score'].mean()
 
@@ -531,6 +531,13 @@ if uploaded_file:
 
 
             # Appel depuis Streamlit
+            
+            question_stats_df = df[questions].agg(['mean', 'median', 'std', 'min', 'max']).T
+            question_stats_df.columns = ['Moyenne', 'Médiane', 'Écart-type', 'Min', 'Max']
+            question_stats_df["% de 1"] = df[questions].apply(lambda x: (x == 1).sum() / len(x) * 100).values
+            question_stats_df["% de 5"] = df[questions].apply(lambda x: (x == 5).sum() / len(x) * 100).values
+            question_stats_df = question_stats_df.round(2)
+
             if st.button("📄 Générer le rapport PDF"):
                 pdf_bytes = generate_sus_pdf(
                     avg_score=avg_score,
@@ -539,7 +546,7 @@ if uploaded_file:
                     zones=zones,
                     questions=questions,
                     category_info=category_info if 'category_info' in locals() else None,
-                    stats_df=stats_df
+                    stats_df=global_stats_df
                 )
             
                 st.download_button(
