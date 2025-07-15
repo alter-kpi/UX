@@ -515,7 +515,7 @@ if uploaded_file:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
 
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-
+                pdf.add_page()
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques par question")
             
