@@ -345,6 +345,35 @@ if uploaded_file:
                     try:
                         binned = pd.cut(df[selected_category], bins=5)
                         df["_cat_display"] = binned.astype(str)
+
+            # Export Excel
+            if st.button("📥 Télécharger le rapport Excel"):
+                import os
+                import tempfile
+                fig_jauge_white = create_gauge(avg_score, zones, mode="white")
+                fig_radar_white = create_radar_chart(df, questions, mode="white")
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = os.path.join(tmpdir, "gauge.png")
+                    radar_path = os.path.join(tmpdir, "radar.png")
+                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+                    fig_jauge_white.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge_white)
+                    fig_radar_white.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar_white)
+                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
+                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=True)
+                        workbook = writer.book
+                        worksheet = writer.sheets["Statistiques générales"]
+                        worksheet.insert_image("H2", gauge_path)
+                        worksheet.insert_image("H25", radar_path)
+                    with open(excel_path, "rb") as f:
+                        st.download_button(
+                            label="📥 Télécharger le rapport Excel",
+                            data=f.read(),
+                            file_name="rapport_sus.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+
                     except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
@@ -419,38 +448,6 @@ if uploaded_file:
             st.markdown(f"#### Scores individuels : {len(df)} sujets")
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
-            # Export Excel
-            if st.button("📥 Télécharger le rapport Excel"):
-                import os
-                import tempfile
-    
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    gauge_path = os.path.join(tmpdir, "gauge.png")
-                    radar_path = os.path.join(tmpdir, "radar.png")
-                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
-    
-                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_jauge)
-    
-                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
-                    plt.close(fig_radar)
-    
-                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
-                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=True)
-    
-                        workbook = writer.book
-                        worksheet = writer.sheets["Statistiques générales"]
-    
-                        worksheet.insert_image("H2", gauge_path)
-                        worksheet.insert_image("H25", radar_path)
-    
-                    with open(excel_path, "rb") as f:
-                        st.download_button(
-                            label="📥 Télécharger le rapport Excel",
-                            data=f.read(),
-                            file_name="rapport_sus.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {str(e)}")
