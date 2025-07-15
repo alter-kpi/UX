@@ -514,14 +514,8 @@ if uploaded_file:
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
 
                 if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-                if question_stats_df is not None:
-                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
-                try:
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
-                    return None
+                    add_stats_table(pdf, stats_df, "Statistiques par question")
+                
 
 
             # Appel depuis Streamlit
