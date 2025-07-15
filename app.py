@@ -506,16 +506,15 @@ if uploaded_file:
                     df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
             
                 # Ajout des éléments au PDF
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
-                if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")           
                 add_figure_inline(fig_dist, "Répartition des scores")
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
                     pdf.add_page()  # saut de page avant le radar
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
+
+                if stats_df is not None:
+                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
                 if question_stats_df is not None:
                     add_stats_table(pdf, question_stats_df, "Statistiques par question")
             
