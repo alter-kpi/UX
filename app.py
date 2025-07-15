@@ -449,12 +449,14 @@ if uploaded_file:
                         pdf.ln(8)
 
                 
+                
                 def add_stats_table(pdf, df_stats, title):
                     pdf.set_font("Arial", "B", 12)
                     pdf.cell(0, 8, title, ln=True, align='C')
                     pdf.ln(2)
 
-                    total_width = 190  # largeur imprimable
+                    df_stats = df_stats.fillna("")  # remplacer les NaN
+                    total_width = 190
                     index_col_width = 60
                     remaining_width = total_width - index_col_width
                     col_width = remaining_width / len(df_stats.columns)
@@ -475,6 +477,7 @@ if uploaded_file:
                         pdf.ln()
 
                     pdf.ln(6)
+
 
 
                 # Figures
