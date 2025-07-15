@@ -519,6 +519,7 @@ if uploaded_file:
                 pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
                 pdf.add_page()
+                pdf.ln(10)  # saute 10 unités de hauteur (≈ 1 ligne)
                 if stats_df is not None:
                     add_stats_table(pdf, stats_df, "Statistiques par question")
             
