@@ -129,6 +129,38 @@ sus_questions = {
 
 if uploaded_file:
     try:
+            # Export Excel
+            if st.button("📥 Télécharger le rapport Excel"):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = os.path.join(tmpdir, "gauge.png")
+                    radar_path = os.path.join(tmpdir, "radar.png")
+                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+
+                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge)
+
+                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar)
+
+                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
+                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
+
+                        workbook = writer.book
+                        worksheet = writer.sheets["Statistiques générales"]
+
+                        worksheet.insert_image("D2", gauge_path)
+                        worksheet.insert_image("D20", radar_path)
+
+                    with open(excel_path, "rb") as f:
+                        st.download_button(
+                            label="📥 Télécharger le rapport Excel",
+                            data=f.read(),
+                            file_name="rapport_sus.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+
+
+    
         df = pd.read_excel(uploaded_file, sheet_name=0)
 
         # Colonnes de questions
@@ -344,9 +376,6 @@ if uploaded_file:
                 # 2. Préparation des groupes
                 if category_info[selected_category] == "Numérique":
                     try:
-                        binned = pd.cut(df[selected_category], bins=5)
-                        df["_cat_display"] = binned.astype(str)
-                    
             # Export Excel
             if st.button("📥 Télécharger le rapport Excel"):
                 with tempfile.TemporaryDirectory() as tmpdir:
@@ -378,7 +407,11 @@ if uploaded_file:
                         )
 
 
-    except Exception as e:
+    
+                        binned = pd.cut(df[selected_category], bins=5)
+                        df["_cat_display"] = binned.astype(str)
+                    
+except Exception as e:
                         st.warning(f"Erreur lors du regroupement par tranches : {e}")
                         df["_cat_display"] = df[selected_category].astype(str)
                 else:
@@ -520,41 +553,6 @@ if uploaded_file:
                     first_category = list(category_info.keys())[0]
                     if category_info[first_category] == "Numérique":
                         try:
-                            binned = pd.cut(df[first_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except:
-                            df["_cat_display"] = df[first_category].astype(str)
-                    else:
-                        df["_cat_display"] = df[first_category].astype(str)
-            
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-                    fig_cat = create_category_chart(group_means, mode="white")
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
-                # Ajout des éléments au PDF
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
-                if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
-                add_figure_inline(fig_dist, "Répartition des scores")
-                if fig_cat:
-                    add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()  # saut de page avant le radar
-                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
-                if question_stats_df is not None:
-                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
-                try:
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
-                    return None
-
-
-            # Appel depuis Streamlit
-            
-
-    
             # Export Excel
             if st.button("📥 Télécharger le rapport Excel"):
                 with tempfile.TemporaryDirectory() as tmpdir:
@@ -586,5 +584,71 @@ if uploaded_file:
                         )
 
 
-    except Exception as e:
-        st.error(f"Une erreur est survenue : {str(e)}")
+    
+                            binned = pd.cut(df[first_category], bins=5)
+                            df["_cat_display"] = binned.astype(str)
+                        except:
+                            df["_cat_display"] = df[first_category].astype(str)
+                    else:
+                        df["_cat_display"] = df[first_category].astype(str)
+            
+                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
+                    fig_cat = create_category_chart(group_means, mode="white")
+                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
+            
+                # Ajout des éléments au PDF
+                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
+                if stats_df is not None:
+                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
+            
+                add_figure_inline(fig_dist, "Répartition des scores")
+                if fig_cat:
+                    add_figure_inline(fig_cat, "Score SUS par catégorie")
+                    pdf.add_page()  # saut de page avant le radar
+                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
+            
+                if question_stats_df is not None:
+                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
+            
+                try:
+            # Export Excel
+            if st.button("📥 Télécharger le rapport Excel"):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    gauge_path = os.path.join(tmpdir, "gauge.png")
+                    radar_path = os.path.join(tmpdir, "radar.png")
+                    excel_path = os.path.join(tmpdir, "rapport_sus.xlsx")
+
+                    fig_jauge.savefig(gauge_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_jauge)
+
+                    fig_radar.savefig(radar_path, bbox_inches='tight', dpi=150)
+                    plt.close(fig_radar)
+
+                    with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
+                        stats_df.to_excel(writer, sheet_name="Statistiques générales", index=False)
+
+                        workbook = writer.book
+                        worksheet = writer.sheets["Statistiques générales"]
+
+                        worksheet.insert_image("D2", gauge_path)
+                        worksheet.insert_image("D20", radar_path)
+
+                    with open(excel_path, "rb") as f:
+                        st.download_button(
+                            label="📥 Télécharger le rapport Excel",
+                            data=f.read(),
+                            file_name="rapport_sus.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+
+
+    
+                    return pdf.output(dest='S').encode('latin1')
+                except UnicodeEncodeError:
+                    return None
+
+
+            # Appel depuis Streamlit
+            
+
+    
