@@ -509,9 +509,11 @@ if uploaded_file:
                 
                 add_figure_inline(fig_jauge, "Évaluation globale (jauge)")           
                 add_figure_inline(fig_dist, "Répartition des scores")
+
+                pdf.add_page()
                 if fig_cat:
                     add_figure_inline(fig_cat, "Score SUS par catégorie")
-                pdf.add_page()
+
                 add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
 
                 if stats_df is not None:
