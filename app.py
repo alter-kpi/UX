@@ -460,7 +460,7 @@ if uploaded_file:
                     pdf.ln(1)
             
                     index_col_width = 60
-                    col_width = 40
+                    col_width = 35
                     row_height = 5
             
                     pdf.set_fill_color(220, 220, 220)
