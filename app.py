@@ -420,102 +420,54 @@ if uploaded_file:
             st.dataframe(df[['Sujet', 'SUS_Score']] if 'Sujet' in df.columns else df[['SUS_Score']])
 
             # PDF            
-            def generate_sus_pdf(avg_score, num_subjects, df, zones, questions, category_info=None, stats_df=None, question_stats_df=None):
-                pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=12)
-                pdf.add_page()
+            def generate_pdf(output_path, sus_score, nb_respondents, gauge_img, radar_img, stats_df):
+                from matplotlib.backends.backend_pdf import PdfPages
+                from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+                from reportlab.lib.pagesizes import A4
+                from reportlab.lib import colors
+                from reportlab.lib.styles import getSampleStyleSheet
             
-                # Titre
-                pdf.set_font("Arial", "B", 14)
-                pdf.cell(0, 7, "Rapport - Questionnaire SUS", ln=True, align='C')
-                pdf.ln(3)
+                doc = SimpleDocTemplate(output_path, pagesize=A4,
+                                        rightMargin=40, leftMargin=40, topMargin=60, bottomMargin=40)
+                styles = getSampleStyleSheet()
+                elements = []
             
-                # Informations générales
-                pdf.set_font("Arial", "", 9)
-                pdf.cell(0, 5, f"Date : {date.today().strftime('%Y-%m-%d')}", ln=True)
-                pdf.cell(0, 5, f"Nombre de répondants : {num_subjects}", ln=True)
-                pdf.cell(0, 5, f"Score SUS moyen : {avg_score:.1f} / 100", ln=True)
-                pdf.ln(3)
+                elements.append(Paragraph("Rapport - Questionnaire SUS", styles['Title']))
+                elements.append(Spacer(1, 12))
+                elements.append(Paragraph(f"Date : {datetime.now().strftime('%Y-%m-%d')}", styles['Normal']))
+                elements.append(Paragraph(f"Nombre de répondants : {nb_respondents}", styles['Normal']))
+                elements.append(Paragraph(f"<b>Score SUS moyen :</b> {sus_score:.1f} / 100", styles['Normal']))
+                elements.append(Spacer(1, 20))
             
-                def add_figure_inline(fig, title, width=160):
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
-                        fig.savefig(tmpfile.name, format='png', bbox_inches='tight', dpi=200)
-                        pdf.set_font("Arial", "B", 11)
-                        pdf.cell(0, 6, title, ln=True)
-                        pdf.ln(2)
-                        x = (pdf.w - width) / 2
-                        pdf.image(tmpfile.name, x=x, w=width)
-                        pdf.ln(4)
+                elements.append(Paragraph("Évaluation globale (jauge)", styles['Heading2']))
+                elements.append(Image(gauge_img, width=400, height=60))  # ajuster selon taille image
+                elements.append(Spacer(1, 20))
             
-                def add_stats_table(pdf, df_stats, title):
-                    pdf.set_font("Arial", "B", 11)
-                    pdf.cell(0, 6, title, ln=True)
-                    pdf.ln(1)
+                elements.append(Paragraph("Analyse moyenne par question (radar)", styles['Heading2']))
+                elements.append(Image(radar_img, width=400, height=400))
+                elements.append(Spacer(1, 20))
             
-                    index_col_width = 60
-                    col_width = 40
-                    row_height = 5
+                elements.append(Paragraph("Statistiques descriptives globales", styles['Heading2']))
             
-                    pdf.set_fill_color(220, 220, 220)
-                    pdf.set_font("Arial", "B", 9)
-                    pdf.cell(index_col_width, row_height, "", border=1, align="C", fill=True)
-                    for col in df_stats.columns:
-                        pdf.cell(col_width, row_height, str(col), border=1, align="C", fill=True)
-                    pdf.ln()
+                # Préparation des données du tableau
+                data = [stats_df.columns.tolist()] + stats_df.values.tolist()
             
-                    pdf.set_font("Arial", "", 9)
-                    for idx, row in df_stats.iterrows():
-                        pdf.cell(index_col_width, row_height, str(idx), border=1)
-                        for val in row:
-                            pdf.cell(col_width, row_height, str(val), border=1)
-                        pdf.ln()
+                # Convertir les éléments en chaînes pour éviter les erreurs avec reportlab
+                data = [[str(cell) for cell in row] for row in data]
             
-                    pdf.ln(4)
+                table = Table(data, repeatRows=1)
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 8),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('GRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ]))
+                elements.append(table)
             
-                # Figures
-                fig_jauge = create_gauge(avg_score, zones, mode="white")
-                bins = [0, 25, 39, 52, 73, 86, 100]
-                labels = [z[3] for z in zones]
-                colors = [z[2] for z in zones]
-                categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
-                distribution = categories.value_counts().sort_index()
-                fig_dist = create_distribution(distribution, colors, mode="white")
-                fig_radar = create_radar_chart(df, questions, mode="white")
-            
-                fig_cat = None
-                if category_info:
-                    first_category = list(category_info.keys())[0]
-                    if category_info[first_category] == "Numérique":
-                        try:
-                            binned = pd.cut(df[first_category], bins=5)
-                            df["_cat_display"] = binned.astype(str)
-                        except:
-                            df["_cat_display"] = df[first_category].astype(str)
-                    else:
-                        df["_cat_display"] = df[first_category].astype(str)
-            
-                    group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
-                    fig_cat = create_category_chart(group_means, mode="white")
-                    df.drop(columns=["_cat_display"], inplace=True, errors="ignore")
-            
-                # Ajout des éléments au PDF
-                add_figure_inline(fig_jauge, "Évaluation globale (jauge)")
-                if stats_df is not None:
-                    add_stats_table(pdf, stats_df, "Statistiques descriptives globales")
-            
-                add_figure_inline(fig_dist, "Répartition des scores")
-                if fig_cat:
-                    add_figure_inline(fig_cat, "Score SUS par catégorie")
-                    pdf.add_page()  # saut de page avant le radar
-                add_figure_inline(fig_radar, "Analyse moyenne par question (radar)")
-            
-                if question_stats_df is not None:
-                    add_stats_table(pdf, question_stats_df, "Statistiques par question")
-            
-                try:
-                    return pdf.output(dest='S').encode('latin1')
-                except UnicodeEncodeError:
-                    return None
+                doc.build(elements)
 
 
             # Appel depuis Streamlit
