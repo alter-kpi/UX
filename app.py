@@ -11,41 +11,6 @@ import tempfile
 
 st.set_page_config(page_title="AlterUX - Analyse SUS", layout="centered")
 
-st.markdown(
-    """
-    <style>
-        :root {
-            color-scheme: only light;
-        }
-        .stApp,
-        .stApp header,
-        .stApp [data-testid="stHeader"],
-        .stApp [data-testid="stSidebar"],
-        .stApp [data-testid="stToolbar"],
-        .stApp [data-testid="stSidebar"] > div,
-        .stApp [data-testid="block-container"] {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-        }
-        .stApp [data-testid="stSidebar"] *,
-        .stApp [data-testid="block-container"] * {
-            color: #000000 !important;
-        }
-        .stApp a,
-        .stApp label,
-        .stApp .stCheckbox,
-        .stApp .stRadio,
-        .stApp .stSelectbox,
-        .stApp .stMarkdown,
-        .stApp .stText,
-        .stApp .stDataFrame,
-        .stApp .stTable {
-            color: #000000 !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 st.title("📊 Analyse de questionnaires UX")
 
 st.write("Application d'analyse des questionnaires liés à l’expérience utilisateur (UX). ")
@@ -586,3 +551,4 @@ if uploaded_file:
 # Logo
 logo = Image.open("Logo.png")
 st.sidebar.image(logo, width=80)
+
