@@ -168,12 +168,12 @@ if uploaded_file:
             st.markdown("---")
             st.markdown(f"#### Score SUS : {avg_score:.1f}")
             
-            def create_gauge(avg_score, zones, mode="dark"):
+            def create_gauge(avg_score, zones, mode="white"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 1.5))
-                fig.patch.set_alpha(0)
+                fig.patch.set_facecolor(bg_color)
                 ax.set_facecolor(bg_color)
             
                 for start, end, zone_color, label in zones:
@@ -197,9 +197,9 @@ if uploaded_file:
                 ax.axis('off')
                 fig.tight_layout()
                 return fig
-            
-            
-            fig_jauge = create_gauge(avg_score, zones, mode="dark")
+
+
+            fig_jauge = create_gauge(avg_score, zones, mode="white")
             st.pyplot(fig_jauge)
             
              # Statistiques descriptives
@@ -245,13 +245,13 @@ if uploaded_file:
             # Histogramme
             st.markdown("#### Distribution")
             
-            def create_distribution(distribution, colors, mode="dark"):
+            def create_distribution(distribution, colors, mode="white"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 3))
-                fig.patch.set_alpha(0)
-                ax.set_facecolor("none")
+                fig.patch.set_facecolor(bg_color)
+                ax.set_facecolor(bg_color)
             
                 bars = ax.bar(distribution.index, distribution.values, color=colors)
             
@@ -288,19 +288,19 @@ if uploaded_file:
             categories = pd.cut(df['SUS_Score'], bins=bins, labels=labels, include_lowest=True, right=True)
             distribution = categories.value_counts().sort_index()
             
-            fig_dist = create_distribution(distribution, colors, mode="dark")
+            fig_dist = create_distribution(distribution, colors, mode="white")
             st.pyplot(fig_dist)
             st.markdown("---")
 
             # Histogramme des scores SUS par catégorie
             
-            def create_category_chart(group_means, mode="dark"):
+            def create_category_chart(group_means, mode="white"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
-            
+
                 fig, ax = plt.subplots(figsize=(6, 3))
-                fig.patch.set_alpha(0)
-                ax.set_facecolor("none")
+                fig.patch.set_facecolor(bg_color)
+                ax.set_facecolor(bg_color)
             
                 bars = ax.bar(group_means.index, group_means.values, color="#5bc0de")
                 ax.set_ylabel("Score SUS moyen", color=text_color)
@@ -351,7 +351,7 @@ if uploaded_file:
                 group_means = df.groupby("_cat_display", sort=True)["SUS_Score"].mean().sort_index()
             
                 # 4. Affichage
-                fig_cat = create_category_chart(group_means, mode="dark")
+                fig_cat = create_category_chart(group_means, mode="white")
                 st.pyplot(fig_cat)
             
                 # 5. Nettoyage
@@ -361,7 +361,7 @@ if uploaded_file:
 
             # Radar - Score SUS par question
             
-            def create_radar_chart(df, questions, mode="dark"):
+            def create_radar_chart(df, questions, mode="white"):
                 bg_color = "white" if mode == "white" else "black"
                 text_color = "black" if mode == "white" else "white"
             
@@ -371,9 +371,9 @@ if uploaded_file:
                 angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False).tolist() + [0]
             
                 fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-            
-                fig.patch.set_alpha(0)
-                ax.set_facecolor("none")
+
+                fig.patch.set_facecolor(bg_color)
+                ax.set_facecolor(bg_color)
           
                 ax.plot(angles, values, color='cyan', linewidth=1)
                 ax.fill(angles, values, color='cyan', alpha=0.25)
@@ -393,7 +393,7 @@ if uploaded_file:
                 return fig
 
             st.markdown("#### Score SUS par question")
-            fig_radar = create_radar_chart(df, questions, mode="dark")
+            fig_radar = create_radar_chart(df, questions, mode="white")
             st.pyplot(fig_radar)
 
 
