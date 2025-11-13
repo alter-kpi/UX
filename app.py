@@ -6,12 +6,14 @@ from components.sus_layout import layout as sus_layout
 from components.sus_callbacks import register_callbacks as register_sus_callbacks
 
 
-
 app = Dash(
     __name__,
     suppress_callback_exceptions=True,
     external_stylesheets=[dbc.themes.FLATLY]
 )
+
+server = app.server   # <-- OBLIGATOIRE pour Render
+
 app.title = "Alter UX"
 
 # === Layout global avec sidebar Bootstrap ===
