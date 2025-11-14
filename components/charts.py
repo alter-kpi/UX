@@ -1,8 +1,11 @@
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
 import pandas as pd
 import numpy as np
 
+# 🔥 FIX GLOBAL — éviter les erreurs de template Plotly (pattern shape)
+pio.templates.default = "plotly"
 
 CATEGORY_COLOR_LIST = [
     "#2980b9",  # bleu
@@ -10,7 +13,6 @@ CATEGORY_COLOR_LIST = [
     "#e67e22",  # orange
     "#8e44ad",  # violet
 ]
-
 
 
 # ======================================================
@@ -144,16 +146,11 @@ def create_acceptability_gauge(score: float):
 # 3️⃣ Histogramme principal SUS
 # ======================================================
 def create_main_histogram(df):
-    import numpy as np
-    import plotly.express as px
-
     mean_sus = float(np.nanmean(df["SUS_Score"]))
 
-    # === Calcul manuel des counts pour fixer le Y max ===
     counts, bins = np.histogram(df["SUS_Score"], bins=20)
     max_count = counts.max()
 
-    # === Histogramme ===
     fig = px.histogram(
         df,
         x="SUS_Score",
@@ -169,7 +166,6 @@ def create_main_histogram(df):
         opacity=0.85
     )
 
-    # === Ligne de moyenne ===
     fig.add_vline(
         x=mean_sus,
         line_width=2,
@@ -186,7 +182,6 @@ def create_main_histogram(df):
         font=dict(size=12, color="grey")
     )
 
-    # === Layout ===
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
@@ -194,7 +189,7 @@ def create_main_histogram(df):
         yaxis=dict(
             title="Nombre de réponses",
             gridcolor="#eee",
-            range=[0, max_count * 1.15]  # ★ marge pour le label
+            range=[0, max_count * 1.15]
         ),
         title_x=0.5,
         font=dict(size=13),
@@ -203,7 +198,6 @@ def create_main_histogram(df):
     )
 
     return fig
-
 
 
 # ======================================================
@@ -228,19 +222,19 @@ def create_radar(df):
         theta="Item",
         line_close=True,
         range_r=[0, 5],
-        title="Moyenne par question (1-5)"   # ← Titre
+        title="Moyenne par question (1-5)"
     )
 
     fig.update_traces(
         fill="toself",
         line_color="#2980b9",
-        mode="lines+markers",   # ← pas de texte
+        mode="lines+markers",
         marker=dict(size=7)
     )
 
     fig.update_layout(
         title=dict(
-            x=0.5,               # 🔥 centre le titre
+            x=0.5,
             xanchor="center",
             font=dict(size=20, color="#333"),
             pad=dict(t=20)
@@ -256,9 +250,8 @@ def create_radar(df):
     return fig
 
 
-
 # ======================================================
-# 5️⃣ Histogrammes par categorie (avec couleur par categorie)
+# 5️⃣ Histogrammes par catégorie
 # ======================================================
 def create_category_hist(df, col, idx):
 
@@ -267,7 +260,7 @@ def create_category_hist(df, col, idx):
 
     df_cat = df[[col, "SUS_Score"]].dropna()
 
-    # Regroupement si numerique
+    # Regroupement si numérique
     if pd.api.types.is_numeric_dtype(df_cat[col]):
         vmin, vmax = df_cat[col].min(), df_cat[col].max()
         amplitude = vmax - vmin
@@ -290,49 +283,51 @@ def create_category_hist(df, col, idx):
     if grouped.empty:
         return empty_fig()
 
-    # 🎨 Couleur dynamique selon l'index
     color = CATEGORY_COLOR_LIST[idx % len(CATEGORY_COLOR_LIST)]
 
-    # 🟦 Le titre : on remet le nom de la catégorie dans Plotly
+    # 🔥 FIX crucial : titre nettoyé pour éviter les erreurs Plotly
+    safe_title = str(col).encode("ascii", errors="ignore").decode()
+
     fig = px.bar(
         grouped,
         x=group_field,
         y="SUS_Score",
         text="SUS_Score",
-        title=str(col)  # <<< 🔥 Titre propre visible dans l'app
+        title=safe_title
     )
+
+    # 🔥 désactive le pattern shape qui plante Plotly
+    fig.update_traces(marker_pattern_shape="")
 
     fig.update_traces(
         texttemplate="%{text:.1f}",
         textposition="outside",
-        textfont=dict(size=16),       # 🔥 valeurs plus grosses
+        textfont=dict(size=16),
         marker_line_color="white",
         marker_line_width=1.2,
         opacity=0.85,
-        marker_color=color            # <<< couleur unique
+        marker_color=color
     )
 
-    # Espace vertical pour éviter collision texte
     max_y = grouped["SUS_Score"].max()
     fig.update_yaxes(range=[0, max_y * 1.25], gridcolor="#eee")
 
-    # Layout amélioré
     fig.update_layout(
         title=dict(
-            text=str(col),
+            text=safe_title,
             x=0.5,
             xanchor="center",
             y=0.95,
-            font=dict(size=20, color="#333")    # 🔥 Titre plus grand
+            font=dict(size=20, color="#333")
         ),
         xaxis_title=None,
         yaxis_title=None,
         plot_bgcolor="white",
         paper_bgcolor="white",
         bargap=0.25,
-        margin=dict(l=20, r=20, t=80, b=60),   # <<< espace pour le titre
+        margin=dict(l=20, r=20, t=80, b=60),
         height=330,
-        font=dict(size=14),                    # labels plus gros
+        font=dict(size=14),
         xaxis=dict(tickfont=dict(size=14)),
         yaxis=dict(tickfont=dict(size=14))
     )
@@ -340,12 +335,9 @@ def create_category_hist(df, col, idx):
     return fig
 
 
-
-
 # ======================================================
 # 6️⃣ Statistiques
 # ======================================================
-
 def compute_sus_stats(df):
     if df.empty:
         return pd.DataFrame(columns=["Indicateur", "Valeur"])
@@ -369,9 +361,6 @@ def compute_sus_stats(df):
 # 7️⃣ Histogramme par classe
 # ======================================================
 def create_sus_class_histogram(df, score_col="SUS_Score"):
-    """Histogramme du nombre de réponses par classe SUS (mêmes couleurs que la jauge)."""
-
-    # Définition des classes SUS
     bins = [0, 25, 39, 52, 73, 86, 100]
     labels = [
         "Pire<br>imaginable",
@@ -413,7 +402,7 @@ def create_sus_class_histogram(df, score_col="SUS_Score"):
         ),
         height=360,
         margin=dict(l=30, r=30, t=80, b=30),
-                plot_bgcolor="white",
+        plot_bgcolor="white",
         paper_bgcolor="white",
         showlegend=False
     )
@@ -422,6 +411,3 @@ def create_sus_class_histogram(df, score_col="SUS_Score"):
     fig.update_yaxes(range=[0, max_y * 1.25])
 
     return fig
-
-
-
