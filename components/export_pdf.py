@@ -5,36 +5,34 @@ import pandas as pd
 import os
 import tempfile
 from datetime import datetime
+from PIL import Image  # 🔥 FIX FPDF PNG
 
 
 # ============================================================================
-# PDF class (ASCII only, Helvetica compatible)
+# PDF CLASS
 # ============================================================================
 class SUSReportPDF(FPDF):
 
     def header(self):
-        # Logo en haut a droite
         logo_path = os.path.abspath(os.path.join(
             os.path.dirname(__file__),
             "..",
             "assets",
             "logo_alterkpi.png"
         ))
+
         if os.path.exists(logo_path):
             self.image(logo_path, x=175, y=8, w=18)
 
-        # Titre
         self.set_xy(10, 10)
         self.set_font("Helvetica", "B", 18)
         self.set_text_color(30, 30, 30)
-        self.cell(0, 10, "Rapport d'analyse SUS", ln=True, align="L")
+        self.cell(0, 10, "Rapport d'analyse SUS", ln=True)
 
-        # Sous-titre
         self.set_font("Helvetica", "", 10)
         self.set_text_color(80, 80, 80)
-        self.cell(0, 6, f"Genere le {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="L")
+        self.cell(0, 6, f"Généré le {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
 
-        # Ligne séparation
         self.ln(3)
         self.set_draw_color(170, 170, 170)
         self.line(10, self.get_y(), 200, self.get_y())
@@ -52,20 +50,19 @@ class SUSReportPDF(FPDF):
 # ============================================================================
 def generate_sus_pdf(df: pd.DataFrame, figs: dict, output_path: str):
 
-    # Folder for PNG export (Render-friendly)
     img_dir = os.path.join(tempfile.gettempdir(), "sus_temp_images")
     os.makedirs(img_dir, exist_ok=True)
 
     img_paths = {}
 
     # =========================================================================
-    # EXPORT DES IMAGES (AVEC TEST PNG OBLIGATOIRE)
+    # EXPORT DES IMAGES PLOTLY → PNG → FIX PNG POUR FPDF
     # =========================================================================
     for key, fig in figs.items():
         if fig is None:
             continue
 
-        # Dash figure dict → Plotly Figure
+        # Convertir dict Dash en figure Plotly
         if isinstance(fig, dict):
             fig = go.Figure(fig)
 
@@ -76,49 +73,54 @@ def generate_sus_pdf(df: pd.DataFrame, figs: dict, output_path: str):
         try:
             pio.write_image(fig, path, format="png", scale=2)
         except Exception as e:
-            raise Exception(f"Erreur lors de la génération PNG pour '{key}': {e}")
+            raise Exception(f"Erreur génération PNG pour '{key}': {e}")
 
-        # --- Vérification PNG ---
+        # --- Vérification taille ---
         if not os.path.exists(path):
-            raise Exception(f"PNG NON CRÉÉ pour '{key}' : {path}")
+            raise Exception(f"PNG non créé pour '{key}'")
 
-        file_size = os.path.getsize(path)
-        if file_size < 2000:   # <2Ko = image vide/corrompue
+        if os.path.getsize(path) < 2000:
             raise Exception(
-                f"PNG VIDE ou CORROMPU pour '{key}' ({file_size} octets).\n"
-                f"Vérifie la figure Plotly correspondante."
+                f"PNG vide ou invalide pour '{key}' ({os.path.getsize(path)} octets)"
             )
+
+        # --- 🔥 FIX FPDF PNG : reconvertir via Pillow (en RGB) ---
+        try:
+            with Image.open(path) as im:
+                im = im.convert("RGB")  # FPDF n’aime pas RGBA / PNG complexes
+                im.save(path, format="PNG")
+        except Exception as e:
+            raise Exception(f"Impossible de convertir PNG '{key}' via Pillow : {e}")
 
         img_paths[key] = path
 
     # =========================================================================
-    # PDF BEGIN
+    # CRÉATION DU PDF
     # =========================================================================
     pdf = SUSReportPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
 
     # =========================================================================
-    # PAGE 1 – Resume + Graphiques principaux
+    # PAGE 1 — Résumé + graphiques principaux
     # =========================================================================
     pdf.add_page()
 
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(30, 30, 30)
-    pdf.cell(0, 10, "Resume statistique", ln=True)
+    pdf.cell(0, 10, "Résumé statistique", ln=True)
 
     pdf.ln(3)
     pdf.set_draw_color(180, 180, 180)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(6)
 
-    # Statistiques SUS
-    pdf.set_font("Helvetica", "", 11)
+    # Statistiques
     stats = {
-        "Nombre de reponses": len(df),
+        "Nombre de réponses": len(df),
         "Score moyen SUS": f"{df['SUS_Score'].mean():.1f}",
-        "Reponses >= 70": f"{(df['SUS_Score'] >= 70).mean()*100:.1f}%",
-        "Mediane": f"{df['SUS_Score'].median():.1f}",
-        "Ecart-type": f"{df['SUS_Score'].std():.2f}",
+        "Réponses >= 70": f"{(df['SUS_Score'] >= 70).mean()*100:.1f}%",
+        "Médiane": f"{df['SUS_Score'].median():.1f}",
+        "Écart-type": f"{df['SUS_Score'].std():.2f}",
         "Score minimum": f"{df['SUS_Score'].min():.1f}",
         "Score maximum": f"{df['SUS_Score'].max():.1f}",
     }
@@ -131,21 +133,20 @@ def generate_sus_pdf(df: pd.DataFrame, figs: dict, output_path: str):
 
     pdf.ln(5)
 
-    # Ordre d'affichage
+    # Ordre des graph principaux
     main_order = ["SUS moyen", "Acceptabilite", "Repartition", "Radar"]
 
     for key in main_order:
-        if key not in img_paths:
-            continue
-        pdf.image(img_paths[key], w=175)
-        pdf.ln(10)
+        if key in img_paths:
+            pdf.image(img_paths[key], w=175)
+            pdf.ln(10)
 
     # =========================================================================
-    # PAGE 2 – Classes SUS + 4 catégories
+    # PAGE 2 — Classes SUS + 4 catégories
     # =========================================================================
     pdf.add_page()
 
-    # --- Classes SUS ---
+    # Classes SUS
     if "Classes SUS" in img_paths:
         pdf.ln(2)
         pdf.image(img_paths["Classes SUS"], w=175, h=80)
@@ -156,25 +157,24 @@ def generate_sus_pdf(df: pd.DataFrame, figs: dict, output_path: str):
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
     pdf.ln(3)
 
-    # --- Grille 2x2 pour les catégories ---
+    # Catégories en grille 2x2
     cat_keys = ["Categorie 1", "Categorie 2", "Categorie 3", "Categorie 4"]
 
     left_x, right_x = 12, 110
     top = pdf.get_y()
-    row_height = 70
+    row_h = 70
 
     positions = [
         (cat_keys[0], left_x,  top),
         (cat_keys[1], right_x, top),
-        (cat_keys[2], left_x,  top + row_height),
-        (cat_keys[3], right_x, top + row_height),
+        (cat_keys[2], left_x,  top + row_h),
+        (cat_keys[3], right_x, top + row_h),
     ]
 
     for key, x, y in positions:
-        if key not in img_paths:
-            continue
-        pdf.set_xy(x, y + 6)
-        pdf.image(img_paths[key], w=85, h=70)
+        if key in img_paths:
+            pdf.set_xy(x, y + 6)
+            pdf.image(img_paths[key], w=85, h=70)
 
     # =========================================================================
     # CLEAN TEMP FILES
