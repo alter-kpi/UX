@@ -6,4 +6,3 @@ numpy
 fpdf
 openpyxl
 gunicorn
-kaleido
