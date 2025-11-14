@@ -144,8 +144,16 @@ def create_acceptability_gauge(score: float):
 # 3️⃣ Histogramme principal SUS
 # ======================================================
 def create_main_histogram(df):
+    import numpy as np
+    import plotly.express as px
+
     mean_sus = float(np.nanmean(df["SUS_Score"]))
 
+    # === Calcul manuel des counts pour fixer le Y max ===
+    counts, bins = np.histogram(df["SUS_Score"], bins=20)
+    max_count = counts.max()
+
+    # === Histogramme ===
     fig = px.histogram(
         df,
         x="SUS_Score",
@@ -161,20 +169,33 @@ def create_main_histogram(df):
         opacity=0.85
     )
 
+    # === Ligne de moyenne ===
     fig.add_vline(
         x=mean_sus,
         line_width=2,
         line_dash="dash",
-        line_color="#e74c3c",
-        annotation_text=f"Moyenne : {mean_sus:.1f}",
-        annotation_position="top right"
+        line_color="#e74c3c"
     )
 
+    fig.add_annotation(
+        x=mean_sus,
+        y=max_count * 1.12,
+        yshift=12,
+        text=f"Moyenne : {mean_sus:.1f}",
+        showarrow=False,
+        font=dict(size=12, color="grey")
+    )
+
+    # === Layout ===
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
         xaxis=dict(title="Score SUS", gridcolor="#eee"),
-        yaxis=dict(title="Nombre de réponses", gridcolor="#eee"),
+        yaxis=dict(
+            title="Nombre de réponses",
+            gridcolor="#eee",
+            range=[0, max_count * 1.15]  # ★ marge pour le label
+        ),
         title_x=0.5,
         font=dict(size=13),
         margin=dict(l=30, r=30, t=60, b=30),
@@ -182,6 +203,7 @@ def create_main_histogram(df):
     )
 
     return fig
+
 
 
 # ======================================================
