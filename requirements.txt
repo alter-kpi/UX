@@ -1,6 +1,6 @@
 dash
 dash-bootstrap-components
-plotly
+plotly>=5.15
 pandas
 numpy
 fpdf
