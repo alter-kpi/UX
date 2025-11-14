@@ -55,57 +55,65 @@ layout = dbc.Container([
         ], className="p-3 text-center bg-white"), md=4),
 
         dbc.Col(html.Div([
-            html.H6("≥ 70 (Acceptable+)", className="text-muted mb-1"),
+            html.H6("≥ 72 (Acceptable+)", className="text-muted mb-1"),
             html.H2(id="kpi_pct70", className="mb-0")
         ], className="p-3 text-center bg-white"), md=4),
     ], className="mb-4 g-3"),
 
 
-    # === 2️⃣ Tableau des statistiques descriptives ===
-    html.Div([
-        dash_table.DataTable(
-            id="sus-stats-table",
-            columns=[
-                {"name": "Indicateur", "id": "Indicateur"},
-                {"name": "Valeur", "id": "Valeur"}
-            ],
-            data=[],
-            style_cell={"textAlign": "left", "padding": "6px", "fontSize": "13px"},
-            style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
-            style_table={"width": "70%", "margin": "auto"},
-        ),
-    ], className="mb-5"),
+    # === 2️⃣ Gauges ===
+    # === 2️⃣ Gauges (centrées verticalement) ===
+    dbc.Row(
+        [
+            dbc.Col(
+                [
+                    dcc.Graph(
+                        id="gauge-graph",
+                        config={"displayModeBar": False, "displaylogo": False},
+                        style={"height": "180px", "backgroundColor": "white"}
+                    ),
+                    dcc.Graph(
+                        id="acceptability-graph",
+                        config={"displayModeBar": False, "displaylogo": False},
+                        style={"height": "180px", "backgroundColor": "white"}
+                    )
+                ],
+                md=8
+            )
+        ],
+        justify="center",
+        className="mb-5"
+    ),
 
-    # === 3️⃣ Gauges à gauche / Histogramme par classe à droite ===
-    dbc.Row([
-        dbc.Col([
-            html.Div([
-                dcc.Graph(
-                    id="gauge-graph",
-                    config={"displayModeBar": False, "displaylogo": False},
-                    style={"height": "180px", "marginBottom": "0px", "backgroundColor": "white"}
+    # === 3️⃣ Stats (gauche) / Histogramme par classe (droite) ===
+    dbc.Row(
+        [
+            dbc.Col(
+                dash_table.DataTable(
+                    id="sus-stats-table",
+                    columns=[
+                        {"name": "Indicateur", "id": "Indicateur"},
+                        {"name": "Valeur", "id": "Valeur"}
+                    ],
+                    data=[],
+                    style_cell={"textAlign": "left", "padding": "6px", "fontSize": "13px"},
+                    style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
+                    style_table={"width": "100%"},
                 ),
-                dcc.Graph(
-                    id="acceptability-graph",
-                    config={"displayModeBar": False, "displaylogo": False},
-                    style={"height": "180px", "marginTop": "0px", "backgroundColor": "white"}
-                )
-            ], style={
-                "backgroundColor": "white",
-                "padding": "0",
-                "borderRadius": "6px",
-                "boxShadow": "0px 1px 3px rgba(0,0,0,0.1)"
-            })
-        ], md=6),
-
-        dbc.Col([
-            dcc.Graph(
-                id="sus-class-hist",
-                config={"displayModeBar": False, "displaylogo": False},
-                style={"height": "360px"}
+                md=6
             ),
-        ], md=6),
-    ], className="g-4 mb-5"),
+            dbc.Col(
+                dcc.Graph(
+                    id="sus-class-hist",
+                    config={"displayModeBar": False, "displaylogo": False},
+                    style={"height": "360px"}
+                ),
+                md=6
+            ),
+        ],
+        className="g-4 mb-5"
+    ),
+
 
     # === 4️⃣ Histogramme principal (gauche) / Radar (droite) ===
     dbc.Row([

@@ -14,6 +14,15 @@ CATEGORY_COLOR_LIST = [
     "#8e44ad",  # violet
 ]
 
+# ======================================================
+# 🎯 Fonction utilitaire — récupère la couleur du segment
+# ======================================================
+def get_zone_color(score, zones):
+    for x0, x1, color, _ in zones:
+        if x0 <= score < x1:
+            return color
+    return zones[-1][2]  # fallback
+
 
 # ======================================================
 # 🚫 Figure vide (utilisée quand pas de données)
@@ -46,6 +55,7 @@ def create_gauge_native(score: float):
 
     fig = go.Figure()
 
+    # Fond coloré
     for x0, x1, color, label in zones:
         fig.add_shape(
             type="rect", x0=x0, x1=x1, y0=0, y1=0.4,
@@ -59,13 +69,18 @@ def create_gauge_native(score: float):
             align="center"
         )
 
+    # 🎯 Couleur dynamique du curseur
+    needle_color = get_zone_color(score, zones)
+
     fig.add_shape(
         type="path",
-        path=f"M {score-2} -0.05 L {score+2} -0.05 L {score} -0.25 Z",
-        fillcolor="red",
-        line=dict(color="red")
+        path=f"M {score-2} -0.25 L {score+2} -0.25 L {score} -0.05 Z",
+        fillcolor=needle_color,
+        line=dict(color="black", width=1)
+
     )
 
+    # Graduation
     for start, _, _, _ in zones:
         fig.add_annotation(x=start, y=-0.6, text=str(start),
                            showarrow=False, font=dict(size=11, color="gray"))
@@ -99,34 +114,35 @@ def create_acceptability_gauge(score: float):
 
     fig = go.Figure()
 
+    # Fond coloré
     for x0, x1, color, label in segments:
         fig.add_shape(type="rect", x0=x0, x1=x1, y0=0, y1=0.4,
                       fillcolor=color, line=dict(width=0))
         fig.add_annotation(
-            x=(x0 + x1) / 2, y=-0.65,
+            x=(x0 + x1) / 2, y=0.68,
             text=label,
             showarrow=False,
             font=dict(size=12, color="black"),
             align="center"
         )
 
+    # 🎯 Couleur dynamique du curseur
+    needle_color = get_zone_color(score, segments)
+
     fig.add_shape(
         type="path",
-        path=f"M {score-2} 0.45 L {score+2} 0.45 L {score} 0.70 Z",
-        fillcolor="red",
-        line=dict(color="red")
+        path=f"M {score-2} -0.25 L {score+2} -0.25 L {score} -0.05 Z",
+        fillcolor=needle_color,
+        line=dict(color="black", width=1)
+
     )
 
-    fig.add_annotation(
-        x=score, y=1.0,
-        text=f"<b>{score:.1f}</b><span style='font-size:11px;'> /100</span>",
-        showarrow=False,
-        font=dict(color="black", size=15),
-        bgcolor="white",
-        bordercolor="red",
-        borderwidth=2,
-        borderpad=3
-    )
+    # Graduation
+    for start, _, _, _ in segments:
+        fig.add_annotation(x=start, y=-0.6, text=str(start),
+                           showarrow=False, font=dict(size=11, color="gray"))
+    fig.add_annotation(x=100, y=-0.6, text="100",
+                       showarrow=False, font=dict(size=11, color="gray"))
 
     fig.update_xaxes(range=[0, 100], visible=False)
     fig.update_yaxes(range=[-0.8, 1.2], visible=False)
@@ -285,7 +301,6 @@ def create_category_hist(df, col, idx):
 
     color = CATEGORY_COLOR_LIST[idx % len(CATEGORY_COLOR_LIST)]
 
-    # 🔥 FIX crucial : titre nettoyé pour éviter les erreurs Plotly
     safe_title = str(col).encode("ascii", errors="ignore").decode()
 
     fig = px.bar(
@@ -296,7 +311,6 @@ def create_category_hist(df, col, idx):
         title=safe_title
     )
 
-    # 🔥 désactive le pattern shape qui plante Plotly
     fig.update_traces(marker_pattern_shape="")
 
     fig.update_traces(

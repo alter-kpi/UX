@@ -130,7 +130,7 @@ def register_callbacks(app):
         # KPIs
         n = len(df)
         mean_sus = df["SUS_Score"].mean()
-        pct70 = float((df["SUS_Score"] >= 70).mean() * 100)
+        pct70 = float((df["SUS_Score"] >= 72).mean() * 100)
 
         kpi_count = f"{n:,}".replace(",", " ")
         kpi_mean = f"{mean_sus:.1f}"
