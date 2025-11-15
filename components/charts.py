@@ -357,18 +357,36 @@ def compute_sus_stats(df):
         return pd.DataFrame(columns=["Indicateur", "Valeur"])
 
     sus = df["SUS_Score"]
+
+    Q1 = sus.quantile(0.25)
+    Q3 = sus.quantile(0.75)
+    IQR = Q3 - Q1
+
     stats = {
+        # Indicateurs centraux
         "Score SUS moyen": round(sus.mean(), 2),
         "Taille de l’échantillon": len(sus),
+        "Médiane": round(sus.median(), 1),
+
+        # Étendue
         "Score minimum": round(sus.min(), 1),
         "Score maximum": round(sus.max(), 1),
+        "Amplitude (max - min)": round(sus.max() - sus.min(), 1),
+
+        # Dispersion
         "Écart-type": round(sus.std(), 2),
-        "Médiane": round(sus.median(), 1),
-        "1er quartile (Q1)": round(sus.quantile(0.25), 1),
-        "3e quartile (Q3)": round(sus.quantile(0.75), 1),
-        "IQR": round(sus.quantile(0.75) - sus.quantile(0.25), 1),
+        "Coefficient de variation (%)": round((sus.std() / sus.mean()) * 100, 1),
+        "1er quartile (Q1)": round(Q1, 1),
+        "3e quartile (Q3)": round(Q3, 1),
+        "IQR (Q3 - Q1)": round(IQR, 1),
+
+        # Indicateurs opérationnels
+        "% des scores ≥ 70": round((sus >= 70).mean() * 100, 1),
+        "% des scores ≤ 50": round((sus <= 50).mean() * 100, 1),
     }
+
     return pd.DataFrame(stats.items(), columns=["Indicateur", "Valeur"])
+
 
 
 # ======================================================
@@ -414,7 +432,7 @@ def create_sus_class_histogram(df, score_col="SUS_Score"):
             zeroline=True,
             tickfont=dict(size=12, color="white")
         ),
-        height=360,
+        height=420,
         margin=dict(l=30, r=30, t=80, b=30),
         plot_bgcolor="white",
         paper_bgcolor="white",

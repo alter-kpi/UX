@@ -1,5 +1,6 @@
 from components.export_pdf import generate_sus_pdf
 from components.charts import compute_sus_stats, create_gauge_native, create_acceptability_gauge, create_sus_class_histogram, create_category_hist, empty_fig, create_main_histogram, create_radar
+from components.ai_text import generate_ai_analysis
 import tempfile
 import dash
 import os
@@ -10,6 +11,7 @@ import numpy as np
 import io, base64
 import plotly.express as px
 import plotly.graph_objects as go
+
 
 # --- Détection colonnes SUS ---
 SUS_PATTERNS = [
@@ -184,36 +186,38 @@ def register_callbacks(app):
     
     # PDF
 
+    # === 💾 Export PDF ===
     @app.callback(
-    Output("export-status", "children"),
-    Output("download-pdf", "data"),
-    Input("btn-export", "n_clicks"),
-    State("data-store", "data"),
-    State("gauge-graph", "figure"),
-    State("acceptability-graph", "figure"),
-    State("hist-graph", "figure"),
-    State("radar-graph", "figure"),
-    State("sus-class-hist", "figure"),
-    State("cat-graph-1", "figure"),
-    State("cat-graph-2", "figure"),
-    State("cat-graph-3", "figure"),
-    State("cat-graph-4", "figure"),
-    prevent_initial_call=True
-)
+        Output("export-status", "children"),
+        Output("download-pdf", "data"),
+        Input("btn-export", "n_clicks"),
+        State("data-store", "data"),
+        State("gauge-graph", "figure"),
+        State("acceptability-graph", "figure"),
+        State("hist-graph", "figure"),
+        State("radar-graph", "figure"),
+        State("sus-class-hist", "figure"),
+        State("cat-graph-1", "figure"),
+        State("cat-graph-2", "figure"),
+        State("cat-graph-3", "figure"),
+        State("cat-graph-4", "figure"),
+        State("sus-stats-table", "data"),
+        State("ai-analysis", "children"), 
+        prevent_initial_call=True
+    )
     def export_pdf(n_clicks, data,
-                gauge_fig,
-                accept_fig,
-                hist_fig,
-                radar_fig,
-                class_fig,
-                cat1, cat2, cat3, cat4):
-
+                gauge_fig, accept_fig, hist_fig, radar_fig,
+                class_fig, cat1, cat2, cat3, cat4,
+                stats_table,
+                ai_text):         
         if not data:
-            return "Aucune donnee a exporter", dash.no_update
+            return "❌ Aucune donnée à exporter", dash.no_update
+
+        # Status
+        status = "⏳ Génération du PDF..."
 
         df = pd.DataFrame(data)
 
-        # IMPORTANT : titres sans accents pour correspondre au PDF sans accents
         figs = {
             "SUS moyen": gauge_fig,
             "Acceptabilite": accept_fig,
@@ -226,16 +230,22 @@ def register_callbacks(app):
             "Categorie 4": cat4,
         }
 
+        # TEMP FILE
         output_path = os.path.join(tempfile.gettempdir(), "rapport_SUS.pdf")
-        generate_sus_pdf(df, figs, output_path)
 
+        # ⬅️ ENVOI DE L'ANALYSE IA AU PDF
+        generate_sus_pdf(df, figs, output_path, ai_text, stats_table)
+
+        # Lecture binaire pour le download
         with open(output_path, "rb") as f:
             pdf_bytes = f.read()
 
-        return "Rapport pret au telechargement", dcc.send_bytes(
-            lambda buf: buf.write(pdf_bytes),
-            "rapport_SUS.pdf"
+        return "✅ PDF généré avec succès", dcc.send_bytes(
+            lambda buffer: buffer.write(pdf_bytes),
+            "Rapport_SUS.pdf"
         )
+
+
 
 
     @app.callback(
@@ -249,3 +259,157 @@ def register_callbacks(app):
         df = pd.DataFrame(data)
         stats_df = compute_sus_stats(df)
         return stats_df.to_dict("records")
+    
+    #Analyse IA
+
+        # Analyse IA
+
+    @app.callback(
+        Output("ai-analysis", "children"),
+        Input("btn-ai", "n_clicks"),
+        State("data-store", "data"),
+        prevent_initial_call=True
+    )
+    def run_ai_analysis(n_clicks, data):
+        if not data:
+            return "Aucune donnée disponible."
+
+        df = pd.DataFrame(data)
+
+        # --- 1. Statistiques globales SUS ---
+        sus = df["SUS_Score"].astype(float)
+        n = len(sus)
+        sus_mean = float(sus.mean())
+        sus_median = float(sus.median())
+        sus_min = float(sus.min())
+        sus_max = float(sus.max())
+        sus_std = float(sus.std())
+        q1 = float(sus.quantile(0.25))
+        q3 = float(sus.quantile(0.75))
+        pct72 = float((sus >= 72).mean() * 100)
+
+        # --- 2. Histogramme (résumé) ---
+        counts, bin_edges = np.histogram(sus, bins=10)
+        hist_desc = {
+            f"{int(bin_edges[i])}-{int(bin_edges[i+1])}": int(counts[i])
+            for i in range(len(counts))
+            if counts[i] > 0
+        }
+
+        # --- 3. Répartition par classes SUS (mêmes bornes que le graphique) ---
+        bins = [0, 25, 39, 52, 73, 86, 100]
+        labels = [
+            "Pire imaginable",
+            "Mauvais",
+            "Acceptable",
+            "Bon",
+            "Excellent",
+            "Meilleur imaginable"
+        ]
+        classe = pd.cut(sus, bins=bins, labels=labels, right=False)
+        class_counts = (
+            classe.value_counts()
+            .reindex(labels, fill_value=0)
+            .astype(int)
+            .to_dict()
+        )
+
+        # --- 4. Radar : moyennes par question (1–5) ---
+        qcols = [
+            c for c in df.columns
+            if (not c.endswith("_adj"))
+            and c != "SUS_Score"
+            and pd.api.types.is_numeric_dtype(df[c])
+        ]
+        qcols = qcols[1:10]  # comme create_radar
+        radar_means = df[qcols].mean().round(2).to_dict() if qcols else {}
+
+        # --- 5. Catégories (colonnes J/K/L/M = index 11 à 14) ---
+        cat_cols = df.columns[11:15]
+        categories = {}
+        for col in cat_cols:
+            if col not in df.columns:
+                continue
+            serie = df[col]
+            if serie.dropna().empty:
+                continue
+
+            tmp = df[[col, "SUS_Score"]].dropna()
+
+            # Même logique que create_category_hist
+            if pd.api.types.is_numeric_dtype(tmp[col]):
+                vmin, vmax = tmp[col].min(), tmp[col].max()
+                amplitude = vmax - vmin
+                step = 5
+                if amplitude > 50:
+                    step = 10
+                if amplitude > 200:
+                    step = 20
+                if amplitude > 500:
+                    step = 50
+                tmp["group"] = (tmp[col] // step * step).astype(int)
+                group_field = "group"
+            else:
+                group_field = col
+
+            grouped = (
+                tmp.groupby(group_field)["SUS_Score"]
+                .mean()
+                .round(1)
+                .sort_values(ascending=False)
+            )
+
+            if grouped.empty:
+                continue
+
+            # On ne garde que les 6 groupes principaux pour le prompt
+            categories[str(col)] = grouped.head(6).to_dict()
+
+        # --- 6. Construction du prompt structuré ---
+        prompt = f"""
+            Tu es un expert UX. Analyse les résultats d'un questionnaire System Usability Scale (SUS)
+            et rédige un texte structuré en sections numérotées. D'une longueur de 600 caractères max.
+
+            1. Synthèse générale (2 à 3 phrases)
+            - Score moyen : {sus_mean:.1f} (n = {n})
+            - Médiane : {sus_median:.1f}, min : {sus_min:.1f}, max : {sus_max:.1f}
+            - Écart-type : {sus_std:.1f}, Q1 : {q1:.1f}, Q3 : {q3:.1f}
+            - Pourcentage de répondants avec un score ≥ 72 : {pct72:.1f}%
+
+            2. Répartition des scores
+            - Histogramme approché (intervalle -> nombre de réponses) : {hist_desc}
+            - Répartition par classes SUS : {class_counts}
+            Explique ce que cela dit de la diversité des expériences et de la présence éventuelle d'utilisateurs très satisfaits ou très insatisfaits.
+
+            3. Analyse par segments (catégories)
+            - Pour chaque catégorie, on dispose de la moyenne SUS par groupe :
+            {categories}
+            Repère les segments les plus satisfaits et ceux qui sont en difficulté,
+            et formule 2 à 3 insights clés sur les différences entre groupes.
+
+            4. Forces
+            - Liste 3 forces majeures en lien avec les résultats (niveau global, items ou segments).
+
+            5. Faiblesses / points de vigilance
+            - Liste 3 axes d'amélioration prioritaires.
+
+            6. Recommandations UX
+            - Propose 3 à 5 recommandations concrètes, pragmatiques et priorisées
+            pour améliorer le SUS, en t'appuyant sur les forces et faiblesses précédentes.
+
+            Contraintes de style :
+            - Écris en français.
+            - Ton professionnel, clair et accessible.
+            - Pas de jargon inutile.
+            - Phrases relativement courtes.
+            - Ne répète pas les valeurs brutes, interprète-les.
+            """
+
+        # --- 7. Appel OpenAI ---
+        try:
+            analysis = generate_ai_analysis(prompt)
+        except Exception as e:
+            return f"⚠️ Erreur génération IA : {e}"
+
+        return analysis
+

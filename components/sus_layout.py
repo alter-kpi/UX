@@ -62,7 +62,6 @@ layout = dbc.Container([
 
 
     # === 2️⃣ Gauges ===
-    # === 2️⃣ Gauges (centrées verticalement) ===
     dbc.Row(
         [
             dbc.Col(
@@ -106,7 +105,7 @@ layout = dbc.Container([
                 dcc.Graph(
                     id="sus-class-hist",
                     config={"displayModeBar": False, "displaylogo": False},
-                    style={"height": "360px"}
+                    style={"height": "400px"}
                 ),
                 md=6
             ),
@@ -138,7 +137,6 @@ layout = dbc.Container([
     html.Hr(),
 
     html.H4("Analyse par catégorie", className="mt-4 mb-3 text-center"),
-    html.Br(),
 
     # === 5️⃣ Histogrammes par catégorie ===
     dbc.Row([
@@ -146,12 +144,53 @@ layout = dbc.Container([
         dbc.Col(dcc.Graph(id="cat-graph-2", config={"displayModeBar": False}), md=6, xs=12),
         dbc.Col(dcc.Graph(id="cat-graph-3", config={"displayModeBar": False}), md=6, xs=12),
         dbc.Col(dcc.Graph(id="cat-graph-4", config={"displayModeBar": False}), md=6, xs=12),
-    ], className="g-4 mb-4")
-    ,
+    ], className="g-4 mb-4"),
 
     html.Hr(),
 
+    # ==== Analyse IA =====
+
+    html.H4("🧠 Analyse IA", className="mt-4 mb-3 text-center"),
+
+    html.Div(
+        dbc.Button(
+            "Générer l'analyse",
+            id="btn-ai",
+            n_clicks=0,
+            color="primary",
+            className="mb-3"
+        ),
+        className="text-center"
+    ),
+
+    dcc.Loading(
+        id="ai-loading",
+        type="circle",
+        color="#2980b9",
+        children=dbc.Card(
+            dbc.CardBody(
+                html.Div(
+                    id="ai-analysis",
+                    style={
+                        "whiteSpace": "pre-line",
+                        "backgroundColor": "white",
+                        "padding": "20px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #eee",
+                        "maxHeight": "500px",
+                        "overflowY": "auto",
+                        "fontSize": "15px",
+                        "lineHeight": "1.5",
+                        "minHeight": "120px"
+                    }
+                )
+            ),
+            className="shadow-sm"
+        )
+    ),
+
     # === 6️⃣ Bouton Télécharger ===
+    html.Hr(),
     html.Div(className="text-center mt-4", children=[
         dbc.Button("Télécharger le rapport PDF", id="btn-export", color="primary"),
         dcc.Loading(
