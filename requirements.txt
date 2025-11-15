@@ -9,3 +9,4 @@ gunicorn
 kaleido
 Pillow
 openai
+os
