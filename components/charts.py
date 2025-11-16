@@ -443,3 +443,107 @@ def create_sus_class_histogram(df, score_col="SUS_Score"):
     fig.update_yaxes(range=[0, max_y * 1.25])
 
     return fig
+
+# ======================================================
+# 5️⃣ TER — Graphique combiné SUS + effectifs
+# ======================================================
+from plotly.subplots import make_subplots
+
+def create_category_combined(df, col, idx):
+
+    if df[col].dropna().empty:
+        return empty_fig()
+
+    df_cat = df[[col, "SUS_Score"]].dropna()
+
+    # Regroupement si numérique
+    if pd.api.types.is_numeric_dtype(df_cat[col]):
+        vmin, vmax = df_cat[col].min(), df_cat[col].max()
+        amplitude = vmax - vmin
+        step = 5
+        if amplitude > 50: step = 10
+        if amplitude > 200: step = 20
+        if amplitude > 500: step = 50
+        df_cat["group"] = (df_cat[col] // step * step).astype(int)
+        group_field = "group"
+    else:
+        group_field = col
+
+    # Statistiques : SUS + effectifs
+    grouped = (
+        df_cat.groupby(group_field, dropna=True)
+              .agg(SUS_mean=("SUS_Score", "mean"),
+                   count=(col, "size"))
+              .reset_index()
+              .sort_values(group_field)
+    )
+
+    if grouped.empty:
+        return empty_fig()
+
+    # Couleur SUS
+    color = CATEGORY_COLOR_LIST[idx % len(CATEGORY_COLOR_LIST)]
+    safe_title = str(col)
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # === 1) Barres SUS (principales) ===
+    fig.add_trace(
+        go.Bar(
+            x=grouped[group_field],
+            y=grouped["SUS_mean"],
+            name="SUS moyen",
+            marker_color=color,
+            marker_line_color="white",
+            marker_line_width=1.2,
+            text=[f"{v:.1f}" for v in grouped["SUS_mean"]],
+            textposition="outside",
+            opacity=0.9
+        ),
+        secondary_y=False
+    )
+
+    # === 2) Barre fine grise (effectif) ===
+    fig.add_trace(
+        go.Bar(
+            x=grouped[group_field],
+            y=grouped["count"],
+            name="Effectif",
+            marker_color="#7f8c8d",
+            opacity=0.5,
+            width=0.25,
+            text=grouped["count"],
+            textposition="inside",
+            textfont=dict(color="white", size=12)
+        ),
+        secondary_y=True
+    )
+
+    # Axes Y
+    max_sus = grouped["SUS_mean"].max()
+    max_count = grouped["count"].max()
+
+    # Axe SUS → le plus haut, permet textposition="outside"
+    fig.update_yaxes(range=[0, max_sus * 1.25], visible=False, secondary_y=False)
+
+    # Axe effectif → toujours plus petit que l'axe SUS
+    fig.update_yaxes(range=[0, max_count * 1.7], visible=False, secondary_y=True)
+
+
+    fig.update_layout(
+        title=dict(
+            text=safe_title,
+            x=0.5,
+            font=dict(size=18, color="#333")
+        ),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        barmode="overlay",
+        bargap=0.30,
+        margin=dict(l=20, r=20, t=60, b=60),
+        height=330,
+        font=dict(size=14),
+        showlegend=False
+    )
+
+    return fig

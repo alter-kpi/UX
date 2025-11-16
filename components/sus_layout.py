@@ -136,15 +136,19 @@ layout = dbc.Container([
 
     html.Hr(),
 
+    # === 5️⃣ Analyse par catégorie ===
+
     html.H4("Analyse par catégorie", className="mt-4 mb-3 text-center"),
 
-    # === 5️⃣ Histogrammes par catégorie ===
+    html.H6("Scores SUS moyens par groupe (effectifs en gris)", className="text-center text-muted mb-3"),
+
     dbc.Row([
         dbc.Col(dcc.Graph(id="cat-graph-1", config={"displayModeBar": False}), md=6, xs=12),
         dbc.Col(dcc.Graph(id="cat-graph-2", config={"displayModeBar": False}), md=6, xs=12),
         dbc.Col(dcc.Graph(id="cat-graph-3", config={"displayModeBar": False}), md=6, xs=12),
         dbc.Col(dcc.Graph(id="cat-graph-4", config={"displayModeBar": False}), md=6, xs=12),
     ], className="g-4 mb-4"),
+
 
     html.Hr(),
 

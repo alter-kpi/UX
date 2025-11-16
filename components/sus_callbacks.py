@@ -1,5 +1,5 @@
 from components.export_pdf import generate_sus_pdf
-from components.charts import compute_sus_stats, create_gauge_native, create_acceptability_gauge, create_sus_class_histogram, create_category_hist, empty_fig, create_main_histogram, create_radar
+from components.charts import compute_sus_stats, create_gauge_native, create_acceptability_gauge, create_sus_class_histogram, create_category_hist, empty_fig, create_main_histogram, create_radar, create_category_combined
 from components.ai_text import generate_ai_analysis
 import tempfile
 import dash
@@ -156,7 +156,8 @@ def register_callbacks(app):
             class_hist
         )
 
-        # === Score SUS par catégorie ===
+    
+    # === Graphique combiné SUS + effectifs par catégorie ===
     @app.callback(
         Output("cat-graph-1", "figure"),
         Output("cat-graph-2", "figure"),
@@ -164,24 +165,22 @@ def register_callbacks(app):
         Output("cat-graph-4", "figure"),
         Input("data-store", "data")
     )
-    def update_category_graphs(data):
+    def update_category_combined(data):
         if not data:
             return [empty_fig()] * 4
 
         df = pd.DataFrame(data)
 
-        # Colonnes J K L M = index 11 → 14
-        extra_cols = df.columns[11:15]
+        extra_cols = df.columns[11:15]  # J,K,L,M
 
-        figures = []
+        figs = []
         for i, col in enumerate(extra_cols):
-            figures.append(create_category_hist(df, col, i))
+            figs.append(create_category_combined(df, col, i))
 
-        # Compléter à 4
-        while len(figures) < 4:
-            figures.append(empty_fig())
+        while len(figs) < 4:
+            figs.append(empty_fig())
 
-        return figures
+        return figs
 
     
     # PDF
