@@ -9,12 +9,15 @@ from components.sus_callbacks import register_callbacks as register_sus_callback
 app = Dash(
     __name__,
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.FLATLY]
+    external_stylesheets=[
+        dbc.themes.SANDSTONE,
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    ]
 )
 
 server = app.server   # <-- OBLIGATOIRE pour Render
-
 app.title = "Alter UX"
+
 
 # === Layout global avec sidebar Bootstrap ===
 app.layout = dbc.Container([
@@ -23,11 +26,12 @@ app.layout = dbc.Container([
         # === Sidebar ===
         dbc.Col(
             html.Div([
+
                 # --- Logo cliquable ---
                 html.A([
                     html.Img(
                         src="/assets/logo_alterkpi.png",
-                        style={"width": "80px", "margin": "10px auto", "display": "block"}
+                        style={"width": "80px", "margin": "20px auto", "display": "block"}
                     )
                 ], href="https://www.alter-kpi.com", target="_blank"),
 
@@ -35,34 +39,30 @@ app.layout = dbc.Container([
 
                 # --- Menu ---
                 dbc.Nav([
-                    dbc.NavLink("🏠 Accueil", href="/", active="exact", className="text-white"),
-                    dbc.NavLink("⚪ Questionnaire SUS", href="/sus", active="exact", className="text-white"),
+                    dbc.NavLink([
+                        html.I(className="bi bi-house-door-fill", style={"color": "white", "marginRight": "8px"}),
+                        "Accueil"
+                    ], href="/", active="exact"),
+
+                    dbc.NavLink([
+                        html.I(className="bi bi-ui-checks-grid", style={"color": "white", "marginRight": "8px"}),
+                        "Questionnaire SUS"
+                    ], href="/sus", active="exact"),
                 ],
-                vertical=True, pills=True,
-                style={
-                    "wordWrap": "break-word",
-                    "whiteSpace": "normal",
-                    "paddingLeft": "0px"  # 🔹 réduit la marge intérieure
-                })
-            ], style={
-                "backgroundColor": "#2c3e50",
-                "height": "100vh",
-                "padding": "5px 5px",  # 🔹 marge interne réduite
-                "position": "fixed",
-                "width": "240px",
-                "overflowY": "auto"  # 🔹 scroll si trop de contenu
-            }),
+                vertical=True, pills=True)
+
+            ], className="sidebar"),
             width=2
         ),
 
-        # Contenu principal
+        # === Contenu principal ===
         dbc.Col(
             [
                 dcc.Location(id="url"),
                 html.Div(id="page-content", className="p-4")
             ],
             width=10,
-            style={"marginLeft": "240px"}  # ✅ correspond à la largeur sidebar
+            style={"marginLeft": "260px"}  # largeur sidebar (240px + padding)
         )
     ], className="g-0")
 ], fluid=True)
@@ -77,8 +77,10 @@ def render_page(pathname):
         return home_layout
     return html.Div([html.H3("Page inconnue"), html.P(pathname)])
 
+
 # === Callbacks SUS ===
 register_sus_callbacks(app)
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
