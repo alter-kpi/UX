@@ -1,11 +1,20 @@
 # app.py — Bootstrap + logo cliquable
 from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
+
 from components.home_layout import layout as home_layout
-from components.sus_layout import layout as sus_layout
+from components.sus_layout import (
+    layout as sus_layout,
+    dashboard_layout,
+    details_layout,
+    ia_layout
+)
 from components.sus_callbacks import register_callbacks as register_sus_callbacks
 
 
+# ====================================================
+# 1) CREATE APP
+# ====================================================
 app = Dash(
     __name__,
     suppress_callback_exceptions=True,
@@ -15,72 +24,100 @@ app = Dash(
     ]
 )
 
-server = app.server   # <-- OBLIGATOIRE pour Render
+server = app.server
 app.title = "Alter UX"
 
 
-# === Layout global avec sidebar Bootstrap ===
-app.layout = dbc.Container([
-    dbc.Row([
+# ====================================================
+# 2) GLOBAL LAYOUT (avec SIDEBAR)
+# ====================================================
+app.layout = html.Div([
 
-        # === Sidebar ===
-        dbc.Col(
-            html.Div([
+    # Toujours présent → routing fonctionne
+    dcc.Location(id="url"),
 
-                # --- Logo cliquable ---
-                html.A([
-                    html.Img(
-                        src="/assets/logo_alterkpi.png",
-                        style={"width": "80px", "margin": "20px auto", "display": "block"}
-                    )
-                ], href="https://www.alter-kpi.com", target="_blank"),
+    # === Hidden layouts (IDs nécessaires aux callbacks) ===
+    # IMPORTANT : en dehors du contenu dynamique !
+    html.Div([
+        dashboard_layout,
+        details_layout,
+        ia_layout
+    ], style={"display": "none"}),
 
-                html.Hr(className="text-white"),
+    # === Layout général avec sidebar ===
+    dbc.Container([
+        dbc.Row([
 
-                # --- Menu ---
-                dbc.Nav([
-                    dbc.NavLink([
-                        html.I(className="bi bi-house-door-fill", style={"color": "white", "marginRight": "8px"}),
-                        "Accueil"
-                    ], href="/", active="exact"),
+            # ---- Sidebar fixe ----
+            dbc.Col(
+                html.Div([
 
-                    dbc.NavLink([
-                        html.I(className="bi bi-ui-checks-grid", style={"color": "white", "marginRight": "8px"}),
-                        "Questionnaire SUS"
-                    ], href="/sus", active="exact"),
-                ],
-                vertical=True, pills=True)
+                    html.A([
+                        html.Img(
+                            src="/assets/logo_alterkpi.png",
+                            style={"width": "80px", "margin": "20px auto", "display": "block"}
+                        )
+                    ], href="https://www.alter-kpi.com", target="_blank"),
 
-            ], className="sidebar"),
-            width=2
-        ),
+                    html.Hr(className="text-white"),
 
-        # === Contenu principal ===
-        dbc.Col(
-            [
-                dcc.Location(id="url"),
-                html.Div(id="page-content", className="p-4")
-            ],
-            width=10,
-            style={"marginLeft": "260px"}  # largeur sidebar (240px + padding)
-        )
-    ], className="g-0")
-], fluid=True)
+                    dbc.Nav([
+                        dbc.NavLink([
+                            html.I(className="bi bi-house-door-fill",
+                                   style={"color": "white", "marginRight": "8px"}),
+                            "Accueil"
+                        ], href="/", active="exact"),
+
+                        dbc.NavLink([
+                            html.I(className="bi bi-ui-checks-grid",
+                                   style={"color": "white", "marginRight": "8px"}),
+                            "Questionnaire SUS"
+                        ], href="/sus", active="exact"),
+                    ],
+                    vertical=True, pills=True)
+
+                ], className="sidebar"),
+                width=2
+            ),
+
+            # ---- Zone dynamique remplacée par routing ----
+            dbc.Col(
+                html.Div(id="page-content", className="p-4"),
+                width=10,
+                style={"marginLeft": "260px"}
+            )
+
+        ], className="g-0")
+    ], fluid=True)
+
+])
 
 
-# === Routing ===
-@app.callback(Output("page-content", "children"), Input("url", "pathname"))
+
+# ====================================================
+# 3) ROUTING
+# ====================================================
+@app.callback(Output("page-content", "children"),
+              Input("url", "pathname"))
 def render_page(pathname):
+
     if pathname == "/sus":
+        # Register SUS callbacks ONLY NOW
+        register_sus_callbacks(app)
         return sus_layout
+
     elif pathname == "/":
         return home_layout
+
     return html.Div([html.H3("Page inconnue"), html.P(pathname)])
 
 
-# === Callbacks SUS ===
-register_sus_callbacks(app)
 
 
+
+
+# ====================================================
+# 5) RUN
+# ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
