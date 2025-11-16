@@ -48,7 +48,7 @@ dashboard_layout = html.Div([
             md=6
         ),
         dbc.Col(
-            dcc.Graph(id="sus-class-hist", config={"displayModeBar": False}, style={"height": "400px"}),
+            dcc.Graph(id="sus-class-hist", config={"displayModeBar": False}, style={"height": "420px"}),
             md=6
         ),
     ], className="g-4 mb-5"),
@@ -230,3 +230,4 @@ layout = dbc.Container([
         style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
     ),
 ], fluid=True)
+
