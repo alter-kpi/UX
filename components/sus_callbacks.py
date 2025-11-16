@@ -223,6 +223,58 @@ def register_callbacks(app):
     # ==========================================================
     # 5️⃣ Analyse IA
     # ==========================================================
+    def build_ai_prompt(df):
+
+        scores = df["SUS_Score"].tolist()
+        classes = df["SUS_Class"].value_counts().to_dict() if "SUS_Class" in df else {}
+
+        stats = {
+            "Score moyen": round(df["SUS_Score"].mean(), 2),
+            "Ecart-type": round(df["SUS_Score"].std(), 2),
+            "Min": df["SUS_Score"].min(),
+            "Max": df["SUS_Score"].max(),
+            "Taille échantillon": len(df)
+        }
+
+        categories = {}
+        extra_cols = df.columns[11:15]
+
+
+        if len(extra_cols) > 0:
+            for col in extra_cols:
+                categories[col] = df[col].value_counts().to_dict()
+        else:
+            categories = {}
+
+        prompt = ""
+        prompt += "Tu es un expert UX senior.\n"
+        prompt += "Analyse ce questionnaire SUS de manière claire, pédagogique et utile.\n\n"
+        prompt += "Tu rééponds en 2000 caractères maximum.\n\n"
+
+        prompt += "=== SCORE GLOBAL SUS ===\n"
+        prompt += f"Scores individuels : {scores}\n"
+        prompt += f"Score moyen : {stats['Score moyen']}\n"
+        prompt += f"Ecart-type : {stats['Ecart-type']}\n"
+        prompt += f"Min : {stats['Min']} - Max : {stats['Max']}\n"
+        prompt += f"Taille de l'échantillon : {stats['Taille échantillon']}\n\n"
+
+        prompt += "=== CLASSES SUS ===\n"
+        prompt += f"{classes}\n\n"
+
+        prompt += "=== CATEGORIES ===\n"
+        prompt += "Les colonnes supplémentaires sont traitées comme des catégories (âge, pays...).\n"
+        prompt += f"{categories}\n\n"
+
+        prompt += "=== OBJECTIFS ===\n"
+        prompt += "1. Évaluer la satisfaction globale.\n"
+        prompt += "2. Identifier les variations importantes.\n"
+        prompt += "3. Trouver les sous-populations en difficulté.\n"
+        prompt += "4. Décrire les forces du produit.\n"
+        prompt += "5. Exposer les points faibles.\n"
+        prompt += "6. Proposer des recommandations actionnables.\n"
+
+        return prompt
+
 
     @app.callback(
         Output("ai-analysis", "children"),
@@ -242,12 +294,15 @@ def register_callbacks(app):
         df = pd.DataFrame(data)
 
         try:
-            analysis = generate_ai_analysis(df.to_string())
-            
+            prompt = build_ai_prompt(df)
+            analysis = generate_ai_analysis(prompt)
+
         except Exception as e:
             return f"⚠️ Erreur génération IA : {e}", f"⚠️ Erreur IA : {e}"
 
         return analysis, analysis
+
+
 
 
 
@@ -377,3 +432,4 @@ def register_callbacks(app):
             figs.get("radar", empty_fig()),
             figs.get("class", empty_fig())
         )
+
