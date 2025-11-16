@@ -1,4 +1,28 @@
-/* === Footer fixé en bas === */
+/* ============================================
+   STYLES GÉNÉRAUX
+   ============================================ */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #f9f9f9;
+    font-family: "Segoe UI", sans-serif;
+    padding-bottom: 60px; /* pour éviter que le footer masque le contenu */
+}
+
+h1 {
+    color: #333;
+}
+
+
+
+
+/* ============================================
+   FOOTER FIXE EN BAS
+   ============================================ */
 .fixed-footer {
     position: fixed;
     bottom: 0;
@@ -11,7 +35,47 @@
     text-align: center;
 }
 
-/* Pour éviter que le contenu ne soit caché par le footer */
-body {
-    padding-bottom: 60px; /* Ajuste si tu changes la hauteur du footer */
+
+/* ============================================
+   SIDEBAR — STYLE PRO SANDSTONE
+   ============================================ */
+.sidebar {
+    background-color: #3e4a56;
+    min-height: 100vh;
+    padding-top: 20px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    overflow-y: auto;
 }
+
+
+/* liens */
+.sidebar .nav-link {
+    color: white !important;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 6px;
+}
+
+/* icone des liens */
+.sidebar .nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+/* hover */
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+    color: white !important;
+}
+
+/* lien actif */
+.sidebar .nav-link.active {
+    background-color: #c83737 !important; /* accent Sandstone */
+    color: white !important;
+}
+
