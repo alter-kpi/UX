@@ -176,13 +176,13 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     y_stats = pdf.get_y()
 
     pdf.set_xy(x_stats, y_stats)
-    pdf.set_font("Roboto", "", 11)
+    pdf.set_font("Roboto", "", 10)
     pdf.set_text_color(40, 40, 40)
 
     for _, row in stats_df.iterrows():
-        pdf.set_font("Roboto", "B", 11)
+        pdf.set_font("Roboto", "B", 10)
         pdf.cell(70, 6, f"{row['Indicateur']} :", ln=0)
-        pdf.set_font("Roboto", "", 11)
+        pdf.set_font("Roboto", "", 10)
         pdf.cell(40, 6, str(row["Valeur"]), ln=1)
 
     end_table_y = pdf.get_y()
@@ -216,8 +216,9 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(6)
 
-    # Graphes standard ( radar remis taille normale )
-    main_order = ["SUS moyen", "Acceptabilite", "Repartition", "Radar"]
+    # Graphes standard (clés réelles venant de fig-store)
+    main_order = ["gauge", "accept", "hist", "radar"]
+
 
     for key in main_order:
         if key in img_paths:
@@ -229,9 +230,11 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     # =========================================================================
     pdf.add_page()
 
-    if "Classes SUS" in img_paths:
-        pdf.image(img_paths["Classes SUS"], w=175, h=80)
+    # Histogramme des classes SUS (clé "class" dans fig-store)
+    if "class" in img_paths:
+        pdf.image(img_paths["class"], w=175, h=80)
         pdf.ln(4)
+
 
     pdf.set_draw_color(200, 200, 200)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
