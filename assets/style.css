@@ -18,6 +18,16 @@ h1 {
 }
 
 
+/* Ombre légère pour les KPI du dashboard */
+.js-plotly-plot {
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    border-radius: 6px;
+}
+
+.bg-white {
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    border-radius: 6px;
+}
 
 
 /* ============================================
@@ -50,7 +60,6 @@ h1 {
     overflow-y: auto;
 }
 
-
 /* liens */
 .sidebar .nav-link {
     color: white !important;
@@ -78,4 +87,5 @@ h1 {
     background-color: #c83737 !important; /* accent Sandstone */
     color: white !important;
 }
+
 
