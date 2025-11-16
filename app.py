@@ -1,4 +1,3 @@
-# app.py — Bootstrap + logo cliquable
 from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 
@@ -33,22 +32,17 @@ app.title = "Alter UX"
 # ====================================================
 app.layout = html.Div([
 
-    # Toujours présent → routing fonctionne
     dcc.Location(id="url"),
 
-    # === Hidden layouts (IDs nécessaires aux callbacks) ===
-    # IMPORTANT : en dehors du contenu dynamique !
+    # Hidden layouts pour IDs (aucune logique)
     html.Div([
         dashboard_layout,
         details_layout,
         ia_layout
     ], style={"display": "none"}),
 
-    # === Layout général avec sidebar ===
     dbc.Container([
         dbc.Row([
-
-            # ---- Sidebar fixe ----
             dbc.Col(
                 html.Div([
 
@@ -80,7 +74,6 @@ app.layout = html.Div([
                 width=2
             ),
 
-            # ---- Zone dynamique remplacée par routing ----
             dbc.Col(
                 html.Div(id="page-content", className="p-4"),
                 width=10,
@@ -102,17 +95,20 @@ app.layout = html.Div([
 def render_page(pathname):
 
     if pathname == "/sus":
-        # Register SUS callbacks ONLY NOW
-        register_sus_callbacks(app)
         return sus_layout
 
-    elif pathname == "/":
+    if pathname == "/":
         return home_layout
 
     return html.Div([html.H3("Page inconnue"), html.P(pathname)])
 
 
 
+
+# ====================================================
+# 4) Enregistrement global des callbacks
+# ====================================================
+register_sus_callbacks(app)
 
 
 
