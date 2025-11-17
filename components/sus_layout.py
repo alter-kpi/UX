@@ -109,27 +109,26 @@ ia_layout = html.Div([
     dcc.Loading(
         id="ai-loading",
         type="circle",
-        children=dbc.Card(
-            dbc.CardBody(
-                html.Div(
-                    id="ai-analysis-visible",     # ⭐ VERSION AFFICHÉE
-                    style={
-                        "whiteSpace": "pre-line",
-                        "backgroundColor": "white",
-                        "padding": "20px",
-                        "borderRadius": "8px",
-                        "border": "1px solid #eee",
-                        "maxHeight": "75vh",
-                        "overflowY": "auto",
-                        "fontSize": "15px",
-                        "lineHeight": "1.5",
-                        "minHeight": "75vh"
-                    }
-                )
-            ),
-            className="shadow-sm"
-        )
+        children=html.Div(id="ai-processing")
+    ),
+
+    # 👉 Zone où le texte IA doit s’afficher
+    html.Div(
+        id="ai-analysis-visible",
+        style={
+            "whiteSpace": "pre-line",
+            "backgroundColor": "white",
+            "padding": "20px",
+            "borderRadius": "8px",
+            "border": "1px solid #eee",
+            "maxHeight": "75vh",
+            "overflowY": "auto",
+            "fontSize": "15px",
+            "lineHeight": "1.5",
+            "minHeight": "75vh"
+        }
     )
+
 ])
 
 
@@ -198,10 +197,9 @@ layout = dbc.Container([
     dcc.Download(id="download-pdf"),
     dcc.Store(id="data-store", storage_type="session"),
     dcc.Store(id="fig-store", storage_type="session"),
-
-
-    # ⭐ DIV CACHÉ POUR LE PDF (toujours présent)
+    dcc.Store(id="ai-processing"),  # ⭐ nouveau
     dcc.Store(id="ai-analysis", storage_type="session"),
+
 
     # Onglets
     dbc.Tabs(

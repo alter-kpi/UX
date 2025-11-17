@@ -278,7 +278,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("ai-analysis", "data"),
-        Output("ai-analysis-visible", "children"),
+        Output("ai-processing", "children"),
         Input("btn-ai", "n_clicks"),
         State("data-store", "data"),
         prevent_initial_call=True
@@ -289,7 +289,10 @@ def register_callbacks(app):
             raise dash.exceptions.PreventUpdate
 
         if not data:
-            return "", "Aucune donnée disponible."
+            return "", ""
+
+        # ⭐ Active le spinner
+        processing = "loading"
 
         df = pd.DataFrame(data)
 
@@ -298,10 +301,18 @@ def register_callbacks(app):
             analysis = generate_ai_analysis(prompt)
 
         except Exception as e:
-            return f"⚠️ Erreur génération IA : {e}", f"⚠️ Erreur IA : {e}"
+            return f"⚠️ Erreur génération IA : {e}", ""
 
-        return analysis, analysis
+        # ⭐ Désactive le spinner
+        return analysis, ""
 
+
+    @app.callback(
+        Output("ai-analysis-visible", "children"),
+        Input("ai-analysis", "data")
+    )
+    def sync_ai_visible(ai_text):
+        return ai_text or ""
 
 
     # ==========================================================
@@ -333,7 +344,8 @@ def register_callbacks(app):
         State("data-store", "data"),
         State("fig-store", "data"),
         State("sus-stats-table", "data"),
-        State("ai-analysis", "children"),
+        State("ai-analysis", "data"),
+
         prevent_initial_call=True
     )
     def export_pdf(
