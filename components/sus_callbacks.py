@@ -84,20 +84,30 @@ def register_callbacks(app):
     @app.callback(
         Output('file-info', 'children'),
         Output('data-store', 'data'),
+        Output('upload-status', 'children'),   # ⭐ nouveau
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
         prevent_initial_call=True
     )
     def load_file(contents, filename):
+
+        # Pas de fichier
         if contents is None:
-            return "Aucun fichier importé.", None
+            return "Aucun fichier importé.", None, ""
+
+        # ⭐ Allumer le spinner immédiatement
+        upload_msg = "loading"
 
         try:
             df = parse_upload(contents, filename or "fichier")
             qcols = find_sus_columns(df)
 
             if len(qcols) != 10:
-                return "❌ Colonnes SUS non détectées (Q1..Q10 / SUS1..SUS10 / 10 numériques).", None
+                return (
+                    "❌ Colonnes SUS non détectées (Q1..Q10 / SUS1..SUS10 / 10 numériques).",
+                    None,
+                    ""     # ⭐ éteindre le spinner
+                )
 
             df = compute_sus(df, qcols)
 
@@ -106,10 +116,11 @@ def register_callbacks(app):
                 f"Score moyen: {np.nanmean(df['SUS_Score']):.1f}"
             )
 
-            return info, df.to_dict('records')
+            return info, df.to_dict('records'), ""   # ⭐ spinner OFF
 
         except Exception as e:
-            return f"❌ Erreur de lecture : {e}", None
+            return f"❌ Erreur de lecture : {e}", None, ""   # ⭐ spinner OFF
+
 
 
 

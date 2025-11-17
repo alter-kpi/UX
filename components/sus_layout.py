@@ -191,6 +191,11 @@ layout = dbc.Container([
 
     # Feedback
     html.Div(id="file-info", style={"display": "none"}),
+        dcc.Loading(
+        id="upload-spinner",
+        type="circle",
+        children=html.Div(id="upload-status", style={"display": "none"})
+    ),
     dcc.Loading(
         id="export-spinner",
         type="circle",
