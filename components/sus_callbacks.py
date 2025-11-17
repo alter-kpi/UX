@@ -304,10 +304,10 @@ def register_callbacks(app):
     #### Analyse de la distribution
     (Analyse du min, max, médiane, quartiles, % extrêmes, compréhension de la dispersion, interprétation du IQR)
 
-    #### Analyse par questions
+    #### Analyse par question
     (Comparer les moyennes par item, identifier forces/faiblesses, expliquer l’impact de la question la plus faible/forte)
 
-    #### Analyse par catégories
+    #### Analyse par catégorie
     (Comparer les groupes si présents, expliquer écarts, identifier sous-populations critiques, analyser les gaps)
 
     #### Recommandations
@@ -551,6 +551,7 @@ def register_callbacks(app):
     )
     def reset_all(n):
         return "", "", "", "tab-dashboard", None, None, "", None, ""
+
 
 
 
