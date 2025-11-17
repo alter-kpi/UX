@@ -105,19 +105,7 @@ ia_layout = html.Div([
 
     # 👉 Zone où le texte IA doit s’afficher
     dcc.Markdown(
-        id="ai-analysis-visible",
-        style={
-            "whiteSpace": "pre-wrap",
-            "backgroundColor": "white",
-            "padding": "20px",
-            "borderRadius": "8px",
-            "border": "1px solid #eee",
-            "maxHeight": "82vh",
-            "overflowY": "auto",
-            "fontSize": "15px",
-            "lineHeight": "1.5",
-            "minHeight": "75vh"
-        }
+        id="ai-analysis-visible"
     )
 
 ])
