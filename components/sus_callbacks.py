@@ -116,7 +116,7 @@ def register_callbacks(app):
                 f"Score moyen: {np.nanmean(df['SUS_Score']):.1f}"
             )
 
-            return info, df.to_dict('records'), ""   # ⭐ spinner OFF
+            return info, df.to_dict('records'), "loading"   # ⭐ spinner ON tjs (on attend la fin de l'IA)
 
         except Exception as e:
             return f"❌ Erreur de lecture : {e}", None, ""   # ⭐ spinner OFF
