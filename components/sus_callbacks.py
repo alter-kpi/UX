@@ -309,25 +309,19 @@ def register_callbacks(app):
 
 
     @app.callback(
-        Output("ai-analysis-visible-store", "data"),
+        Output("ai-analysis-visible", "children", allow_duplicate=True),
+        Input("ai-analysis", "data"),
         Input("sus-tabs", "active_tab"),
-        State("ai-analysis", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=True   # ✅ important avec allow_duplicate
     )
-    def sync_ai_visible_store(active_tab, ai_text):
+    def sync_ai_visible(ai_text, active_tab):
 
-        if active_tab == "tab-ia":
-            return ai_text or ""
+        # On n'affiche que si on est sur l'onglet IA
+        if active_tab != "tab-ia":
+            return dash.no_update
 
-        return dash.no_update
-
-
-    @app.callback(
-        Output("ai-analysis-visible", "children"),
-        Input("ai-analysis-visible-store", "data")
-    )
-    def display_ai_from_store(txt):
-        return txt or ""
+        # Dès que ai-analysis est rempli → on affiche le texte
+        return ai_text or ""
 
 
 
