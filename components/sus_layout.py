@@ -1,3 +1,4 @@
+
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 
@@ -195,12 +196,12 @@ layout = dbc.Container([
     ),
 
     dcc.Download(id="download-pdf"),
-    dcc.Store(id="data-store"),
-    dcc.Store(id="fig-store"),
+    dcc.Store(id="data-store", storage_type="session"),
+    dcc.Store(id="fig-store", storage_type="session"),
 
 
     # ⭐ DIV CACHÉ POUR LE PDF (toujours présent)
-    html.Div(id="ai-analysis", style={"display": "none"}),
+    dcc.Store(id="ai-analysis", storage_type="session"),
 
     # Onglets
     dbc.Tabs(
@@ -215,19 +216,20 @@ layout = dbc.Container([
 
     dbc.Card(
         dbc.CardBody(
-            html.Div(
-                id="tab-content",
-                style={
-                    "minHeight": "85vh",
-                    "maxHeight": "85vh",
-                    "overflowY": "auto",
-                    "padding": "5px",
-                    "overflowX": "hidden"
-                }
-            )
+            html.Div([
+                html.Div(dashboard_layout, id="tab-dashboard"),
+                html.Div(details_layout, id="tab-details", style={"display": "none"}),
+                html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
+            ], style={
+                "minHeight": "85vh",
+                "maxHeight": "85vh",
+                "overflowY": "auto",
+                "padding": "5px",
+                "overflowX": "hidden"
+            })
+
         ),
         className="shadow-sm",
         style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
     ),
 ], fluid=True)
-

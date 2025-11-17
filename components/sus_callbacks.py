@@ -277,7 +277,7 @@ def register_callbacks(app):
 
 
     @app.callback(
-        Output("ai-analysis", "children"),
+        Output("ai-analysis", "data"),
         Output("ai-analysis-visible", "children"),
         Input("btn-ai", "n_clicks"),
         State("data-store", "data"),
@@ -301,8 +301,6 @@ def register_callbacks(app):
             return f"⚠️ Erreur génération IA : {e}", f"⚠️ Erreur IA : {e}"
 
         return analysis, analysis
-
-
 
 
 
@@ -365,27 +363,27 @@ def register_callbacks(app):
     # ==========================================================
     # 8️⃣ Onglets
     # ==========================================================
-
     @app.callback(
-        Output("tab-content", "children"),
+        Output("tab-dashboard", "style"),
+        Output("tab-details", "style"),
+        Output("tab-ia", "style"),
         Input("sus-tabs", "active_tab"),
         Input("data-store", "data")
     )
-    def switch_tab(active_tab, data):
+    def show_tabs(active, data):
 
-        if not data:
-            return ""   # layout vide avant upload
+        is_loaded = data is not None and len(data) > 0
 
-        if active_tab == "tab-dashboard":
-            return dashboard_layout
+        return (
+            # Dashboard
+            {"display": "block"} if active == "tab-dashboard" and is_loaded else {"display": "none"},
 
-        if active_tab == "tab-details":
-            return details_layout
+            # Détails (toujours visible si onglet actif)
+            {"display": "block"} if active == "tab-details" else {"display": "none"},
 
-        if active_tab == "tab-ia":
-            return ia_layout
-
-        return html.Div()
+            # IA (toujours visible si onglet actif)
+            {"display": "block"} if active == "tab-ia" else {"display": "none"},
+        )
 
 
 
@@ -395,18 +393,13 @@ def register_callbacks(app):
 
     @app.callback(
         Output("btn-export", "disabled"),
-        Input("data-store", "data"),
-        Input("sus-tabs", "active_tab")
+        Input("data-store", "data")
     )
-    def toggle_pdf_button(data, active_tab):
+    def toggle_pdf_button(data):
 
-        if not data:
-            return True
+        return False if data else True
 
-        if active_tab != "tab-dashboard":
-            return True
 
-        return False
 
     # ==========================================================
     # 3B️⃣ Injection des figures stockées vers les graphes visibles
