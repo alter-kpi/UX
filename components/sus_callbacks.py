@@ -283,17 +283,16 @@ def register_callbacks(app):
     @app.callback(
         Output("ai-analysis", "data"),
         Output("ai-processing", "children"),
-        Input("data-store", "data"),   # 👈 déclenchement au chargement des données
+        Input("file-info", "children"),     # 👈 déclenche TOUJOURS après un import
+        State("data-store", "data"),        # 👈 récupère DF
         prevent_initial_call=True
     )
-
-    def run_ai_analysis(data):
+    def run_ai_analysis(_, data):
 
         if not data:
             return "", ""
 
-
-        # ⭐ Active le spinner
+        # Spinner
         processing = "loading"
 
         df = pd.DataFrame(data)
@@ -301,20 +300,35 @@ def register_callbacks(app):
         try:
             prompt = build_ai_prompt(df)
             analysis = generate_ai_analysis(prompt)
-
         except Exception as e:
             return f"⚠️ Erreur génération IA : {e}", ""
 
-        # ⭐ Désactive le spinner
         return analysis, ""
+
+
+
+
+    @app.callback(
+        Output("ai-analysis-visible-store", "data"),
+        Input("sus-tabs", "active_tab"),
+        State("ai-analysis", "data"),
+        prevent_initial_call=False
+    )
+    def sync_ai_visible_store(active_tab, ai_text):
+
+        if active_tab == "tab-ia":
+            return ai_text or ""
+
+        return dash.no_update
 
 
     @app.callback(
         Output("ai-analysis-visible", "children"),
-        Input("ai-analysis", "data")
+        Input("ai-analysis-visible-store", "data")
     )
-    def sync_ai_visible(ai_text):
-        return ai_text or ""
+    def display_ai_from_store(txt):
+        return txt or ""
+
 
 
     # ==========================================================
@@ -439,4 +453,33 @@ def register_callbacks(app):
             figs.get("radar", empty_fig()),
             figs.get("class", empty_fig())
         )
+    
+    # ==========================================================
+    # RESET
+    # ==========================================================
+
+
+    @app.callback(
+        Output("ai-analysis-visible", "children", allow_duplicate=True),
+        Output("ai-processing", "children", allow_duplicate=True),
+        Output("file-info", "children", allow_duplicate=True),
+        Output("sus-tabs", "active_tab", allow_duplicate=True),
+
+        Output("data-store", "data", allow_duplicate=True),
+        Output("fig-store", "data", allow_duplicate=True),
+        Output("ai-analysis", "data", allow_duplicate=True),
+
+        # ⭐ RESET DU BOUTON UPLOAD
+        Output("upload-data", "contents", allow_duplicate=True),
+        Output("ai-analysis-visible-store", "data", allow_duplicate=True),
+
+
+        Input("btn-reset", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def reset_all(n):
+        return "", "", "", "tab-dashboard", None, None, "", None, ""
+
+
+
 

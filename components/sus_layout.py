@@ -95,11 +95,12 @@ details_layout = html.Div([
 
 # ---- Section Analyse IA (visible) ----
 ia_layout = html.Div([
-    
+    dcc.Store(id="ai-analysis-visible-store", storage_type="session"),
     dcc.Loading(
         id="ai-loading",
         type="circle",
-        children=html.Div(id="ai-processing")
+        children=html.Div(id="ai-processing"),
+        style={"display": "flex", "justifyContent": "center", "paddingTop": "80px"}
     ),
 
     # 👉 Zone où le texte IA doit s’afficher
@@ -126,54 +127,78 @@ ia_layout = html.Div([
 layout = dbc.Container([
 
     # HEADER
-    dbc.Row([
-        dbc.Col(
-            html.H4("Analyse du questionnaire SUS", className="mt-3 mb-3"),
-            md=8
-        ),
+    dbc.Row(
+        [
+            # Titre à gauche
+            dbc.Col(
+                html.H4("Analyse du questionnaire SUS", className="mt-3 mb-3"),
+                md=6,
+                className="d-flex align-items-center"
+            ),
 
-        dbc.Col(
-            dbc.Row([
-                dbc.Col(
-                    dcc.Upload(
-                        id="upload-data",
-                        children=html.Div(
-                            "📂 Importer fichier Excel",
-                            className="btn btn-secondary",
-                            style={"cursor": "pointer", "fontWeight": "bold", "whiteSpace": "nowrap"}
+            # Boutons à droite
+            dbc.Col(
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            dcc.Upload(
+                                id="upload-data",
+                                children=dbc.Button(
+                                    "📂 Importer",
+                                    color="secondary",
+                                    style={"whiteSpace": "nowrap", "width": "110px"}
+                                ),
+                                multiple=False,
+                                style={"cursor": "pointer"}
+                            ),
+                            width="auto"
                         ),
-                        multiple=False,
-                        style={"cursor": "pointer"}
-                    ),
-                    width="auto"
+
+                        dbc.Col(
+                            html.A(
+                                dbc.Button(
+                                    "📥 Modèle",
+                                    color="info",
+                                    style={"whiteSpace": "nowrap", "width": "110px"}
+                                ),
+                                href="/assets/template_sus.xlsx",
+                                target="_blank"
+                            ),
+                            width="auto"
+                        ),
+
+                        dbc.Col(
+                            dbc.Button(
+                                "📄 PDF",
+                                id="btn-export",
+                                color="primary",
+                                disabled=True,
+                                style={"whiteSpace": "nowrap", "width": "110px"}
+                            ),
+                            width="auto"
+                        ),
+
+                        dbc.Col(
+                            dbc.Button(
+                                "🗑️ Reset",
+                                id="btn-reset",
+                                color="danger",
+                                style={"whiteSpace": "nowrap", "width": "110px"}
+                            ),
+                            width="auto"
+                        ),
+                    ],
+                    className="g-2 justify-content-end mt-3",
                 ),
 
-                dbc.Col(
-                    html.A(
-                        "📥 Télécharger modèle",
-                        href="/assets/template_sus.xlsx",
-                        target="_blank",
-                        className="btn btn-outline-primary",
-                        style={"whiteSpace": "nowrap"}
-                    ),
-                    width="auto"
-                ),
 
-                dbc.Col(
-                    dbc.Button(
-                        "📄 Générer PDF",
-                        id="btn-export",
-                        color="primary",
-                        disabled=True,
-                        style={"whiteSpace": "nowrap"}
-                    ),
-                    width="auto"
-                ),
-            ],
-            className="g-2 justify-content-end mt-3"),
-            md=4
-        )
-    ]),
+                md=6,
+                className="d-flex justify-content-end align-items-center"
+            ),
+        ],
+        className="g-2"
+    ),
+
 
 
     # Feedback
@@ -187,8 +212,9 @@ layout = dbc.Container([
     dcc.Download(id="download-pdf"),
     dcc.Store(id="data-store", storage_type="session"),
     dcc.Store(id="fig-store", storage_type="session"),
-    dcc.Store(id="ai-processing"),  # ⭐ nouveau
+    dcc.Store(id="ai-processing", storage_type="session"),
     dcc.Store(id="ai-analysis", storage_type="session"),
+
 
 
     # Onglets
