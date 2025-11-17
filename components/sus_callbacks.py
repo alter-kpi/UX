@@ -249,7 +249,11 @@ def register_callbacks(app):
         prompt = ""
         prompt += "Tu es un expert UX senior.\n"
         prompt += "Analyse ce questionnaire SUS de manière claire, pédagogique et utile.\n\n"
-        prompt += "Tu rééponds en 2000 caractères maximum.\n\n"
+        prompt += "Tu réponds en 3000 caractères maximum. RRéponds en utilisant strictement du Markdown.\n\n"
+        prompt += "#### pour les titres. **gras** pour les valeurs clés. Des listes à puces pour les points\n\n"
+        prompt += "Pas de backticks ni de code blocks. Pas de tableaux\n\n" 
+        prompt += "Les titres ne doivent pas être trop gros, ça doit être élégant.\n\n"
+        prompt += "Ne renvoie que le texte Markdown.\n\n"
 
         prompt += "=== SCORE GLOBAL SUS ===\n"
         prompt += f"Scores individuels : {scores}\n"
@@ -279,17 +283,15 @@ def register_callbacks(app):
     @app.callback(
         Output("ai-analysis", "data"),
         Output("ai-processing", "children"),
-        Input("btn-ai", "n_clicks"),
-        State("data-store", "data"),
+        Input("data-store", "data"),   # 👈 déclenchement au chargement des données
         prevent_initial_call=True
     )
-    def run_ai_analysis(n_clicks, data):
 
-        if not n_clicks or n_clicks < 1:
-            raise dash.exceptions.PreventUpdate
+    def run_ai_analysis(data):
 
         if not data:
             return "", ""
+
 
         # ⭐ Active le spinner
         processing = "loading"

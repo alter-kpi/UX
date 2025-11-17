@@ -82,7 +82,7 @@ details_layout = html.Div([
     html.Div(
         id="data-preview",
         style={
-            "maxHeight": "82vh",
+            "maxHeight": "85vh",
             "overflowY": "auto",
             "border": "1px solid #ddd",
             "padding": "10px",
@@ -95,17 +95,7 @@ details_layout = html.Div([
 
 # ---- Section Analyse IA (visible) ----
 ia_layout = html.Div([
-    html.Div(
-        dbc.Button(
-            "Générer l'analyse",
-            id="btn-ai",
-            n_clicks=0,
-            color="primary",
-            className="mb-3"
-        ),
-        className="text-center"
-    ),
-
+    
     dcc.Loading(
         id="ai-loading",
         type="circle",
@@ -113,15 +103,15 @@ ia_layout = html.Div([
     ),
 
     # 👉 Zone où le texte IA doit s’afficher
-    html.Div(
+    dcc.Markdown(
         id="ai-analysis-visible",
         style={
-            "whiteSpace": "pre-line",
+            "whiteSpace": "pre-wrap",
             "backgroundColor": "white",
             "padding": "20px",
             "borderRadius": "8px",
             "border": "1px solid #eee",
-            "maxHeight": "75vh",
+            "maxHeight": "82vh",
             "overflowY": "auto",
             "fontSize": "15px",
             "lineHeight": "1.5",
