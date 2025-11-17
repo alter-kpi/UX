@@ -96,13 +96,6 @@ details_layout = html.Div([
 # ---- Section Analyse IA (visible) ----
 ia_layout = html.Div([
     dcc.Store(id="ai-analysis-visible-store", storage_type="session"),
-    dcc.Loading(
-        id="ai-loading",
-        type="circle",
-        children=html.Div(id="ai-processing"),
-        style={"display": "flex", "justifyContent": "center", "paddingTop": "80px"}
-    ),
-
     # 👉 Zone où le texte IA doit s’afficher
     dcc.Markdown(
         id="ai-analysis-visible"
@@ -191,16 +184,6 @@ layout = dbc.Container([
 
     # Feedback
     html.Div(id="file-info", style={"display": "none"}),
-        dcc.Loading(
-        id="upload-spinner",
-        type="circle",
-        children=html.Div(id="upload-status", style={"display": "none"})
-    ),
-    dcc.Loading(
-        id="export-spinner",
-        type="circle",
-        children=html.Div(id="export-status", style={"display": "none"})
-    ),
 
     dcc.Download(id="download-pdf"),
     dcc.Store(id="data-store", storage_type="session"),
@@ -221,22 +204,27 @@ layout = dbc.Container([
         ]
     ),
 
-    dbc.Card(
-        dbc.CardBody(
-            html.Div([
-                html.Div(dashboard_layout, id="tab-dashboard"),
-                html.Div(details_layout, id="tab-details", style={"display": "none"}),
-                html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
-            ], style={
-                "minHeight": "85vh",
-                "maxHeight": "85vh",
-                "overflowY": "auto",
-                "padding": "5px",
-                "overflowX": "hidden"
-            })
+    dcc.Loading(
+        type="circle",
+        fullscreen=False,
+        style={"backgroundColor": "white", "borderRadius": "10px"},
+            children=dbc.Card(
+                dbc.CardBody(
+                    html.Div([
+                        html.Div(dashboard_layout, id="tab-dashboard"),
+                        html.Div(details_layout, id="tab-details", style={"display": "none"}),
+                        html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
+                    ], style={
+                        "minHeight": "85vh",
+                        "maxHeight": "85vh",
+                        "overflowY": "auto",
+                        "padding": "5px",
+                        "overflowX": "hidden"
+                    })
 
-        ),
-        className="shadow-sm",
-        style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
-    ),
+                ),
+                className="shadow-sm",
+                style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
+            ),
+    )
 ], fluid=True)
