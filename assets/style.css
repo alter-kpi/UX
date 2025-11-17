@@ -89,3 +89,63 @@ h1 {
 }
 
 
+/* ============================================
+   ALTERUX – STYLE PREMIUM ANALYSE IA
+   ============================================ */
+
+/* Conteneur général : meilleure couleur, meilleure lisibilité */
+#ai-analysis-visible {
+    color: #2b2b2b;
+    font-size: 15px;
+    line-height: 1.55;
+    letter-spacing: 0.2px;
+}
+
+/* TITRES – uniformisés et stylés */
+#ai-analysis-visible h1,
+#ai-analysis-visible h2,
+#ai-analysis-visible h3,
+#ai-analysis-visible h4,
+#ai-analysis-visible h5,
+#ai-analysis-visible h6 {
+    font-size: 18px !important;
+    font-weight: 700;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    color: #1d4ed8; /* bleu UX moderne */
+    letter-spacing: 0.3px;
+}
+
+/* PARAGRAPHES – lisibles, élégants */
+#ai-analysis-visible p {
+    margin-bottom: 10px;
+    line-height: 1.55;
+    font-size: 15px;
+}
+
+/* LISTES – espacées et propres */
+#ai-analysis-visible ul {
+    padding-left: 20px;
+    margin-bottom: 12px;
+}
+
+#ai-analysis-visible li {
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+/* EMPHASIS – rendre le gras plus élégant */
+#ai-analysis-visible strong {
+    color: #111;
+    font-weight: 600;
+}
+
+/* BLOCS DE CITATION (si IA en génère) */
+#ai-analysis-visible blockquote {
+    margin-left: 0;
+    padding-left: 15px;
+    border-left: 3px solid #1d4ed8;
+    color: #444;
+    font-style: italic;
+}
+
