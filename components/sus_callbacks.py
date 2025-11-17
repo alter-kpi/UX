@@ -226,61 +226,136 @@ def register_callbacks(app):
     # ==========================================================
     # 5️⃣ Analyse IA
     # ==========================================================
+    
     def build_ai_prompt(df):
 
+        # Scores et classes
         scores = df["SUS_Score"].tolist()
         classes = df["SUS_Class"].value_counts().to_dict() if "SUS_Class" in df else {}
 
+        # Statistiques globales avancées
         stats = {
-            "Score moyen": round(df["SUS_Score"].mean(), 2),
+            "Moyenne": round(df["SUS_Score"].mean(), 2),
+            "Médiane": round(df["SUS_Score"].median(), 2),
             "Ecart-type": round(df["SUS_Score"].std(), 2),
+            "Q1": round(df["SUS_Score"].quantile(0.25), 2),
+            "Q3": round(df["SUS_Score"].quantile(0.75), 2),
+            "IQR": round(df["SUS_Score"].quantile(0.75) - df["SUS_Score"].quantile(0.25), 2),
             "Min": df["SUS_Score"].min(),
             "Max": df["SUS_Score"].max(),
-            "Taille échantillon": len(df)
+            "Taille": len(df),
+            "% ≥ 80": round((df["SUS_Score"] >= 80).mean() * 100, 1),
+            "% < 50": round((df["SUS_Score"] < 50).mean() * 100, 1)
         }
 
+        # Colonnes SUS (Q1..Q10)
+        qcols = [c for c in df.columns if c.startswith("Q") and not c.endswith("_adj")]
+        per_question_mean = df[qcols].mean().round(2).to_dict()
+        per_question_std = df[qcols].std().round(2).to_dict()
+
+        weakest_q = min(per_question_mean, key=per_question_mean.get)
+        strongest_q = max(per_question_mean, key=per_question_mean.get)
+
+        # Catégories (âge, pays…)
         categories = {}
         extra_cols = df.columns[11:15]
 
-
         if len(extra_cols) > 0:
             for col in extra_cols:
-                categories[col] = df[col].value_counts().to_dict()
+                categories[col] = df.groupby(col)["SUS_Score"].mean().round(2).to_dict()
         else:
             categories = {}
 
-        prompt = ""
-        prompt += "Tu es un expert UX senior.\n"
-        prompt += "Analyse ce questionnaire SUS de manière claire, pédagogique et utile.\n\n"
-        prompt += "Tu réponds en 3000 caractères maximum. RRéponds en utilisant strictement du Markdown.\n\n"
-        prompt += "#### pour les titres. **gras** pour les valeurs clés. Des listes à puces pour les points\n\n"
-        prompt += "Pas de backticks ni de code blocks. Pas de tableaux\n\n" 
-        prompt += "Les titres ne doivent pas être trop gros, ça doit être élégant.\n\n"
-        prompt += "Ne renvoie que le texte Markdown.\n\n"
+        weakest_cat = {}
+        strongest_cat = {}
+        gaps = {}
 
-        prompt += "=== SCORE GLOBAL SUS ===\n"
-        prompt += f"Scores individuels : {scores}\n"
-        prompt += f"Score moyen : {stats['Score moyen']}\n"
-        prompt += f"Ecart-type : {stats['Ecart-type']}\n"
-        prompt += f"Min : {stats['Min']} - Max : {stats['Max']}\n"
-        prompt += f"Taille de l'échantillon : {stats['Taille échantillon']}\n\n"
+        for col, dist in categories.items():
+            if dist:
+                weakest_cat[col] = min(dist, key=dist.get)
+                strongest_cat[col] = max(dist, key=dist.get)
+                gaps[col] = round(
+                    dist[max(dist, key=dist.get)] - dist[min(dist, key=dist.get)], 2
+                )
 
-        prompt += "=== CLASSES SUS ===\n"
-        prompt += f"{classes}\n\n"
+        # ===============================================================
+        #  PROMPT STRICT + VERSION LONGUE + CONCLUSION
+        # ===============================================================
+        prompt = f"""
+    Tu es un expert UX senior. Rédige une analyse approfondie, détaillée, mais lisible et professionnelle du questionnaire SUS.
 
-        prompt += "=== CATEGORIES ===\n"
-        prompt += "Les colonnes supplémentaires sont traitées comme des catégories (âge, pays...).\n"
-        prompt += f"{categories}\n\n"
+    ➡️ **FORMAT STRICT À RESPECTER :**
+    - Utilise uniquement du Markdown.
+    - Titres : **uniquement** `#### Titre`.
+    - Pas d'autres niveaux de titres.
+    - Pas de HTML.
+    - Pas d’emojis.
+    - Pas de tableaux.
+    - Pas de blocs de code.
+    - Pas de backticks.
+    - Pas plus d’une ligne vide à la suite.
+    - Longueur volontairement plus développée : analyse complète + contexte + recommandations + conclusion.
 
-        prompt += "=== OBJECTIFS ===\n"
-        prompt += "1. Évaluer la satisfaction globale.\n"
-        prompt += "2. Identifier les variations importantes.\n"
-        prompt += "3. Trouver les sous-populations en difficulté.\n"
-        prompt += "4. Décrire les forces du produit.\n"
-        prompt += "5. Exposer les points faibles.\n"
-        prompt += "6. Proposer des recommandations actionnables.\n"
+    ➡️ **STRUCTURE EXACTE À SUIVRE :**
+
+    #### Score global
+    (Analyse détaillée du score SUS global, interprétation, comparaison aux standards UX, nuances)
+
+    #### Analyse de la distribution
+    (Analyse du min, max, médiane, quartiles, % extrêmes, compréhension de la dispersion, interprétation du IQR)
+
+    #### Analyse par questions
+    (Comparer les moyennes par item, identifier forces/faiblesses, expliquer l’impact de la question la plus faible/forte)
+
+    #### Analyse par catégories
+    (Comparer les groupes si présents, expliquer écarts, identifier sous-populations critiques, analyser les gaps)
+
+    #### Recommandations
+    (Listes de recommandations actionnables, structurées, priorisées)
+
+    #### Conclusion
+    (Conclusion récapitulative, claire, synthétique, orientée décision)
+
+    Tu dois respecter strictement cette structure.
+
+    ---
+
+    ### DONNÉES À ANALYSER
+
+    **Scores individuels :** {scores}
+
+    **Statistiques globales :**
+    - Moyenne : {stats['Moyenne']}
+    - Médiane : {stats['Médiane']}
+    - Ecart-type : {stats['Ecart-type']}
+    - Q1 : {stats['Q1']}
+    - Q3 : {stats['Q3']}
+    - IQR : {stats['IQR']}
+    - Min : {stats['Min']} / Max : {stats['Max']}
+    - Taille échantillon : {stats['Taille']}
+    - % ≥ 80 : {stats['% ≥ 80']}%
+    - % < 50 : {stats['% < 50']}%
+
+    **Répartition des classes (A-F) :** {classes}
+
+    **Moyenne par question :** {per_question_mean}
+    **Écart-type par question :** {per_question_std}
+    - Question la plus faible : {weakest_q}
+    - Question la plus forte : {strongest_q}
+
+    **Catégories :** {categories}
+    - Catégories les plus faibles : {weakest_cat}
+    - Catégories les plus fortes : {strongest_cat}
+    - Écarts max entre groupes : {gaps}
+
+    ---
+
+    Rédige maintenant l'analyse en suivant STRICTEMENT le format imposé, avec une longueur développée, des explications approfondies et une conclusion professionnelle.
+    """
 
         return prompt
+
+
 
 
     @app.callback(
