@@ -206,8 +206,7 @@ layout = dbc.Container([
 
     dcc.Loading(
         type="circle",
-        fullscreen=True,
-        style={"backgroundColor": "white", "borderRadius": "10px"},
+        fullscreen=False,
             children=dbc.Card(
                 dbc.CardBody(
                     html.Div([
@@ -228,4 +227,5 @@ layout = dbc.Container([
             ),
     )
 ], fluid=True)
+
 
