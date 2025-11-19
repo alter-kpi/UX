@@ -204,9 +204,9 @@ app.layout = html.Div([
                     # FOOTER-LIKE LINKS
                     html.Div([
                         html.Hr(className="text-white", style={"marginTop": "40px"}),
-                        html.A("ℹ️ À propos de l'auteur", id="open-about", style={"cursor": "pointer"}),
-                        html.A("🔒 Confidentialité & RGPD", id="open-rgpd", style={"cursor": "pointer"}),
-                        html.A("👍 Feedback", id="open-feedback", style={"cursor": "pointer"}),
+                        html.A("À propos de l'auteur", id="open-about", style={"cursor": "pointer"}),
+                        html.A("Confidentialité & RGPD", id="open-rgpd", style={"cursor": "pointer"}),
+                        html.A("Feedback", id="open-feedback", style={"cursor": "pointer"}),
                     ], className="sidebar-footer-fixed"),
 
                 ], className="sidebar"),
