@@ -123,18 +123,4 @@ layout = dbc.Container([
     ], className="mb-5"),
 
 
-    # ============================================================
-    # FOOTER
-    # ============================================================
-    html.Hr(className="my-4"),
-
-    html.Footer([
-        html.H6("🔒 Confidentialité des données", className="fw-bold"),
-        html.P(
-            "Les fichiers importés sont traités temporairement en mémoire uniquement le temps de l’analyse. "
-            "Aucune donnée n’est stockée ni transmise à des tiers.",
-            className="text-muted mb-0"
-        )
-    ], className="text-center small fixed-footer"),
-
 ], fluid=True)
