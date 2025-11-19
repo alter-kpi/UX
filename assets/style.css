@@ -51,14 +51,15 @@ h1 {
    ============================================ */
 .sidebar {
     background-color: #3e4a56;
-    min-height: 100vh;
-    padding-top: 20px;
     position: fixed;
     left: 0;
     top: 0;
+    bottom: 0;          /* ✅ force la sidebar à prendre toute la hauteur */
     width: 240px;
+    padding-top: 20px;
     overflow-y: auto;
 }
+
 
 /* liens */
 .sidebar .nav-link {
@@ -87,6 +88,35 @@ h1 {
     background-color: #c83737 !important; /* accent Sandstone */
     color: white !important;
 }
+
+.sidebar-footer-fixed {
+    position: fixed;
+    left: 0;
+    bottom: 30px;
+    width: 240px; /* même largeur que ta sidebar */
+    text-align: center;
+    z-index: 2000;
+}
+
+.sidebar-footer-fixed a {
+    color: white !important;
+    font-weight: 200;                 /* même épaisseur que les nav-link */
+    font-size: 1rem;                  /* même taille de texte */
+    font-family: "Segoe UI", sans-serif;  /* même police */
+    
+    display: block;
+    margin-bottom: 10px;
+    text-decoration: none;
+    text-align: center;
+}
+
+.sidebar-footer-fixed a:hover {
+    color: white !important;
+    text-decoration: underline;
+}
+
+
+
 
 
 /* ============================================
