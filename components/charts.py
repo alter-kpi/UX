@@ -49,8 +49,8 @@ def create_gauge_native(score: float):
         (25, 39, "#f0ad4e", "Mauvais"),
         (39, 52, "#f7ec13", "Acceptable"),
         (52, 73, "#5bc0de", "Bon"),
-        (73, 86, "#5cb85c", "Excellent"),
-        (86, 100, "#3c763d", "Meilleur<br>imaginable"),
+        (73, 85, "#5cb85c", "Excellent"),
+        (85, 100, "#3c763d", "Meilleur<br>imaginable"),
     ]
 
     fig = go.Figure()
@@ -91,12 +91,20 @@ def create_gauge_native(score: float):
     fig.update_yaxes(range=[-0.8, 1.0], visible=False)
 
     fig.update_layout(
-        height=160,
-        margin=dict(l=20, r=20, t=20, b=0),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        showlegend=False,
+    title=dict(
+        text="Score SUS — Échelle Bangor (2009)",
+        x=0.5,
+        y=0.97,
+        xanchor="center",
+        font=dict(size=14, color="#666")
+    ),
+    height=180,         # +20 px pour laisser la place du titre
+    margin=dict(l=20, r=20, t=45, b=0),  # ↑ top augmenté
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    showlegend=False,
     )
+
 
     return fig
 
@@ -108,8 +116,8 @@ def create_acceptability_gauge(score: float):
     segments = [
         (0, 50, "#FF0000", "Non acceptable"),
         (50, 62, "#f39c12", "Probabilité<br>faible"),
-        (62, 72, "#f1c40f", "Probabilité<br>élevée"),
-        (72, 100, "#27ae60", "Acceptable"),
+        (62, 70, "#f1c40f", "Probabilité<br>élevée"),
+        (70, 100, "#27ae60", "Acceptable"),
     ]
 
     fig = go.Figure()
@@ -148,12 +156,20 @@ def create_acceptability_gauge(score: float):
     fig.update_yaxes(range=[-0.8, 1.2], visible=False)
 
     fig.update_layout(
-        height=160,
-        margin=dict(l=20, r=20, t=0, b=15),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        showlegend=False,
+    title=dict(
+        text="Acceptabilité SUS",
+        x=0.5,
+        y=0.97,
+        xanchor="center",
+        font=dict(size=13, color="#666")
+    ),
+    height=180,         # même logique
+    margin=dict(l=20, r=20, t=45, b=15),
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    showlegend=False,
     )
+
 
     return fig
 
@@ -510,7 +526,7 @@ def create_category_combined(df, col, idx):
             y=grouped["count"],
             name="Effectif",
             marker_color="#7f8c8d",
-            opacity=0.5,
+            opacity=1,
             width=0.25,
             text=grouped["count"],
             textposition="inside",

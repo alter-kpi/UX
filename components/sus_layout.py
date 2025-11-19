@@ -28,10 +28,27 @@ dashboard_layout = html.Div([
     # Gauges
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id="gauge-graph", config={"displayModeBar": False}, style={"height": "180px", "marginBottom": "15px"}),
-            dcc.Graph(id="acceptability-graph", config={"displayModeBar": False}, style={"height": "180px"})
+
+            html.Div([
+                dcc.Graph(
+                    id="gauge-graph",
+                    config={"displayModeBar": False},
+                    style={"height": "180px"}
+                )
+            ], className="mb-4"),
+
+            html.Div([
+                dcc.Graph(
+                    id="acceptability-graph",
+                    config={"displayModeBar": False},
+                    style={"height": "180px"}
+                )
+            ])
+            
         ], md=8)
     ], justify="center", className="mb-5"),
+
+
 
     # Stats + histogram
     dbc.Row([
