@@ -1,5 +1,8 @@
 from dash import Dash, html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
+import os
+import pandas as pd
+from datetime import datetime
 
 from components.home_layout import layout as home_layout
 from components.sus_layout import (
@@ -31,7 +34,6 @@ app.title = "Alter UX"
 # 2) SIDEBAR — liens + modals
 # ====================================================
 
-# Modal À propos (avec photo)
 modal_about = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("À propos")),
@@ -52,8 +54,16 @@ modal_about = dbc.Modal(
 
             # TEXTE
             html.P("Frédéric Michotte — Fondateur Alter KPI"),
-            html.P("Expert en Business Intelligence & Finance d’entreprise."),
-            html.P("Auteur et développeur de l’application Alter UX."),
+            html.P(
+                "Consultant finance & business intelligence spécialisé en pilotage, "
+                "automatisation et création d’outils sur mesure. J’aime transformer "
+                "les idées en solutions simples, efficaces et élégantes."
+            ),
+            html.P(
+                "Alter UX est né de cette philosophie : rendre l’analyse de questionnaires "
+                "intuitive, rapide et fiable, sans complexité technique."
+            ),
+
             html.Hr(),
 
             # LINKEDIN
@@ -78,6 +88,15 @@ modal_about = dbc.Modal(
                 )
             ]),
 
+            # EMAIL
+            html.P([
+                html.I(className="bi bi-envelope me-2"),
+                html.A(
+                    "info@alter-kpi.com",
+                    href="mailto:info@alter-kpi.com",
+                    className="text-decoration-none"
+                )
+            ]),
         ]),
         dbc.ModalFooter(
             dbc.Button("Fermer", id="close-about", className="ms-auto")
@@ -88,35 +107,47 @@ modal_about = dbc.Modal(
 )
 
 
+
 # Modal RGPD (texte complet)
 modal_rgpd = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("Confidentialité / RGPD")),
         dbc.ModalBody([
+
+            # ILLUSTRATION RGPD
+            html.Img(
+                src="/assets/rgpd_icon.png",
+                style={
+                    "width": "80px",
+                    "height": "80px",
+                    "display": "block",
+                    "margin": "0 auto 20px auto",
+                    "opacity": "0.9"
+                }
+            ),
+
+            # TEXTE
             html.P(
                 "L’application Alter UX traite les fichiers importés uniquement en "
-                "mémoire vive (RAM) de son serveur d’exécution. Aucun fichier n’est "
-                "enregistré sur disque, aucune base de données n’est utilisée, et "
-                "aucune donnée n’est conservée après l’analyse."
+                "mémoire vive (RAM). Aucun fichier n’est enregistré sur disque, "
+                "aucune base de données n’est utilisée, et aucune donnée n’est "
+                "conservée après l’analyse."
             ),
             html.P(
-                "Le serveur hébergeant l’application est fourni par Render.com et "
-                "localisé dans la zone EU-Central (Francfort, Allemagne), garantissant "
-                "un traitement des données au sein de l’Union Européenne sans transfert "
+                "Le serveur est hébergé dans l’Union Européenne (Render – zone "
+                "EU Central, Francfort), garantissant l’absence de transfert "
                 "vers des pays tiers."
             ),
             html.P(
-                "Les données de votre fichier Excel sont utilisées exclusivement pour "
-                "calculer les statistiques, afficher les visualisations et générer un "
-                "rapport PDF. Ce rapport est produit en mémoire puis transmis à votre "
-                "navigateur sans jamais être stocké sur le serveur."
+                "Les données servent uniquement à calculer les statistiques, "
+                "générer les visualisations et produire le PDF. Le rapport est "
+                "généré en mémoire puis transmis à votre navigateur, sans "
+                "stockage permanent."
             ),
             html.P(
-                "Les données disparaissent automatiquement à la fermeture de la page, "
-                "à la fin de la session ou lors du redémarrage du serveur, qui "
-                "réinitialise entièrement la mémoire. Aucun tiers ne reçoit ou ne traite "
-                "vos données. L’unique finalité du traitement est l’analyse du "
-                "questionnaire importé, réalisée avec votre consentement."
+                "Vos données disparaissent automatiquement à la fin de la "
+                "session ou lors du redémarrage du serveur. Aucun tiers ne peut "
+                "y accéder."
             )
         ]),
         dbc.ModalFooter(
@@ -129,24 +160,33 @@ modal_rgpd = dbc.Modal(
 
 
 
+
 # Modal Feedback
 modal_feedback = dbc.Modal(
     [
-        dbc.ModalHeader(dbc.ModalTitle("Envoyer un feedback")),
+        dbc.ModalHeader(dbc.ModalTitle("Une remarque, une suggestion ?")),
         dbc.ModalBody([
+            
+            dbc.Label("Votre email (si vous souhaitez être recontacté)"),
+            dbc.Input(
+                id="feedback-email",
+                type="email",
+                placeholder="Ex : nom@domaine.com",
+                style={"marginBottom": "10px"}
+            ),
+
+            # Zone de message
+            dbc.Label("Votre message"),
             dcc.Textarea(
                 id="feedback-text",
-                placeholder="Écrivez votre commentaire ici...",
+                placeholder="Votre commentaire...",
                 style={"width": "100%", "height": "150px"}
             ),
+
+            html.Div(id="feedback-status", style={"marginTop": "10px", "color": "green"})
         ]),
         dbc.ModalFooter([
-            html.A(
-                dbc.Button("Envoyer", id="send-feedback", color="primary"),
-                id="feedback-mailto",
-                href="mailto:info@alter-kpi.com?subject=Feedback%20Alter%20UX&body=",
-                target="_blank"
-            ),
+            dbc.Button("Envoyer", id="send-feedback", color="primary"),
             dbc.Button("Fermer", id="close-feedback", className="ms-auto")
         ])
     ],
@@ -280,13 +320,50 @@ def toggle_feedback(open_click, close_click, is_open):
 # ====================================================
 # 6) UPDATE MAILTO WITH MESSAGE CONTENT
 # ====================================================
+
+import os
+import pandas as pd
+from datetime import datetime
+
+# Dossier et fichier
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+FEEDBACK_FILE = os.path.join(DATA_DIR, "feedback.csv")
+
+# Crée le dossier s'il n'existe pas
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Crée le fichier s'il n'existe pas OU s'il est vide
+if not os.path.exists(FEEDBACK_FILE) or os.path.getsize(FEEDBACK_FILE) == 0:
+    pd.DataFrame(columns=["timestamp", "email", "message"]).to_csv(FEEDBACK_FILE, index=False)
+
+
+
 @app.callback(
-    Output("feedback-mailto", "href"),
-    Input("feedback-text", "value")
+    Output("feedback-status", "children"),
+    Input("send-feedback", "n_clicks"),
+    State("feedback-email", "value"),
+    State("feedback-text", "value"),
+    prevent_initial_call=True
 )
-def update_mailto_body(text):
-    body = (text or "").replace("\n", "%0D%0A")
-    return f"mailto:info@alter-kpi.com?subject=Feedback%20Alter%20UX&body={body}"
+def save_feedback(n, email, message):
+
+    if not message or message.strip() == "":
+        return "⚠️ Merci d'écrire un message."
+
+    df = pd.read_csv(FEEDBACK_FILE)
+
+    new_row = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "email": email.strip() if email else "",
+        "message": message.strip()
+    }
+
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df.to_csv(FEEDBACK_FILE, index=False)
+
+    return "✔️ Merci ! Votre message a bien été envoyé."
+
 
 
 # ====================================================
