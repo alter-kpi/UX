@@ -112,13 +112,33 @@ details_layout = html.Div([
 
 # ---- Section Analyse IA (visible) ----
 ia_layout = html.Div([
-    dcc.Store(id="ai-analysis-visible-store", storage_type="session"),
-    # 👉 Zone où le texte IA doit s’afficher
-    dcc.Markdown(
-        id="ai-analysis-visible"
-    )
 
+    dcc.Store(id="ai-analysis-visible-store", storage_type="session"),
+
+    # --- Texte explicatif du modèle utilisé ---
+    html.P(
+        "L’analyse ci-dessous est générée automatiquement par un modèle de "
+        "langage avancé (OpenAI GPT-4o). Elle est produite en temps réel à "
+        "partir des statistiques de votre questionnaire et n’est jamais "
+        "enregistrée.",
+        style={
+            "fontSize": "14px",
+            "color": "#555",
+            "marginBottom": "20px",
+            "textAlign": "center",
+            "maxWidth": "1600px",
+            "marginLeft": "auto",
+            "marginRight": "auto"
+        }
+    ),
+
+    # --- Zone où le texte IA s'affiche ---
+    dcc.Markdown(
+        id="ai-analysis-visible",
+        style={"whiteSpace": "pre-wrap"}
+    )
 ])
+
 
 
 # === LAYOUT PRINCIPAL ===

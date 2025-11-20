@@ -16,7 +16,7 @@ def generate_ai_analysis(prompt: str) -> str:
             {"role": "system", "content": "Tu es un expert UX concis et professionnel."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=1000
+        max_tokens=2000
     )
 
     return response.choices[0].message.content
