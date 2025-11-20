@@ -437,6 +437,68 @@ def register_callbacks(app):
             "Rapport_SUS.pdf"
         )
 
+    def generate_sus_pdf_bytes(df, figs, stats_table, ai_text):
+        """
+        Génére un PDF en mémoire et retourne les bytes.
+        """
+        # Fichier temporaire
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            path = tmp.name
+
+        # Génération via ton script existant
+        generate_sus_pdf(df, figs, path, ai_text, stats_table)
+
+        # Lecture en bytes
+        with open(path, "rb") as f:
+            data = f.read()
+
+        os.remove(path)
+        return data
+
+
+    # ==========================================================
+    #  PDF — Génération + Preview + Télécharger
+    # ==========================================================
+    @app.callback(
+        Output("pdf-preview", "children"),
+        Output("pdf-download-zone", "children"),
+        Input("btn-generate-pdf", "n_clicks"),
+        State("data-store", "data"),
+        State("fig-store", "data"),
+        State("sus-stats-table", "data"),
+        State("ai-analysis", "data"),
+        prevent_initial_call=True
+    )
+    def generate_pdf_preview(n_clicks, data, figs, stats_table, ai_text):
+
+        if not data:
+            return "Aucune donnée à exporter.", ""
+
+        df = pd.DataFrame(data)
+
+        # 1) Génération PDF en mémoire
+        pdf_bytes = generate_sus_pdf_bytes(df, figs, stats_table, ai_text)
+        b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+
+        # 2) Preview dans un Iframe
+        iframe = html.Iframe(
+            src=f"data:application/pdf;base64,{b64}",
+            style={
+                "width": "100%",
+                "height": "100%",
+                "border": "none"
+            }
+        )
+
+        # 3) Bouton Télécharger
+        download_button = html.A(
+            dbc.Button("Télécharger le PDF", color="success"),
+            href=f"data:application/pdf;base64,{b64}",
+            download="Rapport_SUS.pdf",
+            target="_blank"
+        )
+
+        return iframe, download_button
 
 
     # ==========================================================
@@ -446,6 +508,7 @@ def register_callbacks(app):
         Output("tab-dashboard", "style"),
         Output("tab-details", "style"),
         Output("tab-ia", "style"),
+        Output("tab-pdf", "style"),
         Input("sus-tabs", "active_tab"),
         Input("data-store", "data")
     )
@@ -454,15 +517,12 @@ def register_callbacks(app):
         is_loaded = data is not None and len(data) > 0
 
         return (
-            # Dashboard
             {"display": "block"} if active == "tab-dashboard" and is_loaded else {"display": "none"},
-
-            # Détails (toujours visible si onglet actif)
             {"display": "block"} if active == "tab-details" else {"display": "none"},
-
-            # IA (toujours visible si onglet actif)
             {"display": "block"} if active == "tab-ia" else {"display": "none"},
+            {"display": "block"} if active == "tab-pdf" else {"display": "none"},
         )
+
 
 
 

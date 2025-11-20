@@ -138,11 +138,45 @@ ia_layout = html.Div([
         type="circle",
         children=dcc.Markdown(
             id="ai-analysis-visible",
-            style={"whiteSpace": "pre-wrap", "marginTop": "25px"}
+            style={"whiteSpace": "pre-wrap", "marginTop": "50px"}
         )
     )
 
+
 ])
+
+
+# LAYOUT ONGLET PDF
+
+pdf_layout = html.Div([
+
+    dbc.Button(
+        "📄 Générer le PDF",
+        id="btn-generate-pdf",
+        color="primary",
+        style={"marginBottom": "20px"}
+    ),
+
+    dcc.Loading(
+        id="loading-pdf",
+        type="circle",
+        children=html.Div(
+            id="pdf-preview",
+            style={
+                "height": "75vh",
+                "overflowY": "auto",
+                "border": "1px solid #ddd",
+                "padding": "10px",
+                "backgroundColor": "white",
+                "borderRadius": "6px"
+            }
+        )
+    ),
+
+    html.Div(id="pdf-download-zone", style={"marginTop": "20px"})
+])
+
+
 
 
 
@@ -192,17 +226,6 @@ layout = dbc.Container([
 
                         dbc.Col(
                             dbc.Button(
-                                "📄 PDF",
-                                id="btn-export",
-                                color="primary",
-                                disabled=True,
-                                style={"whiteSpace": "nowrap", "width": "110px"}
-                            ),
-                            width="auto"
-                        ),
-
-                        dbc.Col(
-                            dbc.Button(
                                 "🗑️ Reset",
                                 id="btn-reset",
                                 color="danger",
@@ -221,6 +244,7 @@ layout = dbc.Container([
         ],
         className="g-2"
     ),
+
 
 
 
@@ -243,6 +267,8 @@ layout = dbc.Container([
             dbc.Tab(label="Dashboard", tab_id="tab-dashboard"),
             dbc.Tab(label="Détails", tab_id="tab-details"),
             dbc.Tab(label="Analyse IA", tab_id="tab-ia"),
+            dbc.Tab(label="PDF", tab_id="tab-pdf")
+
         ]
     ),
 
@@ -255,6 +281,8 @@ layout = dbc.Container([
                 ),
                 html.Div(details_layout, id="tab-details", style={"display": "none"}),
                 html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
+                html.Div(pdf_layout, id="tab-pdf", style={"display": "none"}),
+
             ], style={
                 "minHeight": "85vh",
                 "maxHeight": "85vh",

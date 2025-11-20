@@ -7,6 +7,8 @@ import tempfile
 from datetime import datetime
 from PIL import Image
 
+from components.charts import create_category_combined
+
 
 # ============================================================================
 # Couleur dynamique identique à la jauge native charts.py
@@ -27,8 +29,7 @@ def get_sus_color(score):
     else:
         hex_color = "#3c763d"
 
-    # hex → RGB
-    hex_color = hex_color.lstrip('#')
+    hex_color = hex_color.lstrip("#")
     r = int(hex_color[0:2], 16)
     g = int(hex_color[2:4], 16)
     b = int(hex_color[4:6], 16)
@@ -37,256 +38,373 @@ def get_sus_color(score):
 
 
 # ============================================================================
-# PDF CLASS (Roboto Unicode)
+# PDF CLASS (Roboto Unicode) - ORIENTATION PAYSAGE
 # ============================================================================
 class SUSReportPDF(FPDF):
-
     def __init__(self):
-        super().__init__()
+        # A4 paysage
+        super().__init__(orientation="L")
 
         font_dir = os.path.join(os.path.dirname(__file__), "..", "assets", "fonts")
         self.add_font("Roboto", "", os.path.join(font_dir, "Roboto-Regular.ttf"), uni=True)
         self.add_font("Roboto", "B", os.path.join(font_dir, "Roboto-Bold.ttf"), uni=True)
 
     def header(self):
-        logo_path = os.path.abspath(os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "assets",
-            "logo_alterkpi.png"
-        ))
+        logo_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "assets", "logo_alterkpi.png")
+        )
 
         if os.path.exists(logo_path):
-            self.image(logo_path, x=175, y=8, w=18)
+            # un peu à droite en paysage
+            self.image(logo_path, x=self.w - 30, y=8, w=18)
 
         self.set_xy(10, 10)
-        self.set_font("Roboto", "B", 18)
+        self.set_font("Roboto", "B", 14)
         self.set_text_color(30, 30, 30)
         self.cell(0, 10, "Rapport d'analyse SUS", ln=True)
 
-        self.set_font("Roboto", "", 10)
+        self.set_font("Roboto", "", 9)
         self.set_text_color(80, 80, 80)
         self.cell(0, 6, f"Généré le {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
 
         self.ln(3)
         self.set_draw_color(170, 170, 170)
-        self.line(10, self.get_y(), 200, self.get_y())
+        self.line(10, self.get_y(), self.w - 10, self.get_y())
         self.ln(6)
 
     def footer(self):
-        self.set_y(-15)
+        self.set_y(-12)
         self.set_font("Roboto", "", 9)
         self.set_text_color(110, 110, 110)
-        self.cell(0, 10, "Alter KPI - www.alter-kpi.com", align="C")
+        self.cell(0, 8, "Alter KPI - www.alter-kpi.com - info@alter-kpi.com", align="C")
 
 
 # ============================================================================
-# KPI ultra-compacts (premium)
+# KPI compact
 # ============================================================================
-def draw_kpi(pdf, title, value, x, y, w=50, h=12, bg_color=(247, 247, 247)):
-    # Détermination du texte (fond clair → noir, fond foncé → blanc)
+def draw_kpi(pdf, title, value, x, y, w=70, h=16, bg_color=(247, 247, 247)):
     r, g, b = bg_color
-    brightness = (r*0.299 + g*0.587 + b*0.114)
+    brightness = (r * 0.299 + g * 0.587 + b * 0.114)
     text_color = (255, 255, 255) if brightness < 150 else (30, 30, 30)
 
-    # Bordure premium
-    border_color = (
-        max(r-40, 0),
-        max(g-40, 0),
-        max(b-40, 0)
-    )
+    border_color = (max(r - 40, 0), max(g - 40, 0), max(b - 40, 0))
 
-    # Ombre légère
-    pdf.set_draw_color(180, 180, 180)
-    pdf.set_fill_color(0, 0, 0)
-    pdf.rect(x + 1, y + 1, w, h, style="F")
+    # Ombre plus légère
+    pdf.set_draw_color(220, 220, 220)
+    pdf.set_fill_color(240, 240, 240)
+    pdf.rect(x + 0.7, y + 0.7, w, h, style="F")
 
     # Carte
     pdf.set_draw_color(*border_color)
     pdf.set_fill_color(*bg_color)
     pdf.rect(x, y, w, h, style="DF")
 
-    # Titre compact
-    pdf.set_xy(x, y + 1)
-    pdf.set_font("Roboto", "B", 9)
+    # Titre
+    pdf.set_xy(x, y + 2)
+    pdf.set_font("Roboto", "B", 8)
     pdf.set_text_color(*text_color)
     pdf.cell(w, 4, title, align="C", ln=1)
 
-    # Valeur compact
-    pdf.set_xy(x, y + 5)
+    # Valeur
+    pdf.set_xy(x, y + 7)
     pdf.set_font("Roboto", "", 11)
-    pdf.cell(w, 5, value, align="C", ln=1)
+    pdf.cell(w, 6, value, align="C", ln=1)
+
+
+# ============================================================================
+# Utilitaire : sauvegarde d'un fig Plotly en PNG + retour (path, w_img, h_img)
+# ============================================================================
+def save_fig_to_png(fig_obj, key, img_dir):
+    if fig_obj is None:
+        return None
+
+    if isinstance(fig_obj, dict):
+        fig_obj = go.Figure(fig_obj)
+
+    file_name = f"{key}.png"
+    path = os.path.join(img_dir, file_name)
+
+    # export HD
+    pio.write_image(fig_obj, path, format="png", scale=2)
+
+    with Image.open(path) as im:
+        im = im.convert("RGB")
+        w_img, h_img = im.size
+        im.save(path, format="PNG")
+
+    return {"path": path, "w": w_img, "h": h_img}
+
+
+# ============================================================================
+# Utilitaire : dessin d'une image SANS déformation, centrée horizontalement
+# ============================================================================
+def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h):
+    """
+    img_info : dict {path, w, h}
+    x_zone, y_zone : coin haut-gauche de la zone
+    max_w, max_h : taille max dispo
+    """
+    if not img_info:
+        return
+
+    path = img_info["path"]
+    w_img = img_info["w"]
+    h_img = img_info["h"]
+
+    if w_img == 0 or h_img == 0:
+        return
+
+    # scale sans déformation (ratio préservé)
+    scale = min(max_w / w_img, max_h / h_img)
+    w_display = w_img * scale
+    h_display = h_img * scale
+
+    # centrage horizontal dans la zone
+    x_img = x_zone + (max_w - w_display) / 2
+    y_img = y_zone  # pas de centrage vertical, top align
+
+    pdf.image(path, x=x_img, y=y_img, w=w_display, h=h_display)
 
 
 # ============================================================================
 # MAIN PDF GENERATOR
 # ============================================================================
 def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
+    nb_resp = len(df)
 
+    # ------------------------------------------------------------------------
+    # 1) Export des figures → PNG + tailles
+    #    figs contient : gauge, accept, hist, radar, class
+    # ------------------------------------------------------------------------
     img_dir = os.path.join(tempfile.gettempdir(), "sus_temp_images")
     os.makedirs(img_dir, exist_ok=True)
 
-    img_paths = {}
+    img_infos = {}
 
-    # =========================================================================
-    # EXPORT DES IMAGES PLOTLY → PNG
-    # =========================================================================
-    for key, fig in figs.items():
-        if fig is None:
-            continue
+    # Graphes principaux venant du fig-store
+    for key in ["gauge", "accept", "hist", "radar", "class"]:
+        fig_obj = figs.get(key) if isinstance(figs, dict) else None
+        if fig_obj is not None:
+            info = save_fig_to_png(fig_obj, key, img_dir)
+            if info:
+                img_infos[key] = info
 
-        if isinstance(fig, dict):
-            fig = go.Figure(fig)
+    # ------------------------------------------------------------------------
+    # 2) Génération des graphes catégories (comme dans l'app)
+    #    Colonnes 11:15 comme dans update_categories
+    # ------------------------------------------------------------------------
+    extra_cols = df.columns[11:15]
+    cat_keys = []
 
-        file_name = key.replace(" ", "_") + ".png"
-        path = os.path.join(img_dir, file_name)
+    for i, col in enumerate(extra_cols):
+        fig_cat = create_category_combined(df, col, i)
+        key = f"cat{i+1}"
+        cat_keys.append(key)
+        info = save_fig_to_png(fig_cat, key, img_dir)
+        if info:
+            img_infos[key] = info
 
-        pio.write_image(fig, path, format="png", scale=2)
-
-        with Image.open(path) as im:
-            im = im.convert("RGB")
-            im.save(path, format="PNG")
-
-        img_paths[key] = path
-
-    # =========================================================================
-    # PDF
-    # =========================================================================
+    # ------------------------------------------------------------------------
+    # 3) Création PDF (paysage)
+    # ------------------------------------------------------------------------
     pdf = SUSReportPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
+    # marge un peu plus large pour impression
+    pdf.set_auto_page_break(auto=True, margin=25)
 
-    # =========================================================================
-    # PAGE 1 — RESUMÉ + KPI + JAUGES
-    # =========================================================================
+    # ========================================================================
+    # PAGE 1 — Dashboard (Première moitié)
+    # ========================================================================
+
     pdf.add_page()
 
-    pdf.set_font("Roboto", "B", 14)
+    # --- Titre principal ---
+    pdf.set_font("Roboto", "B", 12)
     pdf.set_text_color(30, 30, 30)
-    pdf.cell(0, 10, "Résumé statistique", ln=True)
+    pdf.cell(0, 8, "Résumé du questionnaire SUS", ln=True)
+    pdf.ln(4)
 
-    pdf.ln(3)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(6)
+    # -----------------------------
+    # 1) KPI Cards
+    # -----------------------------
+    y_start = pdf.get_y()
+    kpi_w = (pdf.w - 30) / 3   # 3 colonnes pour les KPIs
+    kpi_h = 40  # Hauteur des cartes KPI
+    kpi_spacing = 10  # Espace entre les cartes
 
-    # Tableau des stats
-    stats_df = pd.DataFrame(stats_table) if stats_table else pd.DataFrame()
+    # Générer les cartes KPI
+    draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 10, y_start, w=kpi_w)
+    y_start += kpi_h + kpi_spacing
 
-    x_stats = 10
-    y_stats = pdf.get_y()
+    draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", kpi_w + 10, y_start, w=kpi_w, bg_color=sus_color)
+    y_start += kpi_h + kpi_spacing
 
-    pdf.set_xy(x_stats, y_stats)
+    draw_kpi(pdf, "≥ 72 (Acceptable+)", f"{pct_72:.1f}%", 2 * kpi_w + 10, y_start, w=kpi_w)
+    y_start += kpi_h + kpi_spacing
+
+    # -----------------------------
+    # 2) Graphiques (Partie 1)
+    # -----------------------------
+    if "gauge" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["gauge"],
+            x_zone=(pdf.w - 160) / 2,
+            y_zone=y_start,
+            max_w=160,
+            max_h=30
+        )
+
+    y_start += 30 + 10  # Espacement après la jauge
+
+    if "accept" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["accept"],
+            x_zone=(pdf.w - 160) / 2,
+            y_zone=y_start,
+            max_w=160,
+            max_h=30
+        )
+    y_start += 30 + 10
+
+    # -----------------------------
+    # 3) Table des Stats
+    # -----------------------------
+    pdf.set_xy(10, y_start)
     pdf.set_font("Roboto", "", 10)
     pdf.set_text_color(40, 40, 40)
+    pdf.set_draw_color(180, 180, 180)  # couleur des bordures
+    pdf.set_fill_color(245, 245, 245)  # couleur de fond des cellules
+    pdf.set_line_width(0.3)
 
-    for _, row in stats_df.iterrows():
-        pdf.set_font("Roboto", "B", 10)
-        pdf.cell(70, 6, f"{row['Indicateur']} :", ln=0)
-        pdf.set_font("Roboto", "", 10)
-        pdf.cell(40, 6, str(row["Valeur"]), ln=1)
+    for i, row in stats_df.iterrows():
+        pdf.cell(50, 5, f"{row['Indicateur']}:", border=1, align="L")
+        pdf.cell(30, 5, f"{row['Valeur']}", border=1, align="C")
+        pdf.ln(5)
 
-    end_table_y = pdf.get_y()
+    pdf.ln(10)  # Fin de la page 1
 
-    # KPI compacts
-    x_kpi = 130
-    y_kpi = y_stats
+    # ========================================================================
+    # PAGE 2 — Dashboard (Seconde moitié)
+    # ========================================================================
 
-    sus_mean = df["SUS_Score"].mean()
-    sus_color = get_sus_color(sus_mean)
-
-    draw_kpi(pdf, "Score SUS", f"{sus_mean:.1f}", x_kpi, y_kpi, bg_color=sus_color)
-    draw_kpi(pdf, "Réponses", str(len(df)), x_kpi, y_kpi + 16)
-    draw_kpi(pdf, "≥ 70", f"{(df['SUS_Score'] >= 70).mean()*100:.1f}%", x_kpi, y_kpi + 32)
-    draw_kpi(pdf, "≤ 50", f"{(df['SUS_Score'] <= 50).mean()*100:.1f}%", x_kpi, y_kpi + 48)
-
-    # Position sous les KPI
-    pdf.set_y(max(end_table_y, y_kpi + 68))
-
-    # Section JAUGES
-    pdf.ln(3)
-    pdf.set_draw_color(210, 210, 210)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(6)
-
-    pdf.set_font("Roboto", "B", 14)
-    pdf.cell(0, 10, "Scores SUS & Acceptabilité", ln=True)
-
-    pdf.ln(3)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(6)
-
-    # Graphes standard (clés réelles venant de fig-store)
-    main_order = ["gauge", "accept", "hist", "radar"]
-
-
-    for key in main_order:
-        if key in img_paths:
-            pdf.image(img_paths[key], w=175)
-            pdf.ln(8)
-
-    # =========================================================================
-    # PAGE 2 — Classes + Catégories
-    # =========================================================================
     pdf.add_page()
 
-    # Histogramme des classes SUS (clé "class" dans fig-store)
-    if "class" in img_paths:
-        pdf.image(img_paths["class"], w=175, h=80)
-        pdf.ln(4)
+    # --- Titre principal ---
+    pdf.set_font("Roboto", "B", 12)
+    pdf.set_text_color(30, 30, 30)
+    pdf.cell(0, 8, "Résumé du questionnaire SUS (Suite)", ln=True)
+    pdf.ln(4)
+
+    # -----------------------------
+    # 4) Graphiques (Partie 2)
+    # -----------------------------
+    if "hist" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["hist"],
+            x_zone=(pdf.w - 200) / 2,
+            y_zone=pdf.get_y(),
+            max_w=200,
+            max_h=60
+        )
+
+    pdf.ln(70)  # Espacement après les graphiques
+
+    if "radar" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["radar"],
+            x_zone=(pdf.w - 200) / 2,
+            y_zone=pdf.get_y(),
+            max_w=200,
+            max_h=60
+        )
+
+    pdf.ln(70)  # Espacement après le radar
+
+    # -----------------------------
+    # 5) Graphique des classes (si nécessaire)
+    # -----------------------------
+    if "class" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["class"],
+            x_zone=(pdf.w - 200) / 2,
+            y_zone=pdf.get_y(),
+            max_w=200,
+            max_h=60
+        )
+
+    pdf.ln(70)
+
+    # -----------------------------
+    # 6) Les 2 JAUGES (SUS + Acceptabilité) (partie basse)
+    # -----------------------------
+    y_gauges = pdf.get_y()  # Positionner après les graphiques
+    if "gauge" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["gauge"],
+            x_zone=(pdf.w - 160) / 2,
+            y_zone=y_gauges,
+            max_w=160,
+            max_h=30
+        )
+
+    y_gauges += 30 + 10  # Espacement
+
+    if "accept" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["accept"],
+            x_zone=(pdf.w - 160) / 2,
+            y_zone=y_gauges,
+            max_w=160,
+            max_h=30
+        )
+
+    pdf.ln(10)
+
+    # --- Fin de la page 2 ---
 
 
-    pdf.set_draw_color(200, 200, 200)
-    pdf.line(12, pdf.get_y(), 198, pdf.get_y())
-    pdf.ln(3)
-
-    cat_keys = ["Categorie 1", "Categorie 2", "Categorie 3", "Categorie 4"]
-    left_x, right_x = 12, 110
-    top = pdf.get_y()
-    row_h = 70
-
-    positions = [
-        (cat_keys[0], left_x, top),
-        (cat_keys[1], right_x, top),
-        (cat_keys[2], left_x, top + row_h),
-        (cat_keys[3], right_x, top + row_h),
-    ]
-
-    for key, x, y in positions:
-        if key in img_paths:
-            pdf.set_xy(x, y + 6)
-            pdf.image(img_paths[key], w=85, h=70)
-
-    # =========================================================================
-    # PAGE 3 — ANALYSE IA
-    # =========================================================================
+    # ========================================================================
+    # PAGE 3 — ANALYSE IA (texte)
+    # ========================================================================
     if ai_text:
         pdf.add_page()
 
-        pdf.set_font("Roboto", "B", 14)
-        pdf.cell(0, 10, "Analyse IA", ln=True)
+        pdf.set_font("Roboto", "B", 12)
+        pdf.cell(0, 8, "Analyse IA", ln=True)
 
-        pdf.ln(3)
+        pdf.ln(2)
         pdf.set_draw_color(180, 180, 180)
-        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-        pdf.ln(5)
+        pdf.line(10, pdf.get_y(), pdf.w - 10, pdf.get_y())
+        pdf.ln(4)
 
         pdf.set_font("Roboto", "", 11)
-        cleaned = ai_text.replace("###", "").replace("**", "")
+        # Nettoyage minimal : on enlève les marqueurs Markdown lourds
+        cleaned = (
+            ai_text.replace("####", "")
+            .replace("###", "")
+            .replace("**", "")
+        )
 
         for line in cleaned.split("\n"):
-            if pdf.get_y() > 260:
+            if pdf.get_y() > pdf.h - 20:
                 pdf.add_page()
+                pdf.set_font("Roboto", "", 11)
             pdf.multi_cell(0, 5, line)
             pdf.ln(1)
 
-    # =========================================================================
+    # ========================================================================
     # CLEAN TEMP FILES
-    # =========================================================================
-    for p in img_paths.values():
+    # ========================================================================
+    for info in img_infos.values():
         try:
-            os.remove(p)
-        except:
+            os.remove(info["path"])
+        except Exception:
             pass
 
     pdf.output(output_path)
