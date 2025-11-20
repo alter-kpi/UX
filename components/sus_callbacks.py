@@ -359,47 +359,26 @@ def register_callbacks(app):
 
 
     @app.callback(
-        Output("ai-analysis", "data"),
-        Output("ai-processing", "children"),
-        Input("file-info", "children"),     # 👈 déclenche TOUJOURS après un import
-        State("data-store", "data"),        # 👈 récupère DF
+        Output("ai-analysis-visible", "children"),
+        Input("file-info", "children"),
+        State("data-store", "data"),
         prevent_initial_call=True
     )
     def run_ai_analysis(_, data):
 
         if not data:
-            return "", ""
-
-        # Spinner
-        processing = "loading"
+            return ""
 
         df = pd.DataFrame(data)
 
+        # 🌀 Important : laisser Dash afficher le spinner pendant l'attente
         try:
             prompt = build_ai_prompt(df)
             analysis = generate_ai_analysis(prompt)
+            return analysis
         except Exception as e:
-            return f"⚠️ Erreur génération IA : {e}", ""
+            return f"⚠️ Erreur génération IA : {e}"
 
-        return analysis, ""
-
-
-
-
-    @app.callback(
-        Output("ai-analysis-visible", "children", allow_duplicate=True),
-        Input("ai-analysis", "data"),
-        Input("sus-tabs", "active_tab"),
-        prevent_initial_call=True   # ✅ important avec allow_duplicate
-    )
-    def sync_ai_visible(ai_text, active_tab):
-
-        # On n'affiche que si on est sur l'onglet IA
-        if active_tab != "tab-ia":
-            return dash.no_update
-
-        # Dès que ai-analysis est rempli → on affiche le texte
-        return ai_text or ""
 
 
 

@@ -133,10 +133,15 @@ ia_layout = html.Div([
     ),
 
     # --- Zone où le texte IA s'affiche ---
-    dcc.Markdown(
-        id="ai-analysis-visible",
-        style={"whiteSpace": "pre-wrap"}
+    dcc.Loading(
+        id="loading-ai",
+        type="circle",
+        children=dcc.Markdown(
+            id="ai-analysis-visible",
+            style={"whiteSpace": "pre-wrap", "marginTop": "25px"}
+        )
     )
+
 ])
 
 
@@ -241,28 +246,27 @@ layout = dbc.Container([
         ]
     ),
 
-    dcc.Loading(
-        type="circle",
-        fullscreen=False,
-            children=dbc.Card(
-                dbc.CardBody(
-                    html.Div([
-                        html.Div(dashboard_layout, id="tab-dashboard"),
-                        html.Div(details_layout, id="tab-details", style={"display": "none"}),
-                        html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
-                    ], style={
-                        "minHeight": "85vh",
-                        "maxHeight": "85vh",
-                        "overflowY": "auto",
-                        "padding": "5px",
-                        "overflowX": "hidden"
-                    })
-
+   dbc.Card(
+        dbc.CardBody(
+            html.Div([
+                html.Div(
+                    dcc.Loading(type="circle", children=dashboard_layout),
+                    id="tab-dashboard"
                 ),
-                className="shadow-sm",
-                style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
-            ),
+                html.Div(details_layout, id="tab-details", style={"display": "none"}),
+                html.Div(ia_layout, id="tab-ia", style={"display": "none"}),
+            ], style={
+                "minHeight": "85vh",
+                "maxHeight": "85vh",
+                "overflowY": "auto",
+                "padding": "5px",
+                "overflowX": "hidden"
+            })
+        ),
+        className="shadow-sm",
+        style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
     )
+
 ], fluid=True)
 
 
