@@ -90,9 +90,9 @@ def draw_kpi(pdf, title, value, x, y, w=70, h=16, bg_color=(247, 247, 247)):
     border_color = (max(r - 40, 0), max(g - 40, 0), max(b - 40, 0))
 
     # Ombre plus légère
-    pdf.set_draw_color(220, 220, 220)
-    pdf.set_fill_color(240, 240, 240)
-    pdf.rect(x + 0.7, y + 0.7, w, h, style="F")
+   # pdf.set_draw_color(220, 220, 220)
+   # pdf.set_fill_color(240, 240, 240)
+   # pdf.rect(x + 0.7, y + 0.7, w, h, style="F")
 
     # Carte
     pdf.set_draw_color(*border_color)
@@ -138,11 +138,13 @@ def save_fig_to_png(fig_obj, key, img_dir):
 # ============================================================================
 # Utilitaire : dessin d'une image SANS déformation, centrée horizontalement
 # ============================================================================
-def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h):
+def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h, shadow_offset=0.2, shadow_color=(200, 200, 200)):
     """
     img_info : dict {path, w, h}
     x_zone, y_zone : coin haut-gauche de la zone
-    max_w, max_h : taille max dispo
+    max_w, max_h : taille max disponible
+    shadow_offset : décalage pour l'ombre tout autour
+    shadow_color : couleur de l'ombre (en RGB)
     """
     if not img_info:
         return
@@ -154,23 +156,31 @@ def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h):
     if w_img == 0 or h_img == 0:
         return
 
-    # scale sans déformation (ratio préservé)
+    # Calcul de l'échelle pour conserver le ratio
     scale = min(max_w / w_img, max_h / h_img)
     w_display = w_img * scale
     h_display = h_img * scale
 
-    # centrage horizontal dans la zone
+    # Calcul du positionnement
     x_img = x_zone + (max_w - w_display) / 2
-    y_img = y_zone  # pas de centrage vertical, top align
+    y_img = y_zone  # Pas de centrage vertical, aligné en haut
 
-    pdf.image(path, x=x_img, y=y_img, w=w_display, h=h_display)
+    # Dessiner l'ombre tout autour de l'image
+    pdf.set_fill_color(*shadow_color)  # Définir la couleur de l'ombre
+
+    # Ombre tout autour (haut, bas, gauche, droite)
+    pdf.rect(x_img - shadow_offset, y_img - shadow_offset, w_display + 2*shadow_offset, h_display + 2*shadow_offset, 'F')
+
+    # Dessiner l'image principale au-dessus de l'ombre
+    pdf.image(path, x=x_img, y=y_img, w=w_display, h=h_display)  # Image principale
+
+
 
 
 # ============================================================================
 # MAIN PDF GENERATOR
 # ============================================================================
 def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
-    nb_resp = len(df)
 
     # ------------------------------------------------------------------------
     # 1) Export des figures → PNG + tailles
@@ -212,192 +222,112 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     pdf.set_auto_page_break(auto=True, margin=25)
 
     # ========================================================================
-    # PAGE 1 — Dashboard (Première moitié)
+    # PAGE 1 — Résumé + KPIs + Graph Classes + 2 JAUGES
     # ========================================================================
 
     pdf.add_page()
 
     # --- Titre principal ---
-    pdf.set_font("Roboto", "B", 12)
+    pdf.set_font("Roboto", "B", 11)
     pdf.set_text_color(30, 30, 30)
-    pdf.cell(0, 8, "Résumé du questionnaire SUS", ln=True)
-    pdf.ln(4)
+    pdf.cell(0, 2, "Résumé du questionnaire SUS", ln=True)
+    #pdf.ln(4)
 
     # -----------------------------
-    # 1) KPI Cards
+    # 1) Colonnes : Stats / KPI / Classes
     # -----------------------------
-    y_start = pdf.get_y()
-    kpi_w = (pdf.w - 30) / 3   # 3 colonnes pour les KPIs
-    kpi_h = 40  # Hauteur des cartes KPI
-    kpi_spacing = 10  # Espace entre les cartes
 
-    # Générer les cartes KPI
-    draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 10, y_start, w=kpi_w)
-    y_start += kpi_h + kpi_spacing
-
-    draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", kpi_w + 10, y_start, w=kpi_w, bg_color=sus_color)
-    y_start += kpi_h + kpi_spacing
-
-    draw_kpi(pdf, "≥ 72 (Acceptable+)", f"{pct_72:.1f}%", 2 * kpi_w + 10, y_start, w=kpi_w)
-    y_start += kpi_h + kpi_spacing
+    # Données stats
+    stats_df = pd.DataFrame(stats_table) if stats_table else pd.DataFrame()
 
     # -----------------------------
-    # 2) Graphiques (Partie 1)
+    # 1.1) Colonne STATISTIQUES (gauche)
     # -----------------------------
-    if "gauge" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["gauge"],
-            x_zone=(pdf.w - 160) / 2,
-            y_zone=y_start,
-            max_w=160,
-            max_h=30
-        )
-
-    y_start += 30 + 10  # Espacement après la jauge
-
-    if "accept" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["accept"],
-            x_zone=(pdf.w - 160) / 2,
-            y_zone=y_start,
-            max_w=160,
-            max_h=30
-        )
-    y_start += 30 + 10
-
-    # -----------------------------
-    # 3) Table des Stats
-    # -----------------------------
-    pdf.set_xy(10, y_start)
-    pdf.set_font("Roboto", "", 10)
+    pdf.set_xy(10, 45)  # Position de départ du tableau
+    pdf.set_font("Roboto", "", 6)
     pdf.set_text_color(40, 40, 40)
-    pdf.set_draw_color(180, 180, 180)  # couleur des bordures
-    pdf.set_fill_color(245, 245, 245)  # couleur de fond des cellules
-    pdf.set_line_width(0.3)
 
-    for i, row in stats_df.iterrows():
-        pdf.cell(50, 5, f"{row['Indicateur']}:", border=1, align="L")
-        pdf.cell(30, 5, f"{row['Valeur']}", border=1, align="C")
-        pdf.ln(5)
+    # Dessiner l'en-tête du tableau (titres des colonnes)
+    pdf.set_font("Roboto", "B", 10)
+    pdf.cell(50, 5, "Indicateur", border=1, align="C", ln=False)  # Colonne "Indicateur"
+    pdf.cell(30, 5, "Valeur", border=1, align="C", ln=True)       # Colonne "Valeur" (avec retour à la ligne)
 
-    pdf.ln(10)  # Fin de la page 1
+    # Remplir les lignes du tableau avec les données du DataFrame
+    pdf.set_font("Roboto", "", 10)
+    for _, row in stats_df.iterrows():
+        pdf.set_xy(10, pdf.get_y())  # Réinitialise la position Y pour chaque ligne
+        pdf.cell(50, 5, f"{row['Indicateur']}", border=1, align="C", ln=False)  # Indicateur
+        pdf.cell(30, 5, str(row["Valeur"]), border=1, align="C", ln=True)        # Valeur (avec retour à la ligne)
 
-    # ========================================================================
-    # PAGE 2 — Dashboard (Seconde moitié)
-    # ========================================================================
-
-    pdf.add_page()
-
-    # --- Titre principal ---
-    pdf.set_font("Roboto", "B", 12)
-    pdf.set_text_color(30, 30, 30)
-    pdf.cell(0, 8, "Résumé du questionnaire SUS (Suite)", ln=True)
-    pdf.ln(4)
 
     # -----------------------------
-    # 4) Graphiques (Partie 2)
+    # 1.2) Colonne KPI (centre)
     # -----------------------------
-    if "hist" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["hist"],
-            x_zone=(pdf.w - 200) / 2,
-            y_zone=pdf.get_y(),
-            max_w=200,
-            max_h=60
-        )
+    sus_mean = df["SUS_Score"].mean()
+    sus_color = get_sus_color(sus_mean)
+    nb_resp = len(df)
+    pct_72 = (df["SUS_Score"] >= 73).mean() * 100
 
-    pdf.ln(70)  # Espacement après les graphiques
+    draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 100, 50, w=40)
+    draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", 100, 70, w=40, bg_color=sus_color)
+    draw_kpi(pdf, "≥ 73 (Acceptable+)", f"{pct_72:.1f}%", 100, 90, w=40)
 
-    if "radar" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["radar"],
-            x_zone=(pdf.w - 200) / 2,
-            y_zone=pdf.get_y(),
-            max_w=200,
-            max_h=60
-        )
-
-    pdf.ln(70)  # Espacement après le radar
 
     # -----------------------------
-    # 5) Graphique des classes (si nécessaire)
+    # 1.3) Colonne GRAPH CLASSES (droite)
     # -----------------------------
     if "class" in img_infos:
         draw_image_centered(
             pdf,
             img_infos["class"],
-            x_zone=(pdf.w - 200) / 2,
-            y_zone=pdf.get_y(),
-            max_w=200,
-            max_h=60
+            x_zone=160,
+            y_zone=45,
+            max_w=120,
+            max_h=100
         )
 
-    pdf.ln(70)
 
     # -----------------------------
-    # 6) Les 2 JAUGES (SUS + Acceptabilité) (partie basse)
+    # Fin bloc 3 colonnes
     # -----------------------------
-    y_gauges = pdf.get_y()  # Positionner après les graphiques
+    
+    # ========================================================================
+    # 2) JAUGES (SUS + Acceptabilité)
+    # ========================================================================
+    pdf.set_xy(10, 140)
+    pdf.set_font("Roboto", "B", 11)
+    pdf.cell(0, 2, "Scores SUS & Acceptabilité", ln=True)
+
+
+
+    margin_x = (pdf.w - 150) / 2
+
+    # Jauge SUS (haut)
     if "gauge" in img_infos:
         draw_image_centered(
             pdf,
             img_infos["gauge"],
-            x_zone=(pdf.w - 160) / 2,
-            y_zone=y_gauges,
+            x_zone=margin_x,
+            y_zone=150,
             max_w=160,
-            max_h=30
+            max_h=40
         )
 
-    y_gauges += 30 + 10  # Espacement
-
-    if "accept" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["accept"],
-            x_zone=(pdf.w - 160) / 2,
-            y_zone=y_gauges,
-            max_w=160,
-            max_h=30
-        )
-
-    pdf.ln(10)
-
-    # --- Fin de la page 2 ---
+    # Jauge Acceptabilité (bas)
+   # if "accept" in img_infos:
+   #     draw_image_centered(
+   #         pdf,
+   #         img_infos["accept"],
+   #         x_zone=margin_x,
+   #         y_zone=y_gauges,
+   #         max_w=GAUGE_W,
+   #         max_h=GAUGE_H
+   #     )
+   #     y_gauges += GAUGE_H + GAUGE_SPACING 
 
 
-    # ========================================================================
-    # PAGE 3 — ANALYSE IA (texte)
-    # ========================================================================
-    if ai_text:
-        pdf.add_page()
-
-        pdf.set_font("Roboto", "B", 12)
-        pdf.cell(0, 8, "Analyse IA", ln=True)
-
-        pdf.ln(2)
-        pdf.set_draw_color(180, 180, 180)
-        pdf.line(10, pdf.get_y(), pdf.w - 10, pdf.get_y())
-        pdf.ln(4)
-
-        pdf.set_font("Roboto", "", 11)
-        # Nettoyage minimal : on enlève les marqueurs Markdown lourds
-        cleaned = (
-            ai_text.replace("####", "")
-            .replace("###", "")
-            .replace("**", "")
-        )
-
-        for line in cleaned.split("\n"):
-            if pdf.get_y() > pdf.h - 20:
-                pdf.add_page()
-                pdf.set_font("Roboto", "", 11)
-            pdf.multi_cell(0, 5, line)
-            pdf.ln(1)
-
+    
+   
     # ========================================================================
     # CLEAN TEMP FILES
     # ========================================================================
