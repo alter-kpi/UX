@@ -84,6 +84,7 @@ def register_callbacks(app):
     @app.callback(
         Output('file-info', 'children'),
         Output('data-store', 'data'),
+        Output("ai-analysis-visible-store", "data"),   # <- FLAG IA
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
         prevent_initial_call=True
@@ -91,7 +92,7 @@ def register_callbacks(app):
     def load_file(contents, filename):
 
         if contents is None:
-            return "Aucun fichier importé.", None
+            return "Aucun fichier importé.", None, "idle"
 
         try:
             df = parse_upload(contents, filename or "fichier")
@@ -100,7 +101,8 @@ def register_callbacks(app):
             if len(qcols) != 10:
                 return (
                     "❌ Colonnes SUS non détectées (Q1..Q10 / SUS1..SUS10 / 10 numériques).",
-                    None
+                    None,
+                    "idle"
                 )
 
             df = compute_sus(df, qcols)
@@ -110,10 +112,12 @@ def register_callbacks(app):
                 f"Score moyen: {np.nanmean(df['SUS_Score']):.1f}"
             )
 
-            return info, df.to_dict('records')
+            # FLAG IA = ON
+            return info, df.to_dict('records'), "run"
 
         except Exception as e:
-            return f"❌ Erreur de lecture : {e}", None
+            return f"❌ Erreur de lecture : {e}", None, "idle"
+
 
 
     # ==========================================================
@@ -356,28 +360,32 @@ def register_callbacks(app):
         return prompt
 
 
-
-
     @app.callback(
-        Output("ai-analysis-visible", "children"),
-        Input("file-info", "children"),
+        Output("ai-analysis-visible", "children", allow_duplicate=True),
+        Output("ai-analysis-visible-store", "data", allow_duplicate=True),  # FLAG = off
+        Input("ai-analysis-visible-store", "data"),
         State("data-store", "data"),
         prevent_initial_call=True
     )
-    def run_ai_analysis(_, data):
+    def run_ai_when_ready(flag, data):
 
-        if not data:
-            return ""
+        # Si aucun fichier ou pas de demande IA → ne rien faire
+        if flag != "run" or not data:
+            raise dash.exceptions.PreventUpdate
 
         df = pd.DataFrame(data)
 
-        # 🌀 Important : laisser Dash afficher le spinner pendant l'attente
         try:
             prompt = build_ai_prompt(df)
             analysis = generate_ai_analysis(prompt)
-            return analysis
+            return analysis, "done"
+
         except Exception as e:
-            return f"⚠️ Erreur génération IA : {e}"
+            return f"⚠️ Erreur génération IA : {e}", "done"
+
+
+
+    
 
 
 
