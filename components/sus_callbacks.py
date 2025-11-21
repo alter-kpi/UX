@@ -592,12 +592,17 @@ def register_callbacks(app):
         Output("upload-data", "contents", allow_duplicate=True),
         Output("ai-analysis-visible-store", "data", allow_duplicate=True),
 
+        Output("pdf-preview", "children", allow_duplicate=True),
+        Output("pdf-download-zone", "children", allow_duplicate=True),
+
+
+
 
         Input("btn-reset", "n_clicks"),
         prevent_initial_call=True
     )
     def reset_all(n):
-        return "", "", "", "tab-dashboard", None, None, "", None, ""
+        return "", "", "", "tab-dashboard", None, None, "", None, "","", "" 
 
 
 
