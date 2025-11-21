@@ -362,7 +362,8 @@ def register_callbacks(app):
 
     @app.callback(
         Output("ai-analysis-visible", "children", allow_duplicate=True),
-        Output("ai-analysis-visible-store", "data", allow_duplicate=True),  # FLAG = off
+        Output("ai-analysis-visible-store", "data", allow_duplicate=True),
+        Output("ai-analysis", "data", allow_duplicate=True),
         Input("ai-analysis-visible-store", "data"),
         State("data-store", "data"),
         prevent_initial_call=True
@@ -378,7 +379,8 @@ def register_callbacks(app):
         try:
             prompt = build_ai_prompt(df)
             analysis = generate_ai_analysis(prompt)
-            return analysis, "done"
+            return analysis, "done", analysis
+            
 
         except Exception as e:
             return f"⚠️ Erreur génération IA : {e}", "done"

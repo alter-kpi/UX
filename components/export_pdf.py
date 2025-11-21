@@ -61,7 +61,7 @@ class SUSReportPDF(FPDF):
         self.set_xy(10, 10)
         self.set_font("Roboto", "B", 14)
         self.set_text_color(30, 30, 30)
-        self.cell(0, 10, "Rapport d'analyse SUS", ln=True)
+        self.cell(0, 10, "Alter UX - Rapport d'analyse SUS", ln=True)
 
         self.set_font("Roboto", "", 9)
         self.set_text_color(80, 80, 80)
@@ -76,7 +76,7 @@ class SUSReportPDF(FPDF):
         self.set_y(-12)
         self.set_font("Roboto", "", 9)
         self.set_text_color(110, 110, 110)
-        self.cell(0, 8, "Alter KPI - www.alter-kpi.com - info@alter-kpi.com", align="C")
+        self.cell(0, 8, "Alter UX - www.alter-ux.com - info@alter-kpi.com", align="C")
 
 
 # ============================================================================
@@ -228,6 +228,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     pdf.add_page()
 
     # --- Titre principal ---
+    pdf.ln(1)
     pdf.set_font("Roboto", "B", 11)
     pdf.set_text_color(30, 30, 30)
     pdf.cell(0, 2, "Résumé du questionnaire SUS", ln=True)
@@ -243,7 +244,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     # -----------------------------
     # 1.1) Colonne STATISTIQUES (gauche)
     # -----------------------------
-    pdf.set_xy(10, 45)  # Position de départ du tableau
+    pdf.set_xy(10, 50)  # Position de départ du tableau
     pdf.set_font("Roboto", "", 6)
     pdf.set_text_color(40, 40, 40)
 
@@ -268,9 +269,9 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     nb_resp = len(df)
     pct_72 = (df["SUS_Score"] >= 73).mean() * 100
 
-    draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 100, 50, w=40)
-    draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", 100, 70, w=40, bg_color=sus_color)
-    draw_kpi(pdf, "≥ 73 (Acceptable+)", f"{pct_72:.1f}%", 100, 90, w=40)
+    draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 105, 55, w=40)
+    draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", 105, 75, w=40, bg_color=sus_color)
+    draw_kpi(pdf, "≥ 73 (Acceptable+)", f"{pct_72:.1f}%", 105, 95, w=40)
 
 
     # -----------------------------
@@ -281,7 +282,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             pdf,
             img_infos["class"],
             x_zone=160,
-            y_zone=45,
+            y_zone=50,
             max_w=120,
             max_h=100
         )
@@ -294,7 +295,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     # ========================================================================
     # 2) JAUGES (SUS + Acceptabilité)
     # ========================================================================
-    pdf.set_xy(10, 140)
+    pdf.set_xy(10, 135)
     pdf.set_font("Roboto", "B", 11)
     pdf.cell(0, 2, "Scores SUS & Acceptabilité", ln=True)
 
@@ -308,7 +309,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             pdf,
             img_infos["gauge"],
             x_zone=margin_x,
-            y_zone=150,
+            y_zone=145,
             max_w=160,
             max_h=40
         )
@@ -326,8 +327,156 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
    #     y_gauges += GAUGE_H + GAUGE_SPACING 
 
 
-    
+    # ========================================================================
+    # PAGE 2 — 
+    # ========================================================================
+
+    pdf.add_page()
+
+    # ---- TITRE ----
+    pdf.ln(1)
+    pdf.set_font("Roboto", "B", 12)
+    pdf.set_text_color(30, 30, 30)
+    pdf.cell(0, 8, "Répartition des scores & Radar", ln=True)
+
+    # ---- GRAPHE HISTOGRAMME (gauche) ----
+    if "hist" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["hist"],
+            x_zone=10,     # Coin haut-gauche
+            y_zone=70,
+            max_w= (pdf.w / 2) - 15,   # moitié de la largeur
+            max_h=150                 # hauteur fixe
+        )
+
+    # ---- GRAPHE RADAR (droite) ----
+    if "radar" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["radar"],
+            x_zone=(pdf.w / 2) + 5,   # moitié droite
+            y_zone=70,
+            max_w=(pdf.w / 2) - 15,
+            max_h=150
+        )
+
    
+    # ========================================================================
+    # PAGE 3 — Graphiques par catégorie (2x2)
+    # ========================================================================
+
+    pdf.add_page()
+
+    # ---- TITRE ----
+    pdf.ln(1)
+    pdf.set_font("Roboto", "B", 12)
+    pdf.set_text_color(30, 30, 30)
+    pdf.cell(0, 8, "Analyse par catégorie", ln=True)
+
+    # ---- COORDONNÉES FIXES POUR LES 4 ZONES ----
+    # Zone 1 (haut-gauche)
+    X1, Y1 = 10, 45
+    # Zone 2 (haut-droite)
+    X2, Y2 = (pdf.w / 2) + 5, 45
+    # Zone 3 (bas-gauche)
+    X3, Y3 = 10, 120
+    # Zone 4 (bas-droite)
+    X4, Y4 = (pdf.w / 2) + 5, 120
+
+    MAX_W = (pdf.w / 2) - 20
+    MAX_H = 80
+
+    # ---- LISTE DES CLÉS DISPONIBLES ----
+    cat_keys = ["cat1", "cat2", "cat3", "cat4"]
+    coords = [(X1, Y1), (X2, Y2), (X3, Y3), (X4, Y4)]
+
+    slot_index = 0
+
+    for key in cat_keys:
+        if key in img_infos:
+            x_zone, y_zone = coords[slot_index]
+
+            draw_image_centered(
+                pdf,
+                img_infos[key],
+                x_zone=x_zone,
+                y_zone=y_zone,
+                max_w=MAX_W,
+                max_h=MAX_H
+            )
+            slot_index += 1
+
+    # ========================================================================
+    # PAGE 4 — Analyse IA (style proche CSS + Markdown enrichi)
+    # ========================================================================
+
+    pdf.add_page()
+
+    # ---- CONFIG STYLE ----
+    LEFT = 20
+    RIGHT = pdf.w - 20
+    MAX_W = RIGHT - LEFT
+
+    LINE = 5.2
+    TITLE_LINE = 7
+
+    pdf.set_text_color(40, 40, 40)
+
+    def write_paragraph(text):
+        pdf.set_x(LEFT)
+        pdf.multi_cell(MAX_W, LINE, text)
+        pdf.ln(1.5)
+
+    def write_title(text):
+        pdf.set_x(LEFT)
+        pdf.set_font("Roboto", "B", 12)
+        pdf.set_text_color(30, 30, 30)
+        pdf.multi_cell(MAX_W, TITLE_LINE, text)
+        pdf.ln(2)
+        pdf.set_font("Roboto", "", 10)
+        pdf.set_text_color(40, 40, 40)
+
+    def write_subtitle(text):
+        pdf.set_x(LEFT)
+        pdf.set_font("Roboto", "B", 11)
+        pdf.set_text_color(35, 35, 35)
+        pdf.multi_cell(MAX_W, LINE, text)
+        pdf.ln(1)
+        pdf.set_font("Roboto", "", 10)
+        pdf.set_text_color(40, 40, 40)
+
+
+    # ---- TITRE PAGE ----
+    write_title("Analyse IA détaillée")
+
+    # Ligne sous titre
+    pdf.set_draw_color(170, 170, 170)
+    pdf.line(LEFT, pdf.get_y(), RIGHT, pdf.get_y())
+    pdf.ln(4)
+
+
+    # ---- RENDU MARKDOWN MANUEL ----
+    if ai_text:
+        clean = ai_text.split("\n")
+
+        for line in clean:
+
+            # TITRE (####)
+            if line.startswith("#### "):
+                write_subtitle(line.replace("#### ", ""))
+
+            # Saut de section
+            elif line.strip() == "":
+                pdf.ln(2)
+
+            # Paragraphe normal
+            else:
+                write_paragraph(line)
+
+    else:
+        write_paragraph("Aucune analyse IA n’a été générée.")
+
     # ========================================================================
     # CLEAN TEMP FILES
     # ========================================================================
