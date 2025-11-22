@@ -243,6 +243,7 @@ def create_radar(df):
         and pd.api.types.is_numeric_dtype(df[c])
     ]
 
+    # Prendre les 9 items SUS
     qcols = qcols[1:10]
 
     mean_items = df[qcols].mean(numeric_only=True).reset_index()
@@ -253,7 +254,6 @@ def create_radar(df):
         r="Score",
         theta="Item",
         line_close=True,
-        range_r=[0, 5],
         title="Moyenne par question (1-5)"
     )
 
@@ -271,15 +271,24 @@ def create_radar(df):
             font=dict(size=20, color="#333"),
             pad=dict(t=20)
         ),
+
+        # 📌 C’est ici que l’on force le radar à commencer à 1
         polar=dict(
-            radialaxis=dict(showticklabels=True, tickfont=dict(size=12)),
+            radialaxis=dict(
+                range=[1, 5],     # <-- Début à 1
+                dtick=1,
+                showticklabels=True,
+                tickfont=dict(size=12)
+            ),
             angularaxis=dict(tickfont=dict(size=12))
         ),
+
         margin=dict(l=30, r=30, t=60, b=30),
         height=400
     )
 
     return fig
+
 
 
 # ======================================================

@@ -25,30 +25,18 @@ dashboard_layout = html.Div([
         ], className="p-3 text-center bg-white"), md=4),
     ], className="mb-4 g-3"),
 
-    # Gauges
+    # Gauge
     dbc.Row([
         dbc.Col([
-
             html.Div([
                 dcc.Graph(
                     id="gauge-graph",
                     config={"displayModeBar": False},
                     style={"height": "180px"}
                 )
-            ], className="mb-4"),
-
-            html.Div([
-                dcc.Graph(
-                    id="acceptability-graph",
-                    config={"displayModeBar": False},
-                    style={"height": "180px"}
-                )
             ])
-            
         ], md=8)
     ], justify="center", className="mb-5"),
-
-
 
     # Stats + histogram
     dbc.Row([
@@ -210,6 +198,15 @@ layout = dbc.Container([
                             ),
                             width="auto"
                         ),
+                        dbc.Col(
+                            dbc.Button(
+                                "🗑️ Reset",
+                                id="btn-reset",
+                                color="danger",
+                                style={"whiteSpace": "nowrap", "width": "110px"}
+                            ),
+                            width="auto"
+                        ),
 
                         dbc.Col(
                             html.A(
@@ -223,16 +220,16 @@ layout = dbc.Container([
                             ),
                             width="auto"
                         ),
-
                         dbc.Col(
                             dbc.Button(
-                                "🗑️ Reset",
-                                id="btn-reset",
-                                color="danger",
+                                "ℹ️ Aide",
+                                id="btn-help-template",
+                                color="dark",
                                 style={"whiteSpace": "nowrap", "width": "110px"}
                             ),
                             width="auto"
                         ),
+                        
                     ],
                     className="g-2 justify-content-end mt-3",
                 ),
@@ -256,6 +253,31 @@ layout = dbc.Container([
     dcc.Store(id="fig-store", storage_type="session"),
     dcc.Store(id="ai-processing", storage_type="session"),
     dcc.Store(id="ai-analysis", storage_type="session"),
+
+    #Modal Explications template
+
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("Comment remplir le fichier Excel ?")),
+            dbc.ModalBody([
+                html.P("• Colonne A : identifiant unique du répondant."),
+                html.P("• Colonnes B à K : réponses aux 10 questions (notes de 1 à 5)."),
+                html.P("• Colonnes L à O : catégories optionnelles (texte ou nombre). "
+                    "Vous pouvez renommer les en-têtes ou laisser vide."),
+                html.Hr(),
+                html.Img(
+                    src="/assets/template.png",
+                    style={"width": "100%", "border": "1px solid #ccc", "borderRadius": "4px"}
+                )
+            ]),
+            dbc.ModalFooter(
+                dbc.Button("Fermer", id="close-help-template", className="ms-auto", color="primary")
+            ),
+        ],
+        id="modal-help-template",
+        is_open=False,
+        size="lg",
+    ),
 
 
 
@@ -296,5 +318,7 @@ layout = dbc.Container([
     )
 
 ], fluid=True)
+
+
 
 

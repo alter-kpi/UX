@@ -1,6 +1,6 @@
 from components.export_pdf import generate_sus_pdf
 from components.charts import (
-    compute_sus_stats, create_gauge_native, create_acceptability_gauge,
+    compute_sus_stats, create_gauge_native,
     create_sus_class_histogram, empty_fig,
     create_main_histogram, create_radar, create_category_combined
 )
@@ -183,7 +183,6 @@ def register_callbacks(app):
         # --- Graphes ---
         figs = {
             "gauge": create_gauge_native(mean_sus),
-            "accept": create_acceptability_gauge(mean_sus),
             "hist": create_main_histogram(df),
             "radar": create_radar(df),
             "class": create_sus_class_histogram(df),
@@ -556,7 +555,6 @@ def register_callbacks(app):
 
     @app.callback(
         Output("gauge-graph", "figure"),
-        Output("acceptability-graph", "figure"),
         Output("hist-graph", "figure"),
         Output("radar-graph", "figure"),
         Output("sus-class-hist", "figure"),
@@ -569,12 +567,28 @@ def register_callbacks(app):
 
         return (
             figs.get("gauge", empty_fig()),
-            figs.get("accept", empty_fig()),
             figs.get("hist", empty_fig()),
             figs.get("radar", empty_fig()),
             figs.get("class", empty_fig())
         )
     
+
+    # ==========================================================
+    # MODAL — Aide Template
+    # ==========================================================
+    @app.callback(
+        Output("modal-help-template", "is_open"),
+        Input("btn-help-template", "n_clicks"),
+        Input("close-help-template", "n_clicks"),
+        State("modal-help-template", "is_open"),
+        prevent_initial_call=True
+    )
+    def toggle_modal(btn_open, btn_close, is_open):
+        return not is_open
+
+
+
+
     # ==========================================================
     # RESET
     # ==========================================================
