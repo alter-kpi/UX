@@ -20,7 +20,7 @@ dashboard_layout = html.Div([
         ], className="p-3 text-center bg-white"), md=4),
 
         dbc.Col(html.Div([
-            html.H6("≥ 72 (Acceptable+)", className="text-muted mb-1"),
+            html.H6("≥ 80 (Bonne UX)", className="text-muted mb-1"),
             html.H2(id="kpi_pct70", className="mb-0")
         ], className="p-3 text-center bg-white"), md=4),
     ], className="mb-4 g-3"),
@@ -68,15 +68,18 @@ dashboard_layout = html.Div([
     html.Br(),
 
     # Categories
-    html.H4("Analyse par catégorie", className="mt-4 mb-3 text-center"),
-    html.H6("Scores SUS moyens par groupe (effectifs en gris)", className="text-center text-muted mb-3"),
+    html.Div([
+        html.H4("Analyse par catégorie", className="mt-4 mb-3 text-center"),
+        html.H6("Scores SUS moyens par groupe (effectifs en gris)", className="text-center text-muted mb-3"),
 
-    dbc.Row([
-        dbc.Col(dcc.Graph(id="cat-graph-1", config={"displayModeBar": False}), md=6, xs=12),
-        dbc.Col(dcc.Graph(id="cat-graph-2", config={"displayModeBar": False}), md=6, xs=12),
-        dbc.Col(dcc.Graph(id="cat-graph-3", config={"displayModeBar": False}), md=6, xs=12),
-        dbc.Col(dcc.Graph(id="cat-graph-4", config={"displayModeBar": False}), md=6, xs=12),
-    ], className="g-4 mb-4"),
+        dbc.Row([
+            dbc.Col(dcc.Graph(id="cat-graph-1", config={"displayModeBar": False}), md=6, xs=12),
+            dbc.Col(dcc.Graph(id="cat-graph-2", config={"displayModeBar": False}), md=6, xs=12),
+            dbc.Col(dcc.Graph(id="cat-graph-3", config={"displayModeBar": False}), md=6, xs=12),
+            dbc.Col(dcc.Graph(id="cat-graph-4", config={"displayModeBar": False}), md=6, xs=12),
+        ], className="g-4 mb-4")
+    ], id="categories-section", style={"display": "none"})
+
 
 ])
 
@@ -256,20 +259,170 @@ layout = dbc.Container([
 
     #Modal Explications template
 
+    # ------------------------------------------------------------
+    # MODAL D’AIDE COMPLET ALTER UX
+    # ------------------------------------------------------------
     dbc.Modal(
         [
-            dbc.ModalHeader(dbc.ModalTitle("Comment remplir le fichier Excel ?")),
-            dbc.ModalBody([
-                html.P("• Colonne A : identifiant unique du répondant."),
-                html.P("• Colonnes B à K : réponses aux 10 questions (notes de 1 à 5)."),
-                html.P("• Colonnes L à O : catégories optionnelles (texte ou nombre). "
-                    "Vous pouvez renommer les en-têtes ou laisser vide."),
-                html.Hr(),
-                html.Img(
-                    src="/assets/template.png",
-                    style={"width": "100%", "border": "1px solid #ccc", "borderRadius": "4px"}
-                )
-            ]),
+            dbc.ModalHeader(dbc.ModalTitle("Guide d'utilisation Alter UX")),
+            dbc.ModalBody(
+                [
+
+                    # ==========================
+                    # SOMMAIRE
+                    # ==========================
+                    html.Div([
+                        html.H5("Sommaire", className="mb-2"),
+                        html.Ul([
+                            html.Li(html.A("1. Remplir le fichier Excel", href="#help-excel"),
+                                    style={"marginBottom": "4px"}),
+                            html.Li(html.A("2. Comprendre les graphiques", href="#help-graphs"),
+                                    style={"marginBottom": "4px"}),
+                            html.Li(html.A("3. Calcul du score SUS", href="#help-calcul-sus"),
+                                    style={"marginBottom": "4px"}),
+                            html.Li(html.A("4. Les 10 items officiels du SUS", href="#help-items"),
+                                    style={"marginBottom": "4px"}),
+                            html.Li(html.A("5. Analyse IA", href="#help-ai"),
+                                    style={"marginBottom": "4px"}),
+                        ],
+                        style={"lineHeight": "1.4"})
+                    ], className="mb-3"),
+
+                    # ==========================
+                    # CONTENU PRINCIPAL
+                    # ==========================
+                    html.Div([
+
+                        # ------------------------------------------------
+                        # SECTION 1 : REMPLIR L’EXCEL
+                        # ------------------------------------------------
+                        html.H5("1. Comment remplir le fichier Excel",
+                                id="help-excel", className="mt-3 mb-2"),
+
+                        html.P("• Colonne A : identifiant unique du répondant.",
+                            style={"marginBottom": "6px"}),
+                        html.P("• Colonnes B à K : réponses aux 10 questions (notes de 1 à 5).",
+                            style={"marginBottom": "6px"}),
+                        html.P("• Colonnes L à O : catégories optionnelles (texte ou nombre).",
+                            style={"marginBottom": "6px"}),
+                        html.P("• Vous pouvez renommer les en-têtes ou laisser vide.",
+                            style={"marginBottom": "6px"}),
+
+                        html.Img(
+                            src="/assets/template.png",
+                            style={"width": "100%", "marginTop": "6px", "borderRadius": "6px"}
+                        ),
+
+                        html.Hr(className="my-3"),
+
+                        # ------------------------------------------------
+                        # SECTION 2 : GRAPHIQUES
+                        # ------------------------------------------------
+                        html.H5("2. Comment les graphiques sont générés",
+                                id="help-graphs", className="mt-3 mb-2"),
+
+                        html.P("• Jauge SUS : basée sur l’échelle de Bangor (2009).",
+                            style={"marginBottom": "6px"}),
+                        html.P("• Histogramme : distribution des scores SUS sur 20 classes.",
+                            style={"marginBottom": "6px"}),
+                        html.P("• Radar : moyenne par question, axe forcé entre 1 et 5.",
+                            style={"marginBottom": "6px"}),
+
+                        html.P(
+                            "• Catégories texte : un graphe par catégorie avec SUS moyen et effectifs.",
+                            style={"marginBottom": "6px"}
+                        ),
+
+                        html.P(
+                            "• Catégories numériques : regroupement automatique en quantiles "
+                            "(entre 4 et 8 groupes selon la taille du fichier) afin de garantir "
+                            "des graphes lisibles.",
+                            style={"marginBottom": "6px"}
+                        ),
+
+                        html.Hr(className="my-3"),
+
+                        # ------------------------------------------------
+                        # SECTION 3 : CALCUL SUS (SCHÉMA)
+                        # ------------------------------------------------
+                        html.H5("3. Calcul du score SUS",
+                                id="help-calcul-sus", className="mt-3 mb-2"),
+
+                        html.Div([
+                            html.P("1. Questions impaires → score = réponse − 1",
+                                style={"marginBottom": "4px"}),
+                            html.P("2. Questions paires → score = 5 − réponse",
+                                style={"marginBottom": "4px"}),
+                            html.P("3. Somme des 10 scores ajustés",
+                                style={"marginBottom": "4px"}),
+                            html.P("4. Score final = somme × 2,5",
+                                style={"fontWeight": "bold", "marginBottom": "4px"}),
+                        ],
+                        style={
+                            "border": "1px solid #ddd",
+                            "padding": "10px",
+                            "borderRadius": "6px",
+                            "backgroundColor": "#f9f9f9",
+                            "marginBottom": "12px"
+                        }),
+
+                        html.P(
+                            "Interprétation (Bangor, 2009) : <50 = Mauvais, 50–70 = Acceptable, "
+                            "70–80 = Bon, 80–90 = Excellent, >90 = Niveau UX très élevé.",
+                            style={"marginBottom": "6px"}
+                        ),
+
+                        html.Hr(className="my-3"),
+
+                        # ------------------------------------------------
+                        # SECTION 4 : ITEMS OFFICIELS
+                        # ------------------------------------------------
+                        html.H5("4. Les 10 items officiels du SUS",
+                                id="help-items", className="mt-3 mb-2"),
+
+                        html.Ul([
+                            html.Li("Q1. Je pense que j’aimerais utiliser ce système fréquemment."),
+                            html.Li("Q2. Je trouve le système inutilement complexe."),
+                            html.Li("Q3. Le système m’a semblé facile à utiliser."),
+                            html.Li("Q4. Je pense qu’un support technique serait nécessaire pour utiliser ce système."),
+                            html.Li("Q5. J’ai trouvé que les fonctions du système étaient bien intégrées."),
+                            html.Li("Q6. J’ai trouvé qu’il y avait trop d’incohérence dans le système."),
+                            html.Li("Q7. Je pense que la plupart des gens apprendraient ce système rapidement."),
+                            html.Li("Q8. J’ai trouvé le système très lourd à utiliser."),
+                            html.Li("Q9. Je me suis senti très confiant en utilisant le système."),
+                            html.Li("Q10. J’ai dû apprendre beaucoup de choses avant d’utiliser le système."),
+                        ],
+                        style={"lineHeight": "1.4", "marginBottom": "10px"}),
+
+                        html.Hr(className="my-3"),
+
+                        # ------------------------------------------------
+                        # SECTION 5 : ANALYSE IA
+                        # ------------------------------------------------
+                        html.H5("5. Comment fonctionne l’analyse IA",
+                                id="help-ai", className="mt-3 mb-2"),
+
+                        html.P(
+                            "• L’analyse IA utilise un modèle OpenAI GPT-4o.",
+                            style={"marginBottom": "6px"}),
+                        html.P(
+                            "• Le prompt inclut : score global, distribution, extrêmes, catégories, "
+                            "moyennes par question et recommandations.",
+                            style={"marginBottom": "6px"}),
+                        html.P(
+                            "• Seules les statistiques nécessaires sont envoyées au modèle.",
+                            style={"marginBottom": "6px"}),
+                        html.P(
+                            "• Aucune donnée n’est stockée : traitement en mémoire vive uniquement.",
+                            style={"marginBottom": "6px"}),
+                        html.P(
+                            "• Le texte est généré en temps réel.",
+                            style={"marginBottom": "6px"}),
+
+                    ],
+                    style={"maxHeight": "70vh", "overflowY": "auto"})
+                ]
+            ),
             dbc.ModalFooter(
                 dbc.Button("Fermer", id="close-help-template", className="ms-auto", color="primary")
             ),
@@ -277,7 +430,9 @@ layout = dbc.Container([
         id="modal-help-template",
         is_open=False,
         size="lg",
-    ),
+    )
+
+    ,
 
 
 

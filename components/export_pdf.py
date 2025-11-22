@@ -18,13 +18,13 @@ def get_sus_color(score):
 
     if score < 25:
         hex_color = "#FF0000"
-    elif score < 39:
+    elif score < 51:
         hex_color = "#f0ad4e"
-    elif score < 52:
+    elif score < 68:
         hex_color = "#f7ec13"
-    elif score < 73:
+    elif score < 80:
         hex_color = "#5bc0de"
-    elif score < 86:
+    elif score < 84:
         hex_color = "#5cb85c"
     else:
         hex_color = "#3c763d"
@@ -267,11 +267,11 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     sus_mean = df["SUS_Score"].mean()
     sus_color = get_sus_color(sus_mean)
     nb_resp = len(df)
-    pct_72 = (df["SUS_Score"] >= 73).mean() * 100
+    pct80 = float((df["SUS_Score"] >= 80).mean() * 100)
 
     draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 105, 55, w=40)
     draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", 105, 75, w=40, bg_color=sus_color)
-    draw_kpi(pdf, "≥ 73 (Acceptable+)", f"{pct_72:.1f}%", 105, 95, w=40)
+    draw_kpi(pdf, "≥ 80 (Bonne UX)", f"{pct80:.1f}%", 105, 95, w=40)
 
 
     # -----------------------------
@@ -287,10 +287,6 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             max_h=100
         )
 
-
-    # -----------------------------
-    # Fin bloc 3 colonnes
-    # -----------------------------
     
     # ========================================================================
     # 2) JAUGES (SUS + Acceptabilité)
@@ -301,7 +297,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
 
 
-    margin_x = (pdf.w - 150) / 2
+    margin_x = (pdf.w - 175) / 2
 
     # Jauge SUS (haut)
     if "gauge" in img_infos:
@@ -310,21 +306,9 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             img_infos["gauge"],
             x_zone=margin_x,
             y_zone=145,
-            max_w=160,
+            max_w=175,
             max_h=40
         )
-
-    # Jauge Acceptabilité (bas)
-   # if "accept" in img_infos:
-   #     draw_image_centered(
-   #         pdf,
-   #         img_infos["accept"],
-   #         x_zone=margin_x,
-   #         y_zone=y_gauges,
-   #         max_w=GAUGE_W,
-   #         max_h=GAUGE_H
-   #     )
-   #     y_gauges += GAUGE_H + GAUGE_SPACING 
 
 
     # ========================================================================

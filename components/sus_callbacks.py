@@ -178,7 +178,7 @@ def register_callbacks(app):
         # --- KPIs ---
         n = len(df)
         mean_sus = df["SUS_Score"].mean()
-        pct70 = float((df["SUS_Score"] >= 72).mean() * 100)
+        pct80 = float((df["SUS_Score"] >= 80).mean() * 100)
 
         # --- Graphes ---
         figs = {
@@ -192,7 +192,7 @@ def register_callbacks(app):
             figs,
             f"{n:,}".replace(",", " "),
             f"{mean_sus:.1f}",
-            f"{pct70:.1f}%"
+            f"{pct80:.1f}%"
         )
 
 
@@ -206,23 +206,58 @@ def register_callbacks(app):
         Output("cat-graph-2", "figure"),
         Output("cat-graph-3", "figure"),
         Output("cat-graph-4", "figure"),
+        Output("categories-section", "style"),
         Input("data-store", "data")
     )
     def update_categories(data):
         if not data:
-            return [empty_fig()] * 4
+            return empty_fig(), empty_fig(), empty_fig(), empty_fig(), {"display": "none"}
 
         df = pd.DataFrame(data)
-        extra_cols = df.columns[11:15]
+        cols = list(df.columns)
+
+        # 1) Trouver Q10
+        try:
+            q10_index = cols.index("Q10")
+        except ValueError:
+            return empty_fig(), empty_fig(), empty_fig(), empty_fig(), {"display": "none"}
+
+        # 2) Prendre EXACTEMENT les 4 colonnes après Q10
+        raw_cat_cols = cols[q10_index + 1 : q10_index + 5]
+
+        # 3) Exclure les colonnes _adj
+        cat_cols = [c for c in raw_cat_cols if not c.endswith("_adj")]
 
         figs = []
-        for i, col in enumerate(extra_cols):
+        visible_any = False
+
+        # 4) Pour chaque position parmi les 4 colonnes immédiatement après Q10 :
+        for i, col in enumerate(raw_cat_cols):
+
+            # si c'est une colonne _adj → vide
+            if col.endswith("_adj"):
+                figs.append(empty_fig())
+                continue
+
+            # si colonne vide ou non existante
+            if col not in df or df[col].dropna().empty:
+                figs.append(empty_fig())
+                continue
+
+            # sinon c'est une vraie catégorie
+            visible_any = True
             figs.append(create_category_combined(df, col, i))
 
+        # 5) Compléter si moins de 4
         while len(figs) < 4:
             figs.append(empty_fig())
 
-        return figs
+        # 6) Montrer/masquer la section
+        section_style = {"display": "block"} if visible_any else {"display": "none"}
+
+        return figs[0], figs[1], figs[2], figs[3], section_style
+
+
 
 
 
@@ -563,7 +598,7 @@ def register_callbacks(app):
     def display_figures(figs):
 
         if not figs:
-            return empty_fig(), empty_fig(), empty_fig(), empty_fig(), empty_fig()
+            return empty_fig(), empty_fig(), empty_fig(), empty_fig()
 
         return (
             figs.get("gauge", empty_fig()),

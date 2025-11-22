@@ -41,137 +41,103 @@ def empty_fig():
 
 
 # ======================================================
-# 1️⃣ Jauge principale SUS
+# 1️⃣ Jauge principale SUS (Bangor 2009 + Grades A–F)
 # ======================================================
 def create_gauge_native(score: float):
+
+    # Bornes exactes Bangor 2009 + lettres
     zones = [
-        (0, 25, "#FF0000", "Pire<br>imaginable"),
-        (25, 39, "#f0ad4e", "Mauvais"),
-        (39, 52, "#f7ec13", "Acceptable"),
-        (52, 73, "#5bc0de", "Bon"),
-        (73, 85, "#5cb85c", "Excellent"),
-        (85, 100, "#3c763d", "Meilleur<br>imaginable"),
+        (0, 25,  "#FF0000", "Pire<br>imaginable",          "F"),
+        (25, 51, "#f0ad4e", "Mauvais",                      "D"),
+        (51, 68, "#f7ec13", "Acceptable",                   "C"),
+        (68, 80, "#5bc0de", "Bon",                          "B"),
+        (80, 84, "#5cb85c", "Excellent",                    "A"),
+        (84, 100,"#3c763d", "Meilleur<br>imaginable",       "A+"),
     ]
 
     fig = go.Figure()
 
-    # Fond coloré
-    for x0, x1, color, label in zones:
+    # ------------------------------------------------------
+    # Fond coloré + labels + lettres
+    # ------------------------------------------------------
+    for x0, x1, color, label, grade in zones:
+
+        # Segment coloré
         fig.add_shape(
-            type="rect", x0=x0, x1=x1, y0=0, y1=0.4,
+            type="rect", x0=x0, x1=x1, y0=0, y1=0.5,
             fillcolor=color, line=dict(width=0)
         )
+
+        # Label (Pire, Mauvais, Bon…)
         fig.add_annotation(
-            x=(x0 + x1) / 2, y=0.68,
+            x=(x0 + x1) / 2,
+            y=0.74,
             text=label,
             showarrow=False,
-            font=dict(size=12, color="black"),
+            font=dict(size=11, color="black"),
             align="center"
         )
 
-    # 🎯 Couleur dynamique du curseur
-    needle_color = get_zone_color(score, zones)
+        # Lettre A / B / C / D / F / A+
+        fig.add_annotation(
+            x=(x0 + x1) / 2,
+            y=0.25,
+            text=f"<b>{grade}</b>",
+            showarrow=False,
+            font=dict(size=14, color="#484646"),
+            bgcolor="rgba(255,255,255,0.9)"
+        )
 
+    # ------------------------------------------------------
+    # Couleur dynamique de l’aiguille
+    # ------------------------------------------------------
+    def zone_color(score):
+        for x0, x1, color, _, _ in zones:
+            if x0 <= score <= x1:
+                return color
+        return "black"
+
+    needle_color = zone_color(score)
+
+    # Aiguille (triangle)
     fig.add_shape(
         type="path",
         path=f"M {score-2} -0.25 L {score+2} -0.25 L {score} -0.05 Z",
         fillcolor=needle_color,
         line=dict(color="black", width=1)
-
     )
 
+    # ------------------------------------------------------
     # Graduation
-    for start, _, _, _ in zones:
-        fig.add_annotation(x=start, y=-0.6, text=str(start),
-                           showarrow=False, font=dict(size=11, color="gray"))
-    fig.add_annotation(x=100, y=-0.6, text="100",
-                       showarrow=False, font=dict(size=11, color="gray"))
+    # ------------------------------------------------------
+    ticks = [0, 25, 51, 68, 80, 84, 100]
+    for t in ticks:
+        fig.add_annotation(
+            x=t, y=-0.6, text=str(t),
+            showarrow=False,
+            font=dict(size=12, color="gray")
+        )
 
     fig.update_xaxes(range=[0, 100], visible=False)
     fig.update_yaxes(range=[-0.8, 1.0], visible=False)
 
     fig.update_layout(
-    title=dict(
-        text="Score SUS — Échelle Bangor (2009)",
-        x=0.5,
-        y=0.97,
-        xanchor="center",
-        font=dict(size=14, color="#666")
-    ),
-    height=180,         # +20 px pour laisser la place du titre
-    margin=dict(l=20, r=20, t=45, b=0),  # ↑ top augmenté
-    plot_bgcolor="white",
-    paper_bgcolor="white",
-    showlegend=False,
+        title=dict(
+            text="Score SUS — Échelle Bangor (2009)",
+            x=0.5,
+            y=0.97,
+            xanchor="center",
+            font=dict(size=14, color="#666")
+        ),
+        height=180,
+        margin=dict(l=20, r=20, t=45, b=0),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        showlegend=False,
     )
-
 
     return fig
 
-
-# ======================================================
-# 2️⃣ Jauge d’acceptabilité
-# ======================================================
-def create_acceptability_gauge(score: float):
-    segments = [
-        (0, 50, "#FF0000", "Non acceptable"),
-        (50, 62, "#f39c12", "Probabilité<br>faible"),
-        (62, 70, "#f1c40f", "Probabilité<br>élevée"),
-        (70, 100, "#27ae60", "Acceptable"),
-    ]
-
-    fig = go.Figure()
-
-    # Fond coloré
-    for x0, x1, color, label in segments:
-        fig.add_shape(type="rect", x0=x0, x1=x1, y0=0, y1=0.4,
-                      fillcolor=color, line=dict(width=0))
-        fig.add_annotation(
-            x=(x0 + x1) / 2, y=0.68,
-            text=label,
-            showarrow=False,
-            font=dict(size=12, color="black"),
-            align="center"
-        )
-
-    # 🎯 Couleur dynamique du curseur
-    needle_color = get_zone_color(score, segments)
-
-    fig.add_shape(
-        type="path",
-        path=f"M {score-2} -0.25 L {score+2} -0.25 L {score} -0.05 Z",
-        fillcolor=needle_color,
-        line=dict(color="black", width=1)
-
-    )
-
-    # Graduation
-    for start, _, _, _ in segments:
-        fig.add_annotation(x=start, y=-0.6, text=str(start),
-                           showarrow=False, font=dict(size=11, color="gray"))
-    fig.add_annotation(x=100, y=-0.6, text="100",
-                       showarrow=False, font=dict(size=11, color="gray"))
-
-    fig.update_xaxes(range=[0, 100], visible=False)
-    fig.update_yaxes(range=[-0.8, 1.2], visible=False)
-
-    fig.update_layout(
-    title=dict(
-        text="Acceptabilité SUS",
-        x=0.5,
-        y=0.97,
-        xanchor="center",
-        font=dict(size=13, color="#666")
-    ),
-    height=180,         # même logique
-    margin=dict(l=20, r=20, t=45, b=15),
-    plot_bgcolor="white",
-    paper_bgcolor="white",
-    showlegend=False,
-    )
-
-
-    return fig
 
 
 # ======================================================
@@ -179,9 +145,6 @@ def create_acceptability_gauge(score: float):
 # ======================================================
 def create_main_histogram(df):
     mean_sus = float(np.nanmean(df["SUS_Score"]))
-
-    counts, bins = np.histogram(df["SUS_Score"], bins=20)
-    max_count = counts.max()
 
     fig = px.histogram(
         df,
@@ -192,12 +155,14 @@ def create_main_histogram(df):
         text_auto=True
     )
 
+    # Style des barres
     fig.update_traces(
         marker_line_color="white",
         marker_line_width=1.5,
         opacity=0.85
     )
 
+    # Ligne moyenne
     fig.add_vline(
         x=mean_sus,
         line_width=2,
@@ -205,23 +170,28 @@ def create_main_histogram(df):
         line_color="#e74c3c"
     )
 
+    # Etiquette moyenne – toujours visible
     fig.add_annotation(
-        x=mean_sus,
-        y=max_count * 1.12,
-        yshift=12,
+        x=mean_sus,  
         text=f"Moyenne : {mean_sus:.1f}",
         showarrow=False,
-        font=dict(size=12, color="grey")
+        font=dict(size=13, color="red"),
+        yanchor="auto",
+        bgcolor="rgba(255,255,255,0.9)"
     )
 
+    # Mise en forme
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
-        xaxis=dict(title="Score SUS", gridcolor="#eee"),
+        xaxis=dict(
+            title="Score SUS",
+            gridcolor="#eee"
+        ),
         yaxis=dict(
             title="Nombre de réponses",
             gridcolor="#eee",
-            range=[0, max_count * 1.15]
+            automargin=True
         ),
         title_x=0.5,
         font=dict(size=13),
@@ -230,6 +200,8 @@ def create_main_histogram(df):
     )
 
     return fig
+
+
 
 
 # ======================================================
@@ -406,8 +378,8 @@ def compute_sus_stats(df):
         "IQR (Q3 - Q1)": round(IQR, 1),
 
         # Indicateurs opérationnels
-        "% des scores ≥ 70": round((sus >= 70).mean() * 100, 1),
-        "% des scores ≤ 50": round((sus <= 50).mean() * 100, 1),
+        "% des scores ≥ 68": round((sus >= 68).mean() * 100, 1),
+        "% des scores ≤ 51": round((sus <= 51).mean() * 100, 1),
     }
 
     return pd.DataFrame(stats.items(), columns=["Indicateur", "Valeur"])
@@ -418,7 +390,7 @@ def compute_sus_stats(df):
 # 7️⃣ Histogramme par classe
 # ======================================================
 def create_sus_class_histogram(df, score_col="SUS_Score"):
-    bins = [0, 25, 39, 52, 73, 86, 100]
+    bins = [0, 25, 51, 68, 80, 84, 100]
     labels = [
         "Pire<br>imaginable",
         "Mauvais",
@@ -474,6 +446,7 @@ def create_sus_class_histogram(df, score_col="SUS_Score"):
 # ======================================================
 from plotly.subplots import make_subplots
 
+
 def create_category_combined(df, col, idx):
 
     if df[col].dropna().empty:
@@ -481,62 +454,91 @@ def create_category_combined(df, col, idx):
 
     df_cat = df[[col, "SUS_Score"]].dropna()
 
-    # Regroupement si numérique
+    # ======================================================
+    # 🎯 1. Détecter si numérique
+    # ======================================================
     if pd.api.types.is_numeric_dtype(df_cat[col]):
-        vmin, vmax = df_cat[col].min(), df_cat[col].max()
-        amplitude = vmax - vmin
-        step = 5
-        if amplitude > 50: step = 10
-        if amplitude > 200: step = 20
-        if amplitude > 500: step = 50
-        df_cat["group"] = (df_cat[col] // step * step).astype(int)
+
+        # Nombre de groupes optimal : 4 à 8 selon la taille
+        n = len(df_cat)
+        if n < 20:
+            q = 4
+        elif n < 100:
+            q = 6
+        else:
+            q = 8
+
+        # Essayer qcut (quantiles)
+        try:
+            df_cat["group"] = pd.qcut(df_cat[col], q=q, duplicates="drop")
+        except:
+            # fallback à des intervalles réguliers
+            df_cat["group"] = pd.cut(df_cat[col], bins=q)
+
         group_field = "group"
+
     else:
+        # Catégorie textuelle simple
         group_field = col
 
-    # Statistiques : SUS + effectifs
+    # ======================================================
+    # 🎯 2. Statistiques : moyenne SUS + effectifs
+    # ======================================================
     grouped = (
-        df_cat.groupby(group_field, dropna=True)
+        df_cat.groupby(group_field)
               .agg(SUS_mean=("SUS_Score", "mean"),
                    count=(col, "size"))
               .reset_index()
-              .sort_values(group_field)
     )
 
-    if grouped.empty:
-        return empty_fig()
+    # --- Nettoyage des labels pour affichage sans décimales ---
+    if pd.api.types.is_numeric_dtype(df_cat[col]):
+        def clean_interval(x):
+            if isinstance(x, pd.Interval):
+                left = int(round(x.left))
+                right = int(round(x.right))
+                return f"{left}–{right}"
+            return str(x)
 
-    # Couleur SUS
+        grouped[group_field] = grouped[group_field].apply(clean_interval)
+
+
+        if grouped.empty:
+            return empty_fig()
+
     color = CATEGORY_COLOR_LIST[idx % len(CATEGORY_COLOR_LIST)]
     safe_title = str(col)
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # === 1) Barres SUS (principales) ===
+    # ======================================================
+    # 🎯 3. Barres SUS larges
+    # ======================================================
     fig.add_trace(
         go.Bar(
-            x=grouped[group_field],
+            x=grouped[group_field].astype(str),
             y=grouped["SUS_mean"],
-            name="SUS moyen",
             marker_color=color,
             marker_line_color="white",
             marker_line_width=1.2,
             text=[f"{v:.1f}" for v in grouped["SUS_mean"]],
             textposition="outside",
+            width=0.75,
             opacity=0.9
         ),
         secondary_y=False
     )
 
-    # === 2) Barre fine grise (effectif) ===
+    # ======================================================
+    # 🎯 4. Barres Effectifs — large et lisible
+    # ======================================================
     fig.add_trace(
         go.Bar(
-            x=grouped[group_field],
+            x=grouped[group_field].astype(str),
             y=grouped["count"],
-            name="Effectif",
             marker_color="#7f8c8d",
             opacity=1,
-            width=0.25,
+            width=0.45,
             text=grouped["count"],
             textposition="inside",
             textfont=dict(color="white", size=12)
@@ -544,27 +546,20 @@ def create_category_combined(df, col, idx):
         secondary_y=True
     )
 
-    # Axes Y
+    # Axes
     max_sus = grouped["SUS_mean"].max()
     max_count = grouped["count"].max()
 
-    # Axe SUS → le plus haut, permet textposition="outside"
     fig.update_yaxes(range=[0, max_sus * 1.25], visible=False, secondary_y=False)
+    fig.update_yaxes(range=[0, max_count * 1.6], visible=False, secondary_y=True)
 
-    # Axe effectif → toujours plus petit que l'axe SUS
-    fig.update_yaxes(range=[0, max_count * 1.7], visible=False, secondary_y=True)
-
-
+    # Layout
     fig.update_layout(
-        title=dict(
-            text=safe_title,
-            x=0.5,
-            font=dict(size=18, color="#333")
-        ),
+        title=dict(text=safe_title, x=0.5, font=dict(size=18, color="#333")),
         plot_bgcolor="white",
         paper_bgcolor="white",
         barmode="overlay",
-        bargap=0.30,
+        bargap=0.20,
         margin=dict(l=20, r=20, t=60, b=60),
         height=330,
         font=dict(size=14),
