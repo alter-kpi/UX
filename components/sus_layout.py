@@ -305,7 +305,7 @@ layout = dbc.Container([
                             style={"marginBottom": "6px"}),
                         html.P("• Colonnes L à O : catégories optionnelles (texte ou nombre).",
                             style={"marginBottom": "6px"}),
-                        html.P("• Vous pouvez renommer les en-têtes ou laisser vide.",
+                        html.P("• Vous pouvez renommer les en-têtes des catégories ou laisser vide.",
                             style={"marginBottom": "6px"}),
 
                         html.Img(
@@ -473,6 +473,7 @@ layout = dbc.Container([
     )
 
 ], fluid=True)
+
 
 
 
