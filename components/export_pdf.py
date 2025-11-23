@@ -347,49 +347,82 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
    
     # ========================================================================
-    # PAGE 3 — Graphiques par catégorie (2x2)
+    # PAGE 3 — Graphiques par catégorie (affichée uniquement si ≥ 1 catégorie)
     # ========================================================================
 
-    pdf.add_page()
+    # ------------------------------------------------------------
+    # 1. Détection des catégories comme dans l'app
+    # ------------------------------------------------------------
+    cols = list(df.columns)
 
-    # ---- TITRE ----
-    pdf.ln(1)
-    pdf.set_font("Roboto", "B", 12)
-    pdf.set_text_color(30, 30, 30)
-    pdf.cell(0, 8, "Analyse par catégorie", ln=True)
+    try:
+        q10_index = cols.index("Q10")
+        raw_cat_cols = cols[q10_index + 1 : q10_index + 5]
+    except ValueError:
+        raw_cat_cols = []
 
-    # ---- COORDONNÉES FIXES POUR LES 4 ZONES ----
-    # Zone 1 (haut-gauche)
-    X1, Y1 = 10, 45
-    # Zone 2 (haut-droite)
-    X2, Y2 = (pdf.w / 2) + 5, 45
-    # Zone 3 (bas-gauche)
-    X3, Y3 = 10, 120
-    # Zone 4 (bas-droite)
-    X4, Y4 = (pdf.w / 2) + 5, 120
+    valid_categories = []
 
-    MAX_W = (pdf.w / 2) - 20
-    MAX_H = 80
+    for col in raw_cat_cols:
+        # Exclure colonnes _adj
+        if col.endswith("_adj"):
+            continue
+        # Exclure colonnes vides
+        if df[col].dropna().empty:
+            continue
+        valid_categories.append(col)
 
-    # ---- LISTE DES CLÉS DISPONIBLES ----
-    cat_keys = ["cat1", "cat2", "cat3", "cat4"]
-    coords = [(X1, Y1), (X2, Y2), (X3, Y3), (X4, Y4)]
+    # Garder max 4
+    valid_categories = valid_categories[:4]
 
-    slot_index = 0
+    # ------------------------------------------------------------
+    # 2. Si aucune catégorie → NE PAS créer la page
+    # ------------------------------------------------------------
+    if len(valid_categories) == 0:
+        # Rien du tout : on ne crée aucune page 3
+        pass
 
-    for key in cat_keys:
-        if key in img_infos:
-            x_zone, y_zone = coords[slot_index]
+    else:
+        # --------------------------------------------------------
+        # 3. Générer uniquement les figures valides
+        # --------------------------------------------------------
+        for i, col in enumerate(valid_categories):
+            fig_cat = create_category_combined(df, col, i)
+            key = f"cat{i+1}"
+            info = save_fig_to_png(fig_cat, key, img_dir)
+            if info:
+                img_infos[key] = info
 
-            draw_image_centered(
-                pdf,
-                img_infos[key],
-                x_zone=x_zone,
-                y_zone=y_zone,
-                max_w=MAX_W,
-                max_h=MAX_H
-            )
-            slot_index += 1
+        # --------------------------------------------------------
+        # 4. Affichage sur une page 3 (2×2 max)
+        # --------------------------------------------------------
+        pdf.add_page()
+        pdf.ln(1)
+        pdf.set_font("Roboto", "B", 12)
+        pdf.set_text_color(30, 30, 30)
+        pdf.cell(0, 8, "Analyse par catégorie", ln=True)
+
+        coords = [
+            (10, 45),
+            ((pdf.w / 2) + 5, 45),
+            (10, 120),
+            ((pdf.w / 2) + 5, 120),
+        ]
+        MAX_W = (pdf.w / 2) - 20
+        MAX_H = 80
+
+        # Placement propre
+        for i, key in enumerate([f"cat{i+1}" for i in range(len(valid_categories))]):
+            if key in img_infos:
+                x_zone, y_zone = coords[i]
+                draw_image_centered(
+                    pdf,
+                    img_infos[key],
+                    x_zone=x_zone,
+                    y_zone=y_zone,
+                    max_w=MAX_W,
+                    max_h=MAX_H
+                )
 
     # ========================================================================
     # PAGE 4 — Analyse IA (style proche CSS + Markdown enrichi)
