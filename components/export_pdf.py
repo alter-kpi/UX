@@ -6,6 +6,7 @@ import os
 import tempfile
 from datetime import datetime
 from PIL import Image
+import io  # pour lire les bytes d'image en mémoire
 
 from components.charts import create_category_combined
 
@@ -89,11 +90,6 @@ def draw_kpi(pdf, title, value, x, y, w=70, h=16, bg_color=(247, 247, 247)):
 
     border_color = (max(r - 40, 0), max(g - 40, 0), max(b - 40, 0))
 
-    # Ombre plus légère
-   # pdf.set_draw_color(220, 220, 220)
-   # pdf.set_fill_color(240, 240, 240)
-   # pdf.rect(x + 0.7, y + 0.7, w, h, style="F")
-
     # Carte
     pdf.set_draw_color(*border_color)
     pdf.set_fill_color(*bg_color)
@@ -113,6 +109,7 @@ def draw_kpi(pdf, title, value, x, y, w=70, h=16, bg_color=(247, 247, 247)):
 
 # ============================================================================
 # Utilitaire : sauvegarde d'un fig Plotly en PNG + retour (path, w_img, h_img)
+#   -> version allégée pour Render (to_image, width/height, scale=1)
 # ============================================================================
 def save_fig_to_png(fig_obj, key, img_dir):
     if fig_obj is None:
@@ -124,13 +121,28 @@ def save_fig_to_png(fig_obj, key, img_dir):
     file_name = f"{key}.png"
     path = os.path.join(img_dir, file_name)
 
-    # export HD
-    pio.write_image(fig_obj, path, format="png", scale=2)
+    # Export image via Kaleido, mais en résolution plus modeste
+    try:
+        img_bytes = pio.to_image(
+            fig_obj,
+            format="png",
+            width=900,   # plus raisonnable que scale=2 en full HD
+            height=400,
+            scale=1
+        )
+    except Exception as e:
+        print(f"[save_fig_to_png] Erreur export {key}:", e)
+        return None
 
-    with Image.open(path) as im:
-        im = im.convert("RGB")
+    # On sauve directement les bytes
+    try:
+        with open(path, "wb") as f:
+            f.write(img_bytes)
+        im = Image.open(io.BytesIO(img_bytes))
         w_img, h_img = im.size
-        im.save(path, format="PNG")
+    except Exception as e:
+        print(f"[save_fig_to_png] Erreur lecture PNG {key}:", e)
+        return None
 
     return {"path": path, "w": w_img, "h": h_img}
 
@@ -138,7 +150,8 @@ def save_fig_to_png(fig_obj, key, img_dir):
 # ============================================================================
 # Utilitaire : dessin d'une image SANS déformation, centrée horizontalement
 # ============================================================================
-def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h, shadow_offset=0.2, shadow_color=(200, 200, 200)):
+def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h,
+                        shadow_offset=0.2, shadow_color=(200, 200, 200)):
     """
     img_info : dict {path, w, h}
     x_zone, y_zone : coin haut-gauche de la zone
@@ -163,18 +176,20 @@ def draw_image_centered(pdf, img_info, x_zone, y_zone, max_w, max_h, shadow_offs
 
     # Calcul du positionnement
     x_img = x_zone + (max_w - w_display) / 2
-    y_img = y_zone  # Pas de centrage vertical, aligné en haut
+    y_img = y_zone  # aligné en haut
 
-    # Dessiner l'ombre tout autour de l'image
-    pdf.set_fill_color(*shadow_color)  # Définir la couleur de l'ombre
+    # Ombre
+    pdf.set_fill_color(*shadow_color)
+    pdf.rect(
+        x_img - shadow_offset,
+        y_img - shadow_offset,
+        w_display + 2 * shadow_offset,
+        h_display + 2 * shadow_offset,
+        'F'
+    )
 
-    # Ombre tout autour (haut, bas, gauche, droite)
-    pdf.rect(x_img - shadow_offset, y_img - shadow_offset, w_display + 2*shadow_offset, h_display + 2*shadow_offset, 'F')
-
-    # Dessiner l'image principale au-dessus de l'ombre
-    pdf.image(path, x=x_img, y=y_img, w=w_display, h=h_display)  # Image principale
-
-
+    # Image principale
+    pdf.image(path, x=x_img, y=y_img, w=w_display, h=h_display)
 
 
 # ============================================================================
@@ -184,7 +199,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     # ------------------------------------------------------------------------
     # 1) Export des figures → PNG + tailles
-    #    figs contient : gauge, accept, hist, radar, class
+    #    figs contient : gauge, hist, radar, class
     # ------------------------------------------------------------------------
     img_dir = os.path.join(tempfile.gettempdir(), "sus_temp_images")
     os.makedirs(img_dir, exist_ok=True)
@@ -192,7 +207,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     img_infos = {}
 
     # Graphes principaux venant du fig-store
-    for key in ["gauge", "accept", "hist", "radar", "class"]:
+    for key in ["gauge", "hist", "radar", "class"]:
         fig_obj = figs.get(key) if isinstance(figs, dict) else None
         if fig_obj is not None:
             info = save_fig_to_png(fig_obj, key, img_dir)
@@ -201,15 +216,30 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     # ------------------------------------------------------------------------
     # 2) Génération des graphes catégories (comme dans l'app)
-    #    Colonnes 11:15 comme dans update_categories
+    #    Colonnes après Q10 : 4 catégories max
     # ------------------------------------------------------------------------
-    extra_cols = df.columns[11:15]
-    cat_keys = []
+    cols = list(df.columns)
+    try:
+        q10_index = cols.index("Q10")
+        raw_cat_cols = cols[q10_index + 1 : q10_index + 5]
+    except ValueError:
+        raw_cat_cols = []
 
-    for i, col in enumerate(extra_cols):
+    valid_categories = []
+    for col in raw_cat_cols:
+        if col.endswith("_adj"):
+            continue
+        if df[col].dropna().empty:
+            continue
+        valid_categories.append(col)
+
+    # Garder max 4 catégories
+    valid_categories = valid_categories[:4]
+
+    # On génère les figures des catégories
+    for i, col in enumerate(valid_categories):
         fig_cat = create_category_combined(df, col, i)
         key = f"cat{i+1}"
-        cat_keys.append(key)
         info = save_fig_to_png(fig_cat, key, img_dir)
         if info:
             img_infos[key] = info
@@ -218,13 +248,11 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     # 3) Création PDF (paysage)
     # ------------------------------------------------------------------------
     pdf = SUSReportPDF()
-    # marge un peu plus large pour impression
     pdf.set_auto_page_break(auto=True, margin=25)
 
     # ========================================================================
-    # PAGE 1 — Résumé + KPIs + Graph Classes + 2 JAUGES
+    # PAGE 1 — Résumé + KPIs + Graph Classes + Jauge SUS
     # ========================================================================
-
     pdf.add_page()
 
     # --- Titre principal ---
@@ -232,34 +260,28 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     pdf.set_font("Roboto", "B", 11)
     pdf.set_text_color(30, 30, 30)
     pdf.cell(0, 2, "Résumé du questionnaire SUS", ln=True)
-    #pdf.ln(4)
-
-    # -----------------------------
-    # 1) Colonnes : Stats / KPI / Classes
-    # -----------------------------
 
     # Données stats
-    stats_df = pd.DataFrame(stats_table) if stats_table else pd.DataFrame()
+    stats_df = pd.DataFrame(stats_table) if stats_table is not None else pd.DataFrame()
 
     # -----------------------------
-    # 1.1) Colonne STATISTIQUES (gauche)
+    # 1.1) Tableau STATISTIQUES (gauche)
     # -----------------------------
-    pdf.set_xy(10, 50)  # Position de départ du tableau
+    pdf.set_xy(10, 50)
     pdf.set_font("Roboto", "", 6)
     pdf.set_text_color(40, 40, 40)
 
-    # Dessiner l'en-tête du tableau (titres des colonnes)
+    # En-tête
     pdf.set_font("Roboto", "B", 10)
-    pdf.cell(50, 5, "Indicateur", border=1, align="C", ln=False)  # Colonne "Indicateur"
-    pdf.cell(30, 5, "Valeur", border=1, align="C", ln=True)       # Colonne "Valeur" (avec retour à la ligne)
+    pdf.cell(50, 5, "Indicateur", border=1, align="C", ln=False)
+    pdf.cell(30, 5, "Valeur", border=1, align="C", ln=True)
 
-    # Remplir les lignes du tableau avec les données du DataFrame
+    # Lignes
     pdf.set_font("Roboto", "", 10)
     for _, row in stats_df.iterrows():
-        pdf.set_xy(10, pdf.get_y())  # Réinitialise la position Y pour chaque ligne
-        pdf.cell(50, 5, f"{row['Indicateur']}", border=1, align="C", ln=False)  # Indicateur
-        pdf.cell(30, 5, str(row["Valeur"]), border=1, align="C", ln=True)        # Valeur (avec retour à la ligne)
-
+        pdf.set_xy(10, pdf.get_y())
+        pdf.cell(50, 5, f"{row['Indicateur']}", border=1, align="C", ln=False)
+        pdf.cell(30, 5, str(row["Valeur"]), border=1, align="C", ln=True)
 
     # -----------------------------
     # 1.2) Colonne KPI (centre)
@@ -272,7 +294,6 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     draw_kpi(pdf, "Nombre de réponses", f"{nb_resp}", 105, 55, w=40)
     draw_kpi(pdf, "Score SUS moyen", f"{sus_mean:.1f}", 105, 75, w=40, bg_color=sus_color)
     draw_kpi(pdf, "≥ 80 (Bonne UX)", f"{pct80:.1f}%", 105, 95, w=40)
-
 
     # -----------------------------
     # 1.3) Colonne GRAPH CLASSES (droite)
@@ -287,19 +308,15 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             max_h=100
         )
 
-    
     # ========================================================================
-    # 2) JAUGES (SUS + Acceptabilité)
+    # 2) Jauge SUS
     # ========================================================================
     pdf.set_xy(10, 135)
     pdf.set_font("Roboto", "B", 11)
-    pdf.cell(0, 2, "Scores SUS & Acceptabilité", ln=True)
-
-
+    pdf.cell(0, 2, "Score SUS", ln=True)
 
     margin_x = (pdf.w - 175) / 2
 
-    # Jauge SUS (haut)
     if "gauge" in img_infos:
         draw_image_centered(
             pdf,
@@ -310,92 +327,42 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             max_h=40
         )
 
-
     # ========================================================================
-    # PAGE 2 — 
+    # PAGE 2 — Histogramme + Radar
     # ========================================================================
-
     pdf.add_page()
 
-    # ---- TITRE ----
     pdf.ln(1)
     pdf.set_font("Roboto", "B", 12)
     pdf.set_text_color(30, 30, 30)
     pdf.cell(0, 8, "Répartition des scores & Radar", ln=True)
 
-    # ---- GRAPHE HISTOGRAMME (gauche) ----
+    # Histogramme (gauche)
     if "hist" in img_infos:
         draw_image_centered(
             pdf,
             img_infos["hist"],
-            x_zone=10,     # Coin haut-gauche
-            y_zone=70,
-            max_w= (pdf.w / 2) - 15,   # moitié de la largeur
-            max_h=150                 # hauteur fixe
-        )
-
-    # ---- GRAPHE RADAR (droite) ----
-    if "radar" in img_infos:
-        draw_image_centered(
-            pdf,
-            img_infos["radar"],
-            x_zone=(pdf.w / 2) + 5,   # moitié droite
+            x_zone=10,
             y_zone=70,
             max_w=(pdf.w / 2) - 15,
             max_h=150
         )
 
-   
+    # Radar (droite)
+    if "radar" in img_infos:
+        draw_image_centered(
+            pdf,
+            img_infos["radar"],
+            x_zone=(pdf.w / 2) + 5,
+            y_zone=70,
+            max_w=(pdf.w / 2) - 15,
+            max_h=150
+        )
+
     # ========================================================================
-    # PAGE 3 — Graphiques par catégorie (affichée uniquement si ≥ 1 catégorie)
+    # PAGE 3 — Graphiques par catégorie (si ≥ 1 catégorie valide)
     # ========================================================================
-
-    # ------------------------------------------------------------
-    # 1. Détection des catégories comme dans l'app
-    # ------------------------------------------------------------
-    cols = list(df.columns)
-
-    try:
-        q10_index = cols.index("Q10")
-        raw_cat_cols = cols[q10_index + 1 : q10_index + 5]
-    except ValueError:
-        raw_cat_cols = []
-
-    valid_categories = []
-
-    for col in raw_cat_cols:
-        # Exclure colonnes _adj
-        if col.endswith("_adj"):
-            continue
-        # Exclure colonnes vides
-        if df[col].dropna().empty:
-            continue
-        valid_categories.append(col)
-
-    # Garder max 4
-    valid_categories = valid_categories[:4]
-
-    # ------------------------------------------------------------
-    # 2. Si aucune catégorie → NE PAS créer la page
-    # ------------------------------------------------------------
-    if len(valid_categories) == 0:
-        # Rien du tout : on ne crée aucune page 3
-        pass
-
-    else:
-        # --------------------------------------------------------
-        # 3. Générer uniquement les figures valides
-        # --------------------------------------------------------
-        for i, col in enumerate(valid_categories):
-            fig_cat = create_category_combined(df, col, i)
-            key = f"cat{i+1}"
-            info = save_fig_to_png(fig_cat, key, img_dir)
-            if info:
-                img_infos[key] = info
-
-        # --------------------------------------------------------
-        # 4. Affichage sur une page 3 (2×2 max)
-        # --------------------------------------------------------
+    if len(valid_categories) > 0:
         pdf.add_page()
         pdf.ln(1)
         pdf.set_font("Roboto", "B", 12)
@@ -411,9 +378,9 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
         MAX_W = (pdf.w / 2) - 20
         MAX_H = 80
 
-        # Placement propre
-        for i, key in enumerate([f"cat{i+1}" for i in range(len(valid_categories))]):
-            if key in img_infos:
+        for i, col in enumerate(valid_categories):
+            key = f"cat{i+1}"
+            if key in img_infos and i < len(coords):
                 x_zone, y_zone = coords[i]
                 draw_image_centered(
                     pdf,
@@ -425,12 +392,10 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
                 )
 
     # ========================================================================
-    # PAGE 4 — Analyse IA (style proche CSS + Markdown enrichi)
+    # PAGE 4 — Analyse IA (style markdown simplifié)
     # ========================================================================
-
     pdf.add_page()
 
-    # ---- CONFIG STYLE ----
     LEFT = 20
     RIGHT = pdf.w - 20
     MAX_W = RIGHT - LEFT
@@ -463,34 +428,22 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
         pdf.set_font("Roboto", "", 10)
         pdf.set_text_color(40, 40, 40)
 
-
-    # ---- TITRE PAGE ----
+    # Titre page
     write_title("Analyse IA détaillée")
 
-    # Ligne sous titre
     pdf.set_draw_color(170, 170, 170)
     pdf.line(LEFT, pdf.get_y(), RIGHT, pdf.get_y())
     pdf.ln(4)
 
-
-    # ---- RENDU MARKDOWN MANUEL ----
     if ai_text:
         clean = ai_text.split("\n")
-
         for line in clean:
-
-            # TITRE (####)
             if line.startswith("#### "):
                 write_subtitle(line.replace("#### ", ""))
-
-            # Saut de section
             elif line.strip() == "":
                 pdf.ln(2)
-
-            # Paragraphe normal
             else:
                 write_paragraph(line)
-
     else:
         write_paragraph("Aucune analyse IA n’a été générée.")
 
