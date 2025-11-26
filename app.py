@@ -14,6 +14,7 @@ from components.sus_layout import (
 from components.sus_callbacks import register_callbacks as register_sus_callbacks
 
 
+
 # ====================================================
 # 1) CREATE APP
 # ====================================================
@@ -221,7 +222,7 @@ app.layout = html.Div([
                     html.A([
                         html.Img(
                             src="/assets/logo_alterkpi.png",
-                            style={"width": "80px", "margin": "20px auto", "display": "block"}
+                            style={"width": "120px", "margin": "20px auto", "display": "block"}
                         )
                     ], href="https://www.alter-kpi.com", target="_blank"),
 
