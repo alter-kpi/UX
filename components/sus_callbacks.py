@@ -670,9 +670,11 @@ def register_callbacks(app):
         if not n:
             raise dash.exceptions.PreventUpdate
 
+        # --- Chemin absolu vers assets ---
         assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
         sample_path = os.path.abspath(os.path.join(assets_dir, "sample.xlsx"))
 
+        # --- Lecture et conversion EXACTE format d’upload ---
         with open(sample_path, "rb") as f:
             b64 = base64.b64encode(f.read()).decode()
 
@@ -681,7 +683,9 @@ def register_callbacks(app):
             + b64
         )
 
+        # --- Retourne EXACTEMENT ce que dcc.Upload renvoie ---
         return contents, "sample.xlsx"
+
 
 
 
