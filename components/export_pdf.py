@@ -3,10 +3,10 @@ import plotly.io as pio
 import plotly.graph_objects as go
 import pandas as pd
 import os
-import io
 import tempfile
 from datetime import datetime
 from PIL import Image
+import io
 
 from components.charts import create_category_combined
 
@@ -507,6 +507,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
 
 
