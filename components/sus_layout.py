@@ -194,7 +194,7 @@ layout = dbc.Container([
                                 children=dbc.Button(
                                     "📂 Importer",
                                     color="secondary",
-                                    style={"whiteSpace": "nowrap", "width": "110px"}
+                                    style={"padding": "3px 5px","whiteSpace": "nowrap", "width": "140px"}
                                 ),
                                 multiple=False,
                                 style={"cursor": "pointer"}
@@ -203,10 +203,20 @@ layout = dbc.Container([
                         ),
                         dbc.Col(
                             dbc.Button(
+                                "⭐ Charger exemple",
+                                id="btn-load-sample",
+                                color="success",
+                                style={"padding": "3px 5px","whiteSpace": "nowrap", "width": "150px"}
+                            ),
+                            width="auto"
+                        ),
+
+                        dbc.Col(
+                            dbc.Button(
                                 "🗑️ Reset",
                                 id="btn-reset",
                                 color="danger",
-                                style={"whiteSpace": "nowrap", "width": "110px"}
+                                style={"padding": "3px 5px","whiteSpace": "nowrap", "width": "150px"}
                             ),
                             width="auto"
                         ),
@@ -214,9 +224,9 @@ layout = dbc.Container([
                         dbc.Col(
                             html.A(
                                 dbc.Button(
-                                    "📥 Modèle",
+                                    "📥 Modèle Excel",
                                     color="info",
-                                    style={"whiteSpace": "nowrap", "width": "110px"}
+                                    style={"padding": "3px 5px","whiteSpace": "nowrap", "width": "150px"}
                                 ),
                                 href="/assets/template_sus.xlsx",
                                 target="_blank"
@@ -228,7 +238,7 @@ layout = dbc.Container([
                                 "ℹ️ Aide",
                                 id="btn-help-template",
                                 color="dark",
-                                style={"whiteSpace": "nowrap", "width": "110px"}
+                                style={"padding": "3px 10px","whiteSpace": "nowrap", "width": "150px"}
                             ),
                             width="auto"
                         ),
@@ -473,7 +483,6 @@ layout = dbc.Container([
     )
 
 ], fluid=True)
-
 
 
 
