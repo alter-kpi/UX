@@ -6,6 +6,6 @@ numpy
 fpdf
 openpyxl
 gunicorn
-kaleido
 Pillow
 openai
+cairosvg
