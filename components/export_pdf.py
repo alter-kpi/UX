@@ -192,7 +192,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
     img_infos = {}
 
     # Graphes principaux venant du fig-store
-    for key in ["gauge", "accept", "hist", "radar", "class"]:
+    for key in ["gauge", "hist", "radar", "class"]:
         fig_obj = figs.get(key) if isinstance(figs, dict) else None
         if fig_obj is not None:
             info = save_fig_to_png(fig_obj, key, img_dir)
@@ -505,3 +505,4 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
