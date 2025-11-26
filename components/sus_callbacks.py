@@ -656,6 +656,35 @@ def register_callbacks(app):
         return "", "", "", "tab-dashboard", None, None, "", None, "","", "" 
 
 
+   # ==========================================================
+    # 1B️⃣ Charger un exemple (sample.xlsx)
+    # ==========================================================
+
+    @app.callback(
+        Output("upload-data", "contents"),
+        Output("upload-data", "filename"),
+        Input("btn-load-sample", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def load_sample(n):
+        if not n:
+            raise dash.exceptions.PreventUpdate
+
+        assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
+        sample_path = os.path.abspath(os.path.join(assets_dir, "sample.xlsx"))
+
+        with open(sample_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+
+        contents = (
+            "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"
+            + b64
+        )
+
+        return contents, "sample.xlsx"
+
+
+
 
 
 
