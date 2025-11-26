@@ -121,16 +121,17 @@ def save_fig_to_png(fig_obj, key, img_dir):
     if isinstance(fig_obj, dict):
         fig_obj = go.Figure(fig_obj)
 
+    # rendu léger (stable Render)
+    png_bytes = fig_obj.to_image(format="png", width=900, height=400)
+
     file_name = f"{key}.png"
     path = os.path.join(img_dir, file_name)
 
-    # export HD
-    pio.write_image(fig_obj, path, format="png", scale=2)
+    with open(path, "wb") as f:
+        f.write(png_bytes)
 
-    with Image.open(path) as im:
-        im = im.convert("RGB")
-        w_img, h_img = im.size
-        im.save(path, format="PNG")
+    im = Image.open(io.BytesIO(png_bytes))
+    w_img, h_img = im.size
 
     return {"path": path, "w": w_img, "h": h_img}
 
@@ -505,4 +506,5 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
