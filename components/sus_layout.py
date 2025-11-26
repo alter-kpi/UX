@@ -482,6 +482,7 @@ layout = dbc.Container([
         style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
     )
 
+
 ], fluid=True)
 
 
