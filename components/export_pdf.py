@@ -122,7 +122,7 @@ def save_fig_to_png(fig_obj, key, img_dir):
         fig_obj = go.Figure(fig_obj)
 
     # rendu léger (stable Render)
-    png_bytes = fig_obj.to_image(format="png", width=600, height=300)
+    png_bytes = fig_obj.to_image(format="png", width=800, height=500)
 
     file_name = f"{key}.png"
     path = os.path.join(img_dir, file_name)
@@ -506,6 +506,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
 
 
