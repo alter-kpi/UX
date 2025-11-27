@@ -8,9 +8,11 @@ import io
 import tempfile
 from datetime import datetime
 from PIL import Image
-
-
 from components.charts import create_category_combined
+
+pio.kaleido.scope.default_format = "png"
+pio.kaleido.scope.default_width = 600
+pio.kaleido.scope.default_height = 300
 
 
 # ============================================================================
@@ -125,7 +127,7 @@ def save_fig_to_png(fig_obj, key, img_dir):
         fig_obj = go.Figure(fig_obj)
 
     # rendu léger (stable Render)
-    png_bytes = fig_obj.to_image(format="png", width=900, height=400)
+    png_bytes = fig_obj.to_image(format="png", width=600, height=300)
 
     file_name = f"{key}.png"
     path = os.path.join(img_dir, file_name)
@@ -509,5 +511,6 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
 
