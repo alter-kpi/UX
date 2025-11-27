@@ -126,6 +126,7 @@ ia_layout = html.Div([
     # --- Zone où le texte IA s'affiche ---
     dcc.Loading(
         id="loading-ai",
+        fullscreen=True,
         type="circle",
         children=dcc.Markdown(
             id="ai-analysis-visible",
@@ -150,6 +151,7 @@ pdf_layout = html.Div([
 
     dcc.Loading(
         id="loading-pdf",
+        fullscreen=True,
         type="circle",
         children=html.Div(
             id="pdf-preview",
@@ -463,7 +465,7 @@ layout = dbc.Container([
         dbc.CardBody(
             html.Div([
                 html.Div(
-                    dcc.Loading(type="circle", children=dashboard_layout),
+                    dcc.Loading(type="circle", children=dashboard_layout,fullscreen=True),
                     id="tab-dashboard"
                 ),
                 html.Div(details_layout, id="tab-details", style={"display": "none"}),
@@ -484,6 +486,7 @@ layout = dbc.Container([
 
 
 ], fluid=True)
+
 
 
 
