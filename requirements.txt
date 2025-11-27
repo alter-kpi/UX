@@ -1,6 +1,5 @@
 dash
 dash-bootstrap-components
-plotly>=5.15
 pandas
 numpy
 fpdf
@@ -9,4 +8,5 @@ gunicorn
 Pillow
 openai
 cairosvg
-kaleido
+kaleido==0.2.1
+plotly==5.18.0
