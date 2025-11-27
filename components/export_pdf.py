@@ -1,5 +1,6 @@
 from fpdf import FPDF
 import plotly.io as pio
+pio.renderers.default = "kaleido"
 import plotly.graph_objects as go
 import pandas as pd
 import os
@@ -508,3 +509,4 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
