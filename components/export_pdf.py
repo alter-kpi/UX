@@ -10,11 +10,6 @@ from datetime import datetime
 from PIL import Image
 from components.charts import create_category_combined
 
-pio.kaleido.scope.default_format = "png"
-pio.kaleido.scope.default_width = 600
-pio.kaleido.scope.default_height = 300
-
-
 # ============================================================================
 # Couleur dynamique identique à la jauge native charts.py
 # ============================================================================
@@ -511,6 +506,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
 
 
