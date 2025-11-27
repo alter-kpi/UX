@@ -9,4 +9,4 @@ gunicorn
 Pillow
 openai
 cairosvg
-kaleido==0.2.1
+kaleido
