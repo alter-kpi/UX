@@ -298,7 +298,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
 
 
-    margin_x = (pdf.w - 175) / 2
+    margin_x = (pdf.w - 300) / 2
 
     # Jauge SUS (haut)
     if "gauge" in img_infos:
@@ -307,7 +307,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             img_infos["gauge"],
             x_zone=margin_x,
             y_zone=145,
-            max_w=175,
+            max_w=300,
             max_h=40
         )
 
@@ -506,6 +506,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
+
 
 
 
