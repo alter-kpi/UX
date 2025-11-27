@@ -135,8 +135,8 @@ modal_rgpd = dbc.Modal(
                 "conservée après l’analyse."
             ),
             html.P(
-                "Le serveur est hébergé dans l’Union Européenne (Render – zone "
-                "EU Central, Francfort), garantissant l’absence de transfert "
+                "Le serveur est hébergé dans l’Union Européenne (Azure – zone "
+                "France centre), garantissant l’absence de transfert "
                 "vers des pays tiers."
             ),
             html.P(
@@ -378,3 +378,4 @@ register_sus_callbacks(app)
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
+
