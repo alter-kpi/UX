@@ -84,8 +84,7 @@ def register_callbacks(app):
     @app.callback(
         Output('file-info', 'children'),
         Output('data-store', 'data'),
-        Output("ai-analysis-visible-store", "data"),  # <- FLAG IA
-        Output("tab-dashboard", "children"),  # Ajouté pour forcer la mise à jour du layout du dashboard (spinner)
+        Output("ai-analysis-visible-store", "data"),  # Ne pas modifier l'IA ici
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
         prevent_initial_call=True
@@ -93,10 +92,9 @@ def register_callbacks(app):
     def load_file(contents, filename):
 
         if contents is None:
-            return "Aucun fichier importé.", None, "idle", dashboard_layout  # Affiche à nouveau le layout sans données
+            return "Aucun fichier importé.", None, "idle"  # Pas d'activation IA ici
 
         try:
-            # Charger et traiter les données
             df = parse_upload(contents, filename or "fichier")
             qcols = find_sus_columns(df)
 
@@ -104,8 +102,7 @@ def register_callbacks(app):
                 return (
                     "❌ Colonnes SUS non détectées (Q1..Q10 / SUS1..SUS10 / 10 numériques).",
                     None,
-                    "idle",
-                    dashboard_layout  # Affiche le layout sans données
+                    "idle"  # Pas d'activation IA ici
                 )
 
             df = compute_sus(df, qcols)
@@ -115,11 +112,38 @@ def register_callbacks(app):
                 f"Score moyen: {np.nanmean(df['SUS_Score']):.1f}"
             )
 
-            # FLAG IA = ON
-            return info, df.to_dict('records'), "run", dashboard_layout  # Le spinner est activé en retournant dashboard_layout ici
+            return info, df.to_dict('records'), "idle"  # Pas d'activation IA ici
 
         except Exception as e:
-            return f"❌ Erreur de lecture : {e}", None, "idle", dashboard_layout  # Affiche le layout avec erreur mais spinner visible
+            return f"❌ Erreur de lecture : {e}", None, "idle"
+
+    #Declenchement de l'IA
+
+    @app.callback(
+        Output("ai-analysis-visible", "children"),
+        Output("ai-analysis-visible-store", "data", allow_duplicate=True),  # Assurez-vous que l'analyse IA est stockée ici
+        Input("btn-generate-ai", "n_clicks"),
+        State('data-store', 'data'),
+        prevent_initial_call=True
+    )
+    def generate_ai_analysis_callback(n_clicks, data):
+
+        if not n_clicks or not data:
+            raise dash.exceptions.PreventUpdate
+
+        df = pd.DataFrame(data)
+
+        try:
+            # Construire le prompt pour l'IA
+            prompt = build_ai_prompt(df)
+
+            # Appeler la fonction qui génère l'analyse IA
+            analysis = generate_ai_analysis(prompt)
+
+            return analysis, analysis  # Stocker l'analyse IA dans le Store
+
+        except Exception as e:
+            return f"⚠️ Erreur génération IA : {e}", None
 
         
 
@@ -460,7 +484,7 @@ def register_callbacks(app):
         State("data-store", "data"),
         State("fig-store", "data"),
         State("sus-stats-table", "data"),
-        State("ai-analysis", "data"),
+        State("ai-analysis-visible-store", "data"),
 
         prevent_initial_call=True
     )
@@ -515,7 +539,7 @@ def register_callbacks(app):
         State("data-store", "data"),
         State("fig-store", "data"),
         State("sus-stats-table", "data"),
-        State("ai-analysis", "data"),
+        State("ai-analysis-visible-store", "data"),
         prevent_initial_call=True
     )
     def generate_pdf_preview(n_clicks, data, figs, stats_table, ai_text):

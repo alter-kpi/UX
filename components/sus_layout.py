@@ -106,6 +106,14 @@ ia_layout = html.Div([
 
     dcc.Store(id="ai-analysis-visible-store", storage_type="session"),
 
+    dbc.Button(
+        "🧠 Générer l'analyse IA",
+        id="btn-generate-ai",
+        color="primary",
+        style={"padding": "3px 10px", "whiteSpace": "nowrap", "width": "200px"}
+    ),
+
+
     # --- Texte explicatif du modèle utilisé ---
     html.P(
         "L’analyse ci-dessous est générée automatiquement par un modèle de "
@@ -122,6 +130,8 @@ ia_layout = html.Div([
             "marginRight": "auto"
         }
     ),
+
+    
 
     # --- Zone où le texte IA s'affiche ---
     dcc.Loading(
@@ -484,8 +494,6 @@ layout = dbc.Container([
 
 
 ], fluid=True)
-
-
 
 
 
