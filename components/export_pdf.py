@@ -1,6 +1,5 @@
 from fpdf import FPDF
 import plotly.io as pio
-pio.kaleido.scope.default_format = "png"
 import plotly.graph_objects as go
 import pandas as pd
 import os
@@ -8,7 +7,10 @@ import io
 import tempfile
 from datetime import datetime
 from PIL import Image
+
+
 from components.charts import create_category_combined
+
 
 # ============================================================================
 # Couleur dynamique identique à la jauge native charts.py
@@ -122,7 +124,7 @@ def save_fig_to_png(fig_obj, key, img_dir):
         fig_obj = go.Figure(fig_obj)
 
     # rendu léger (stable Render)
-    png_bytes = fig_obj.to_image(format="png", width=800, height=500)
+    png_bytes = fig_obj.to_image(format="png")
 
     file_name = f"{key}.png"
     path = os.path.join(img_dir, file_name)
@@ -298,7 +300,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
 
 
-    margin_x = (pdf.w - 300) / 2
+    margin_x = (pdf.w - 400) / 2
 
     # Jauge SUS (haut)
     if "gauge" in img_infos:
@@ -307,7 +309,7 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
             img_infos["gauge"],
             x_zone=margin_x,
             y_zone=145,
-            max_w=300,
+            max_w=400,
             max_h=40
         )
 
@@ -506,9 +508,3 @@ def generate_sus_pdf(df, figs, output_path, ai_text=None, stats_table=None):
 
     pdf.output(output_path)
     return output_path
-
-
-
-
-
-
