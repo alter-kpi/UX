@@ -84,7 +84,8 @@ def register_callbacks(app):
     @app.callback(
         Output('file-info', 'children'),
         Output('data-store', 'data'),
-        Output("ai-analysis-visible-store", "data"),   # <- FLAG IA
+        Output("ai-analysis-visible-store", "data"),  # <- FLAG IA
+        Output("tab-dashboard", "children"),  # Ajouté pour forcer la mise à jour du layout du dashboard (spinner)
         Input('upload-data', 'contents'),
         State('upload-data', 'filename'),
         prevent_initial_call=True
@@ -92,9 +93,10 @@ def register_callbacks(app):
     def load_file(contents, filename):
 
         if contents is None:
-            return "Aucun fichier importé.", None, "idle"
+            return "Aucun fichier importé.", None, "idle", dashboard_layout  # Affiche à nouveau le layout sans données
 
         try:
+            # Charger et traiter les données
             df = parse_upload(contents, filename or "fichier")
             qcols = find_sus_columns(df)
 
@@ -102,7 +104,8 @@ def register_callbacks(app):
                 return (
                     "❌ Colonnes SUS non détectées (Q1..Q10 / SUS1..SUS10 / 10 numériques).",
                     None,
-                    "idle"
+                    "idle",
+                    dashboard_layout  # Affiche le layout sans données
                 )
 
             df = compute_sus(df, qcols)
@@ -113,10 +116,12 @@ def register_callbacks(app):
             )
 
             # FLAG IA = ON
-            return info, df.to_dict('records'), "run"
+            return info, df.to_dict('records'), "run", dashboard_layout  # Le spinner est activé en retournant dashboard_layout ici
 
         except Exception as e:
-            return f"❌ Erreur de lecture : {e}", None, "idle"
+            return f"❌ Erreur de lecture : {e}", None, "idle", dashboard_layout  # Affiche le layout avec erreur mais spinner visible
+
+        
 
 
 
