@@ -326,17 +326,16 @@ import os
 import pandas as pd
 from datetime import datetime
 
-# Dossier et fichier
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+import tempfile
+
+DATA_DIR = os.path.join(tempfile.gettempdir(), "alterux_data")
 FEEDBACK_FILE = os.path.join(DATA_DIR, "feedback.csv")
 
-# Crée le dossier s'il n'existe pas
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Crée le fichier s'il n'existe pas OU s'il est vide
 if not os.path.exists(FEEDBACK_FILE) or os.path.getsize(FEEDBACK_FILE) == 0:
     pd.DataFrame(columns=["timestamp", "email", "message"]).to_csv(FEEDBACK_FILE, index=False)
+
 
 
 
@@ -378,4 +377,5 @@ register_sus_callbacks(app)
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
+
 
