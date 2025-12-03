@@ -238,6 +238,14 @@ app.layout = html.Div([
     modal_rgpd,
     modal_feedback,
 
+    #GA Dummies
+    html.Div(id="dummy-upload", style={"display": "none"}),
+    html.Div(id="dummy-sample", style={"display": "none"}),
+    html.Div(id="dummy-pdf", style={"display": "none"}),
+    html.Div(id="dummy-ai", style={"display": "none"}),
+    html.Div(id="dummy-nav", style={"display": "none"}),
+
+
     html.Div([
         dashboard_layout,
         details_layout,
@@ -408,6 +416,7 @@ register_sus_callbacks(app)
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
+
 
 
 
