@@ -412,10 +412,89 @@ register_sus_callbacks(app)
 
 
 # ====================================================
-# 8) RUN
+# 8) GOOGLE ANALYTICS — EVENTS TRACKING
+# ====================================================
+
+# Upload de fichier Excel
+app.clientside_callback(
+    """
+    function(contents) {
+        if (contents) {
+            trackEvent("upload_file", {category: "import"});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("dummy-upload", "children"),
+    Input("upload-data", "contents")
+)
+
+# Utilisation du fichier exemple
+app.clientside_callback(
+    """
+    function(n) {
+        if (n > 0) {
+            trackEvent("use_sample", {category: "sample"});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("dummy-sample", "children"),
+    Input("btn-load-sample", "n_clicks")
+)
+
+# Génération du PDF
+app.clientside_callback(
+    """
+    function(n) {
+        if (n > 0) {
+            trackEvent("generate_pdf", {category: "pdf"});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("dummy-pdf", "children"),
+    Input("btn-generate-pdf", "n_clicks")
+)
+
+# Génération de l'analyse IA
+app.clientside_callback(
+    """
+    function(n) {
+        if (n > 0) {
+            trackEvent("generate_ai", {category: "ai"});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("dummy-ai", "children"),
+    Input("btn-generate-ai", "n_clicks")
+)
+
+# Navigation entre / et /sus
+app.clientside_callback(
+    """
+    function(path) {
+        if (path === "/sus") {
+            trackEvent("navigate_sus", {category: "navigation"});
+        }
+        if (path === "/") {
+            trackEvent("navigate_home", {category: "navigation"});
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("dummy-nav", "children"),
+    Input("url", "pathname")
+)
+
+
+# ====================================================
+# 9) RUN
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
+
 
 
 
