@@ -30,6 +30,37 @@ app = Dash(
 server = app.server
 app.title = "Alter UX"
 
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>Alter UX</title>
+        {%favicon%}
+        {%css%}
+
+        <!-- Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7PBT4P0DNM"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-7PBT4P0DNM');
+        </script>
+
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+"""
+
+
 
 # ====================================================
 # 2) SIDEBAR — liens + modals
@@ -377,5 +408,6 @@ register_sus_callbacks(app)
 # ====================================================
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
+
 
 
