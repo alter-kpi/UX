@@ -3,7 +3,6 @@ import dash_bootstrap_components as dbc
 import os
 import pandas as pd
 from datetime import datetime
-
 from components.home_layout import layout as home_layout
 from components.sus_layout import (
     layout as sus_layout,
@@ -13,11 +12,20 @@ from components.sus_layout import (
 )
 from components.sus_callbacks import register_callbacks as register_sus_callbacks
 
-
+# ── ATTRAKDIFF ──────────────────────────────────────────────
+from components.attrakdiff_layout import (
+    layout as attrakdiff_layout,
+    dashboard_layout as attrakdiff_dashboard_layout,
+    details_layout   as attrakdiff_details_layout,
+    ia_layout        as attrakdiff_ia_layout,
+)
+from components.attrakdiff_callbacks import register_callbacks as register_attrakdiff_callbacks
+# ────────────────────────────────────────────────────────────
 
 # ====================================================
 # 1) CREATE APP
 # ====================================================
+
 app = Dash(
     __name__,
     suppress_callback_exceptions=True,
@@ -33,34 +41,30 @@ app.title = "Alter UX"
 app.index_string = """
 <!DOCTYPE html>
 <html>
-    <head>
-        {%metas%}
-        <title>Alter UX</title>
-        {%favicon%}
-        {%css%}
-
-        <!-- Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7PBT4P0DNM"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-7PBT4P0DNM');
-        </script>
-
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
+<head>
+{%metas%}
+<title>Alter UX</title>
+{%favicon%}
+{%css%}
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7PBT4P0DNM"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-7PBT4P0DNM');
+</script>
+</head>
+<body>
+{%app_entry%}
+<footer>
+{%config%}
+{%scripts%}
+{%renderer%}
+</footer>
+</body>
 </html>
 """
-
-
 
 # ====================================================
 # 2) SIDEBAR — liens + modals
@@ -70,7 +74,6 @@ modal_about = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("À propos")),
         dbc.ModalBody([
-
             # PHOTO
             html.Img(
                 src="/assets/photo_frederic.png",
@@ -83,21 +86,18 @@ modal_about = dbc.Modal(
                     "objectFit": "cover"
                 }
             ),
-
             # TEXTE
             html.P("Frédéric Michotte — Fondateur Alter KPI"),
             html.P(
                 "Consultant finance & business intelligence spécialisé en pilotage, "
-                "automatisation et création d’outils sur mesure. J’aime transformer "
+                "automatisation et création d'outils sur mesure. J'aime transformer "
                 "les idées en solutions simples, efficaces et élégantes."
             ),
             html.P(
-                "Alter UX est né de cette philosophie : rendre l’analyse de questionnaires "
+                "Alter UX est né de cette philosophie : rendre l'analyse de questionnaires "
                 "intuitive, rapide et fiable, sans complexité technique."
             ),
-
             html.Hr(),
-
             # LINKEDIN
             html.P([
                 html.I(className="bi bi-linkedin me-2"),
@@ -108,7 +108,6 @@ modal_about = dbc.Modal(
                     className="text-decoration-none"
                 )
             ]),
-
             # SITE WEB
             html.P([
                 html.I(className="bi bi-globe me-2"),
@@ -119,7 +118,6 @@ modal_about = dbc.Modal(
                     className="text-decoration-none"
                 )
             ]),
-
             # EMAIL
             html.P([
                 html.I(className="bi bi-envelope me-2"),
@@ -138,14 +136,11 @@ modal_about = dbc.Modal(
     is_open=False,
 )
 
-
-
 # Modal RGPD (texte complet)
 modal_rgpd = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("Confidentialité / RGPD")),
         dbc.ModalBody([
-
             # ILLUSTRATION RGPD
             html.Img(
                 src="/assets/rgpd_icon.png",
@@ -157,17 +152,16 @@ modal_rgpd = dbc.Modal(
                     "opacity": "0.9"
                 }
             ),
-
             # TEXTE
             html.P(
-                "L’application Alter UX traite les fichiers importés uniquement en "
-                "mémoire vive (RAM). Aucun fichier n’est enregistré sur disque, "
-                "aucune base de données n’est utilisée, et aucune donnée n’est "
-                "conservée après l’analyse."
+                "L'application Alter UX traite les fichiers importés uniquement en "
+                "mémoire vive (RAM). Aucun fichier n'est enregistré sur disque, "
+                "aucune base de données n'est utilisée, et aucune donnée n'est "
+                "conservée après l'analyse."
             ),
             html.P(
-                "Le serveur est hébergé dans l’Union Européenne (Azure – zone "
-                "France centre), garantissant l’absence de transfert "
+                "Le serveur est hébergé dans l'Union Européenne (Azure – zone "
+                "France centre), garantissant l'absence de transfert "
                 "vers des pays tiers."
             ),
             html.P(
@@ -190,15 +184,11 @@ modal_rgpd = dbc.Modal(
     is_open=False,
 )
 
-
-
-
 # Modal Feedback
 modal_feedback = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("Une remarque, une suggestion ?")),
         dbc.ModalBody([
-            
             dbc.Label("Votre email (si vous souhaitez être recontacté)"),
             dbc.Input(
                 id="feedback-email",
@@ -206,7 +196,6 @@ modal_feedback = dbc.Modal(
                 placeholder="Ex : nom@domaine.com",
                 style={"marginBottom": "10px"}
             ),
-
             # Zone de message
             dbc.Label("Votre message"),
             dcc.Textarea(
@@ -214,7 +203,6 @@ modal_feedback = dbc.Modal(
                 placeholder="Votre commentaire...",
                 style={"width": "100%", "height": "150px"}
             ),
-
             html.Div(id="feedback-status", style={"marginTop": "10px", "color": "green"})
         ]),
         dbc.ModalFooter([
@@ -226,37 +214,37 @@ modal_feedback = dbc.Modal(
     is_open=False,
 )
 
-
 # ====================================================
 # 3) GLOBAL LAYOUT
 # ====================================================
+
 app.layout = html.Div([
-
     dcc.Location(id="url"),
-
     modal_about,
     modal_rgpd,
     modal_feedback,
 
-    #GA Dummies
-    html.Div(id="dummy-upload", style={"display": "none"}),
-    html.Div(id="dummy-sample", style={"display": "none"}),
-    html.Div(id="dummy-pdf", style={"display": "none"}),
-    html.Div(id="dummy-ai", style={"display": "none"}),
-    html.Div(id="dummy-nav", style={"display": "none"}),
+    # GA Dummies
+    html.Div(id="dummy-upload",  style={"display": "none"}),
+    html.Div(id="dummy-sample",  style={"display": "none"}),
+    html.Div(id="dummy-pdf",     style={"display": "none"}),
+    html.Div(id="dummy-ai",      style={"display": "none"}),
+    html.Div(id="dummy-nav",     style={"display": "none"}),
 
-
+    # Hidden layouts pour enregistrer les callbacks Dash
     html.Div([
         dashboard_layout,
         details_layout,
-        ia_layout
+        ia_layout,
+        attrakdiff_dashboard_layout,
+        attrakdiff_details_layout,
+        attrakdiff_ia_layout,
     ], style={"display": "none"}),
 
     dbc.Container([
         dbc.Row([
             dbc.Col(
                 html.Div([
-
                     # LOGO
                     html.A([
                         html.Img(
@@ -274,11 +262,21 @@ app.layout = html.Div([
                                    style={"color": "white", "marginRight": "8px"}),
                             "Accueil"
                         ], href="/", active="exact"),
+
                         dbc.NavLink([
                             html.I(className="bi bi-ui-checks-grid",
                                    style={"color": "white", "marginRight": "8px"}),
                             "Questionnaire SUS"
                         ], href="/sus", active="exact"),
+
+                        # ── NOUVEAU ──────────────────────────
+                        dbc.NavLink([
+                            html.I(className="bi bi-stars",
+                                   style={"color": "white", "marginRight": "8px"}),
+                            "AttrakDiff"
+                        ], href="/attrakdiff", active="exact"),
+                        # ─────────────────────────────────────
+
                     ], vertical=True, pills=True),
 
                     # FOOTER-LIKE LINKS
@@ -292,38 +290,34 @@ app.layout = html.Div([
                 ], className="sidebar"),
                 width=2
             ),
-
             dbc.Col(
                 html.Div(id="page-content", className="p-4"),
                 width=10,
                 style={"marginLeft": "260px"}
             )
-
         ], className="g-0")
     ], fluid=True)
-
 ])
-
 
 # ====================================================
 # 4) ROUTING
 # ====================================================
+
 @app.callback(Output("page-content", "children"),
               Input("url", "pathname"))
 def render_page(pathname):
-
     if pathname == "/sus":
         return sus_layout
-
+    if pathname == "/attrakdiff":          # ← NOUVEAU
+        return attrakdiff_layout
     if pathname == "/":
         return home_layout
-
     return html.Div([html.H3("Page inconnue"), html.P(pathname)])
-
 
 # ====================================================
 # 5) OPEN/CLOSE MODALS CALLBACKS
 # ====================================================
+
 @app.callback(
     Output("modal-about", "is_open"),
     Input("open-about", "n_clicks"),
@@ -333,7 +327,6 @@ def render_page(pathname):
 )
 def toggle_about(open_click, close_click, is_open):
     return not is_open
-
 
 @app.callback(
     Output("modal-rgpd", "is_open"),
@@ -345,7 +338,6 @@ def toggle_about(open_click, close_click, is_open):
 def toggle_rgpd(open_click, close_click, is_open):
     return not is_open
 
-
 @app.callback(
     Output("modal-feedback", "is_open"),
     Input("open-feedback", "n_clicks"),
@@ -356,7 +348,6 @@ def toggle_rgpd(open_click, close_click, is_open):
 def toggle_feedback(open_click, close_click, is_open):
     return not is_open
 
-
 # ====================================================
 # 6) UPDATE MAILTO WITH MESSAGE CONTENT
 # ====================================================
@@ -364,19 +355,14 @@ def toggle_feedback(open_click, close_click, is_open):
 import os
 import pandas as pd
 from datetime import datetime
-
 import tempfile
 
-DATA_DIR = os.path.join(tempfile.gettempdir(), "alterux_data")
+DATA_DIR      = os.path.join(tempfile.gettempdir(), "alterux_data")
 FEEDBACK_FILE = os.path.join(DATA_DIR, "feedback.csv")
-
 os.makedirs(DATA_DIR, exist_ok=True)
 
 if not os.path.exists(FEEDBACK_FILE) or os.path.getsize(FEEDBACK_FILE) == 0:
     pd.DataFrame(columns=["timestamp", "email", "message"]).to_csv(FEEDBACK_FILE, index=False)
-
-
-
 
 @app.callback(
     Output("feedback-status", "children"),
@@ -386,30 +372,24 @@ if not os.path.exists(FEEDBACK_FILE) or os.path.getsize(FEEDBACK_FILE) == 0:
     prevent_initial_call=True
 )
 def save_feedback(n, email, message):
-
     if not message or message.strip() == "":
         return "⚠️ Merci d'écrire un message."
-
     df = pd.read_csv(FEEDBACK_FILE)
-
     new_row = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "email": email.strip() if email else "",
-        "message": message.strip()
+        "email":     email.strip() if email else "",
+        "message":   message.strip()
     }
-
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     df.to_csv(FEEDBACK_FILE, index=False)
-
     return "✔️ Merci ! Votre message a bien été envoyé."
 
-
-
 # ====================================================
-# 7) REGISTER SUS CALLBACKS
+# 7) REGISTER CALLBACKS
 # ====================================================
+
 register_sus_callbacks(app)
-
+register_attrakdiff_callbacks(app)      # ← NOUVEAU
 
 # ====================================================
 # 8) GOOGLE ANALYTICS — EVENTS TRACKING
@@ -471,12 +451,15 @@ app.clientside_callback(
     Input("btn-generate-ai", "n_clicks")
 )
 
-# Navigation entre / et /sus
+# Navigation
 app.clientside_callback(
     """
     function(path) {
         if (path === "/sus") {
             trackEvent("navigate_sus", {category: "navigation"});
+        }
+        if (path === "/attrakdiff") {
+            trackEvent("navigate_attrakdiff", {category: "navigation"});
         }
         if (path === "/") {
             trackEvent("navigate_home", {category: "navigation"});
@@ -488,14 +471,9 @@ app.clientside_callback(
     Input("url", "pathname")
 )
 
-
 # ====================================================
 # 9) RUN
 # ====================================================
+
 if __name__ == "__main__":
     app.run(debug=True, port=8051)
-
-
-
-
-
