@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from dash import Dash, html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import os
@@ -53,6 +56,9 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-7PBT4P0DNM');
+function trackEvent(name, params) {
+    if (typeof gtag !== 'undefined') { gtag('event', name, params); }
+}
 </script>
 </head>
 <body>
@@ -74,19 +80,13 @@ modal_about = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("À propos")),
         dbc.ModalBody([
-            # PHOTO
             html.Img(
                 src="/assets/photo_frederic.png",
                 style={
-                    "width": "90px",
-                    "height": "90px",
-                    "borderRadius": "50%",
-                    "display": "block",
-                    "margin": "0 auto 20px auto",
-                    "objectFit": "cover"
+                    "width": "90px", "height": "90px", "borderRadius": "50%",
+                    "display": "block", "margin": "0 auto 20px auto", "objectFit": "cover"
                 }
             ),
-            # TEXTE
             html.P("Frédéric Michotte — Fondateur Alter KPI"),
             html.P(
                 "Consultant finance & business intelligence spécialisé en pilotage, "
@@ -98,111 +98,64 @@ modal_about = dbc.Modal(
                 "intuitive, rapide et fiable, sans complexité technique."
             ),
             html.Hr(),
-            # LINKEDIN
             html.P([
                 html.I(className="bi bi-linkedin me-2"),
-                html.A(
-                    "Mon profil LinkedIn",
-                    href="https://www.linkedin.com/in/fr%C3%A9d%C3%A9ric-michotte-03a9081a8/",
-                    target="_blank",
-                    className="text-decoration-none"
-                )
+                html.A("Mon profil LinkedIn",
+                       href="https://www.linkedin.com/in/fr%C3%A9d%C3%A9ric-michotte-03a9081a8/",
+                       target="_blank", className="text-decoration-none")
             ]),
-            # SITE WEB
             html.P([
                 html.I(className="bi bi-globe me-2"),
-                html.A(
-                    "www.alter-kpi.com",
-                    href="https://www.alter-kpi.com",
-                    target="_blank",
-                    className="text-decoration-none"
-                )
+                html.A("www.alter-kpi.com", href="https://www.alter-kpi.com",
+                       target="_blank", className="text-decoration-none")
             ]),
-            # EMAIL
             html.P([
                 html.I(className="bi bi-envelope me-2"),
-                html.A(
-                    "info@alter-kpi.com",
-                    href="mailto:info@alter-kpi.com",
-                    className="text-decoration-none"
-                )
+                html.A("info@alter-kpi.com", href="mailto:info@alter-kpi.com",
+                       className="text-decoration-none")
             ]),
         ]),
-        dbc.ModalFooter(
-            dbc.Button("Fermer", id="close-about", className="ms-auto")
-        )
+        dbc.ModalFooter(dbc.Button("Fermer", id="close-about", className="ms-auto"))
     ],
-    id="modal-about",
-    is_open=False,
+    id="modal-about", is_open=False,
 )
 
-# Modal RGPD (texte complet)
 modal_rgpd = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("Confidentialité / RGPD")),
         dbc.ModalBody([
-            # ILLUSTRATION RGPD
             html.Img(
                 src="/assets/rgpd_icon.png",
-                style={
-                    "width": "80px",
-                    "height": "80px",
-                    "display": "block",
-                    "margin": "0 auto 20px auto",
-                    "opacity": "0.9"
-                }
+                style={"width": "80px", "height": "80px", "display": "block",
+                       "margin": "0 auto 20px auto", "opacity": "0.9"}
             ),
-            # TEXTE
-            html.P(
-                "L'application Alter UX traite les fichiers importés uniquement en "
-                "mémoire vive (RAM). Aucun fichier n'est enregistré sur disque, "
-                "aucune base de données n'est utilisée, et aucune donnée n'est "
-                "conservée après l'analyse."
-            ),
-            html.P(
-                "Le serveur est hébergé dans l'Union Européenne (Azure – zone "
-                "France centre), garantissant l'absence de transfert "
-                "vers des pays tiers."
-            ),
-            html.P(
-                "Les données servent uniquement à calculer les statistiques, "
-                "générer les visualisations et produire le PDF. Le rapport est "
-                "généré en mémoire puis transmis à votre navigateur, sans "
-                "stockage permanent."
-            ),
-            html.P(
-                "Vos données disparaissent automatiquement à la fin de la "
-                "session ou lors du redémarrage du serveur. Aucun tiers ne peut "
-                "y accéder."
-            )
+            html.P("L'application Alter UX traite les fichiers importés uniquement en "
+                   "mémoire vive (RAM). Aucun fichier n'est enregistré sur disque, "
+                   "aucune base de données n'est utilisée, et aucune donnée n'est "
+                   "conservée après l'analyse."),
+            html.P("Le serveur est hébergé dans l'Union Européenne (Azure – zone "
+                   "France centre), garantissant l'absence de transfert vers des pays tiers."),
+            html.P("Les données servent uniquement à calculer les statistiques, "
+                   "générer les visualisations et produire le PDF. Le rapport est "
+                   "généré en mémoire puis transmis à votre navigateur, sans stockage permanent."),
+            html.P("Vos données disparaissent automatiquement à la fin de la "
+                   "session ou lors du redémarrage du serveur. Aucun tiers ne peut y accéder.")
         ]),
-        dbc.ModalFooter(
-            dbc.Button("Fermer", id="close-rgpd", className="ms-auto")
-        )
+        dbc.ModalFooter(dbc.Button("Fermer", id="close-rgpd", className="ms-auto"))
     ],
-    id="modal-rgpd",
-    is_open=False,
+    id="modal-rgpd", is_open=False,
 )
 
-# Modal Feedback
 modal_feedback = dbc.Modal(
     [
         dbc.ModalHeader(dbc.ModalTitle("Une remarque, une suggestion ?")),
         dbc.ModalBody([
             dbc.Label("Votre email (si vous souhaitez être recontacté)"),
-            dbc.Input(
-                id="feedback-email",
-                type="email",
-                placeholder="Ex : nom@domaine.com",
-                style={"marginBottom": "10px"}
-            ),
-            # Zone de message
+            dbc.Input(id="feedback-email", type="email",
+                      placeholder="Ex : nom@domaine.com", style={"marginBottom": "10px"}),
             dbc.Label("Votre message"),
-            dcc.Textarea(
-                id="feedback-text",
-                placeholder="Votre commentaire...",
-                style={"width": "100%", "height": "150px"}
-            ),
+            dcc.Textarea(id="feedback-text", placeholder="Votre commentaire...",
+                         style={"width": "100%", "height": "150px"}),
             html.Div(id="feedback-status", style={"marginTop": "10px", "color": "green"})
         ]),
         dbc.ModalFooter([
@@ -210,8 +163,7 @@ modal_feedback = dbc.Modal(
             dbc.Button("Fermer", id="close-feedback", className="ms-auto")
         ])
     ],
-    id="modal-feedback",
-    is_open=False,
+    id="modal-feedback", is_open=False,
 )
 
 # ====================================================
@@ -225,20 +177,45 @@ app.layout = html.Div([
     modal_feedback,
 
     # GA Dummies
-    html.Div(id="dummy-upload",  style={"display": "none"}),
-    html.Div(id="dummy-sample",  style={"display": "none"}),
-    html.Div(id="dummy-pdf",     style={"display": "none"}),
-    html.Div(id="dummy-ai",      style={"display": "none"}),
-    html.Div(id="dummy-nav",     style={"display": "none"}),
+    html.Div(id="dummy-upload", style={"display": "none"}),
+    html.Div(id="dummy-sample", style={"display": "none"}),
+    html.Div(id="dummy-pdf",    style={"display": "none"}),
+    html.Div(id="dummy-ai",     style={"display": "none"}),
+    html.Div(id="dummy-nav",    style={"display": "none"}),
 
-    # Hidden layouts pour enregistrer les callbacks Dash
+    # --------------------------------------------------------
+    # Hidden layouts — tous les IDs nécessaires aux callbacks
+    # --------------------------------------------------------
     html.Div([
+        # SUS layouts
         dashboard_layout,
         details_layout,
         ia_layout,
+        # AttrakDiff layouts
         attrakdiff_dashboard_layout,
         attrakdiff_details_layout,
         attrakdiff_ia_layout,
+
+        # --- Stores & composants SUS ---
+        dcc.Store(id="data-store",  storage_type="session"),
+        dcc.Store(id="fig-store",   storage_type="session"),
+        dcc.Store(id="ai-analysis", storage_type="session"),
+        html.Div(id="ai-processing"),
+        dbc.Button(id="btn-export", style={"display": "none"}),
+        html.Div(id="export-status"),
+        html.Div(id="pdf-preview"),
+        html.Div(id="pdf-download-zone"),
+        dcc.Download(id="download-pdf"),
+
+        # --- Stores & composants AttrakDiff ---
+        dcc.Store(id="attrakdiff-store"),
+        dcc.Download(id="attrakdiff-download-template"),
+        html.Div(id="attrakdiff-results"),
+        html.Div(id="attrakdiff-upload-status"),
+        html.Div(id="attrakdiff-pdf-preview"),
+        html.Div(id="attrakdiff-pdf-download-zone"),
+        dcc.Markdown(id="attrakdiff-ia-text"),
+
     ], style={"display": "none"}),
 
     dbc.Container([
@@ -262,29 +239,27 @@ app.layout = html.Div([
                                    style={"color": "white", "marginRight": "8px"}),
                             "Accueil"
                         ], href="/", active="exact"),
-
                         dbc.NavLink([
                             html.I(className="bi bi-ui-checks-grid",
                                    style={"color": "white", "marginRight": "8px"}),
                             "Questionnaire SUS"
                         ], href="/sus", active="exact"),
-
-                        # ── NOUVEAU ──────────────────────────
                         dbc.NavLink([
                             html.I(className="bi bi-stars",
                                    style={"color": "white", "marginRight": "8px"}),
                             "AttrakDiff"
                         ], href="/attrakdiff", active="exact"),
-                        # ─────────────────────────────────────
-
                     ], vertical=True, pills=True),
 
                     # FOOTER-LIKE LINKS
                     html.Div([
                         html.Hr(className="text-white", style={"marginTop": "40px"}),
-                        html.A("À propos de l'auteur", id="open-about", style={"cursor": "pointer"}),
-                        html.A("Confidentialité & RGPD", id="open-rgpd", style={"cursor": "pointer"}),
-                        html.A("Feedback", id="open-feedback", style={"cursor": "pointer"}),
+                        html.A("À propos de l'auteur", id="open-about",
+                               style={"cursor": "pointer"}),
+                        html.A("Confidentialité & RGPD", id="open-rgpd",
+                               style={"cursor": "pointer"}),
+                        html.A("Feedback", id="open-feedback",
+                               style={"cursor": "pointer"}),
                     ], className="sidebar-footer-fixed"),
 
                 ], className="sidebar"),
@@ -308,14 +283,14 @@ app.layout = html.Div([
 def render_page(pathname):
     if pathname == "/sus":
         return sus_layout
-    if pathname == "/attrakdiff":          # ← NOUVEAU
+    if pathname == "/attrakdiff":
         return attrakdiff_layout
     if pathname == "/":
         return home_layout
     return html.Div([html.H3("Page inconnue"), html.P(pathname)])
 
 # ====================================================
-# 5) OPEN/CLOSE MODALS CALLBACKS
+# 5) OPEN/CLOSE MODALS
 # ====================================================
 
 @app.callback(
@@ -349,12 +324,9 @@ def toggle_feedback(open_click, close_click, is_open):
     return not is_open
 
 # ====================================================
-# 6) UPDATE MAILTO WITH MESSAGE CONTENT
+# 6) FEEDBACK
 # ====================================================
 
-import os
-import pandas as pd
-from datetime import datetime
 import tempfile
 
 DATA_DIR      = os.path.join(tempfile.gettempdir(), "alterux_data")
@@ -389,18 +361,17 @@ def save_feedback(n, email, message):
 # ====================================================
 
 register_sus_callbacks(app)
-register_attrakdiff_callbacks(app)      # ← NOUVEAU
+register_attrakdiff_callbacks(app)
 
 # ====================================================
-# 8) GOOGLE ANALYTICS — EVENTS TRACKING
+# 8) GOOGLE ANALYTICS
 # ====================================================
 
-# Upload de fichier Excel
 app.clientside_callback(
     """
     function(contents) {
         if (contents) {
-            trackEvent("upload_file", {category: "import"});
+            if (typeof trackEvent !== 'undefined') trackEvent("upload_file", {category: "import"});
         }
         return window.dash_clientside.no_update;
     }
@@ -409,12 +380,11 @@ app.clientside_callback(
     Input("upload-data", "contents")
 )
 
-# Utilisation du fichier exemple
 app.clientside_callback(
     """
     function(n) {
         if (n > 0) {
-            trackEvent("use_sample", {category: "sample"});
+            if (typeof trackEvent !== 'undefined') trackEvent("use_sample", {category: "sample"});
         }
         return window.dash_clientside.no_update;
     }
@@ -423,12 +393,11 @@ app.clientside_callback(
     Input("btn-load-sample", "n_clicks")
 )
 
-# Génération du PDF
 app.clientside_callback(
     """
     function(n) {
         if (n > 0) {
-            trackEvent("generate_pdf", {category: "pdf"});
+            if (typeof trackEvent !== 'undefined') trackEvent("generate_pdf", {category: "pdf"});
         }
         return window.dash_clientside.no_update;
     }
@@ -437,12 +406,11 @@ app.clientside_callback(
     Input("btn-generate-pdf", "n_clicks")
 )
 
-# Génération de l'analyse IA
 app.clientside_callback(
     """
     function(n) {
         if (n > 0) {
-            trackEvent("generate_ai", {category: "ai"});
+            if (typeof trackEvent !== 'undefined') trackEvent("generate_ai", {category: "ai"});
         }
         return window.dash_clientside.no_update;
     }
@@ -451,19 +419,13 @@ app.clientside_callback(
     Input("btn-generate-ai", "n_clicks")
 )
 
-# Navigation
 app.clientside_callback(
     """
     function(path) {
-        if (path === "/sus") {
-            trackEvent("navigate_sus", {category: "navigation"});
-        }
-        if (path === "/attrakdiff") {
-            trackEvent("navigate_attrakdiff", {category: "navigation"});
-        }
-        if (path === "/") {
-            trackEvent("navigate_home", {category: "navigation"});
-        }
+        if (typeof trackEvent === 'undefined') return window.dash_clientside.no_update;
+        if (path === "/sus")        trackEvent("navigate_sus",        {category: "navigation"});
+        if (path === "/attrakdiff") trackEvent("navigate_attrakdiff", {category: "navigation"});
+        if (path === "/")           trackEvent("navigate_home",       {category: "navigation"});
         return window.dash_clientside.no_update;
     }
     """,

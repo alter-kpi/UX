@@ -11,6 +11,14 @@ from PIL import Image
 
 from components.charts import create_category_combined
 
+import plotly.io as pio
+import plotly
+import os
+
+plotlyjs = os.path.join(os.path.dirname(plotly.__file__), 'package_data', 'plotly.min.js')
+if os.path.exists(plotlyjs):
+    pio.kaleido.scope.plotlyjs = plotlyjs
+
 
 # ============================================================================
 # Couleur dynamique identique à la jauge native charts.py
@@ -122,6 +130,13 @@ def save_fig_to_png(fig_obj, key, img_dir):
 
     if isinstance(fig_obj, dict):
         fig_obj = go.Figure(fig_obj)
+
+    # Fix kaleido — chemin plotly.js
+    import plotly.io as pio
+    import plotly as _plotly
+    _plotlyjs = os.path.join(os.path.dirname(_plotly.__file__), 'package_data', 'plotly.min.js')
+    if os.path.exists(_plotlyjs):
+        pio.kaleido.scope.plotlyjs = _plotlyjs
 
     # rendu léger (stable Render)
     png_bytes = fig_obj.to_image(format="png")

@@ -5,11 +5,18 @@ import tempfile
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.io as pio
+import plotly as _plotly
 from datetime import datetime
 from dash import Input, Output, State, html, dcc, callback_context, no_update
 import dash_bootstrap_components as dbc
 
 from components.attrakdiff_layout import ATTRAKDIFF_ITEMS, DIM_COLORS, DIM_LABELS
+
+# Fix kaleido — initialisation au niveau module
+_plotlyjs = os.path.join(os.path.dirname(_plotly.__file__), 'package_data', 'plotly.min.js')
+if os.path.exists(_plotlyjs):
+    pio.kaleido.scope.plotlyjs = _plotlyjs
 
 
 # ============================================================
@@ -30,11 +37,6 @@ def parse_file(contents, filename):
 
 
 def compute_scores(df):
-    """
-    Calcule les scores par dimension.
-    Entrée  : colonnes item_1..item_28, valeurs 1–7.
-    Sortie  : dict {dim: score_-3_to_+3}
-    """
     dim_vals = {d: [] for d in ["PQ", "HQ-S", "HQ-I", "ATT"]}
     for item_id, _, _, dim in ATTRAKDIFF_ITEMS:
         col = f"item_{item_id}"
@@ -162,8 +164,7 @@ def make_profile(df):
 # PDF GENERATION
 # ============================================================
 
-def generate_pdf(scores, n_participants, product_name="", ai_text=""):
-    """Génère un rapport PDF AttrakDiff avec fpdf2 + kaleido."""
+def generate_pdf(scores, n_participants, ai_text=""):
     from fpdf import FPDF
 
     fig_portfolio = make_portfolio(scores)
@@ -203,21 +204,13 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Titre
-    title = f"AttrakDiff{' - ' + product_name if product_name else ''}"
     pdf.set_font("Helvetica", "B", 20)
     pdf.set_text_color(33, 37, 41)
-    pdf.cell(0, 10, title, ln=True)
+    pdf.cell(0, 10, "AttrakDiff", ln=True)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 6, f"{n_participants} participants  ·  {datetime.now().strftime('%d %B %Y')}", ln=True)
     pdf.ln(4)
-
-    # Scores
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(33, 37, 41)
-    pdf.cell(0, 8, "Scores par dimension", ln=True)
-    pdf.ln(2)
 
     dim_rgb = {
         "PQ":   (33, 150, 243),
@@ -225,6 +218,11 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
         "HQ-I": (255, 152, 0),
         "ATT":  (233, 30, 99),
     }
+
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(33, 37, 41)
+    pdf.cell(0, 8, "Scores par dimension", ln=True)
+    pdf.ln(2)
 
     col_w = 45
     for dim in ["PQ", "HQ-S", "HQ-I", "ATT"]:
@@ -251,9 +249,6 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
 
     pdf.ln(10)
 
-    # Interprétation rapide
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(80, 80, 80)
     hq_mean = ((scores.get("HQ-S") or 0) + (scores.get("HQ-I") or 0)) / 2
     pq_val  = scores.get("PQ") or 0
     if hq_mean > 1 and pq_val > 1:
@@ -266,22 +261,22 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
         zone = "Inutile - des ameliorations sont necessaires sur toutes les dimensions."
     else:
         zone = "Neutre - le produit se situe dans la zone centrale du portfolio."
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(80, 80, 80)
     pdf.multi_cell(0, 6, f"Zone portfolio : {zone}")
     pdf.ln(4)
 
-    # Portfolio
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(33, 37, 41)
     pdf.cell(0, 8, "Diagramme Portfolio", ln=True)
     pdf.image(path_portfolio, x=10, w=120)
     pdf.ln(4)
 
-    # Radar
     pdf.cell(0, 8, "Vue Radar", ln=True)
     pdf.image(path_radar, x=35, w=90)
     pdf.ln(4)
 
-    # Détail items
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(33, 37, 41)
@@ -296,7 +291,6 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
         score_val = scores.get(dim)
         score_str = f"{score_val:+.2f}" if score_val is not None else "N/A"
         pdf.cell(0, 7, f"  {dim} - {DIM_LABELS[dim]}  (score : {score_str})", fill=True, ln=True)
-
         items_dim = [(i, l, r2) for i, l, r2, d in ATTRAKDIFF_ITEMS if d == dim]
         for item_id, left, right in items_dim:
             pdf.set_fill_color(250, 250, 250)
@@ -305,7 +299,6 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
             pdf.cell(0, 5, f"   item_{item_id}   {left}  /  {right}", fill=True, ln=True)
         pdf.ln(3)
 
-    # Analyse IA
     if ai_text and ai_text.strip():
         pdf.add_page()
         pdf.set_font("Helvetica", "B", 13)
@@ -314,7 +307,6 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
         pdf.ln(2)
         pdf.set_font("Helvetica", "", 10)
         pdf.set_text_color(50, 50, 50)
-        # Rendu ligne par ligne pour gérer les titres markdown
         for line in ai_text.split("\n"):
             if line.startswith("#### "):
                 pdf.set_font("Helvetica", "B", 11)
@@ -327,12 +319,11 @@ def generate_pdf(scores, n_participants, product_name="", ai_text=""):
 
     os.unlink(path_portfolio)
     os.unlink(path_radar)
-
     return bytes(pdf.output())
 
 
 # ============================================================
-# UI RÉSULTATS
+# UI RÉSULTATS — Dashboard
 # ============================================================
 
 def make_score_cards(scores, n_participants):
@@ -364,65 +355,40 @@ def make_score_cards(scores, n_participants):
     return dbc.Row(cols, className="g-3 mb-3")
 
 
-def make_action_bar():
-    return dbc.Row([
-        dbc.Col([
-            dbc.Button([html.I(className="bi bi-filetype-pdf me-2"), "Télécharger le rapport PDF"],
-                       id="attrakdiff-btn-pdf", color="danger", outline=True, size="sm", n_clicks=0),
-        ], width="auto"),
-        dbc.Col([
-            dbc.Button([html.I(className="bi bi-stars me-2"), "Générer l'analyse IA"],
-                       id="attrakdiff-btn-ai", color="primary", outline=True, size="sm", n_clicks=0),
-        ], width="auto"),
-    ], className="mb-3 g-2")
-
-
-def make_results_layout(df, scores):
+def make_dashboard_content(df, scores):
     portfolio = make_portfolio(scores)
     radar     = make_radar(scores)
     profile   = make_profile(df)
     display_df = df[[f"item_{i}" for i in range(1, 29)]].copy()
     display_df.columns = [f"Q{i}" for i in range(1, 29)]
 
-    tabs = dbc.Tabs([
-        dbc.Tab(
-            dbc.Card(dbc.CardBody(dbc.Row([
-                dbc.Col(dcc.Graph(figure=portfolio, config={"displayModeBar": False}), width=7),
-                dbc.Col(dcc.Graph(figure=radar,     config={"displayModeBar": False}), width=5),
-            ])), className="border-0"),
-            label="📊 Portfolio & Radar", tab_id="tab-portfolio",
-        ),
-        dbc.Tab(
-            dbc.Card(dbc.CardBody(
-                dcc.Graph(figure=profile, config={"displayModeBar": False})
-            ), className="border-0"),
-            label="📋 Profil de mots", tab_id="tab-profile",
-        ),
-        dbc.Tab(
-            dbc.Card(dbc.CardBody([
-                html.P(f"{len(df)} participants - aperçu des 30 premières lignes",
-                       className="text-muted small mb-2"),
-                dbc.Table.from_dataframe(display_df.head(30),
-                                         striped=True, hover=True, responsive=True, size="sm"),
-            ]), className="border-0"),
-            label="🔍 Données", tab_id="tab-data",
-        ),
-        dbc.Tab(
-            dbc.Card(dbc.CardBody([
-                html.Div(id="attrakdiff-ia-output",
-                         children=html.P("Cliquez sur « Générer l'analyse IA » pour obtenir "
-                                         "une interprétation automatique de vos résultats.",
-                                         className="text-muted")),
-            ]), className="border-0"),
-            label="🤖 Analyse IA", tab_id="tab-ia",
-        ),
-    ], active_tab="tab-portfolio", className="mt-2")
-
     return html.Div([
         html.Hr(),
         make_score_cards(scores, len(df)),
-        make_action_bar(),
-        tabs,
+        dbc.Tabs([
+            dbc.Tab(
+                dbc.Card(dbc.CardBody(dbc.Row([
+                    dbc.Col(dcc.Graph(figure=portfolio, config={"displayModeBar": False}), width=7),
+                    dbc.Col(dcc.Graph(figure=radar,     config={"displayModeBar": False}), width=5),
+                ])), className="border-0"),
+                label="📊 Portfolio & Radar", tab_id="tab-portfolio",
+            ),
+            dbc.Tab(
+                dbc.Card(dbc.CardBody(
+                    dcc.Graph(figure=profile, config={"displayModeBar": False})
+                ), className="border-0"),
+                label="📋 Profil de mots", tab_id="tab-profile",
+            ),
+            dbc.Tab(
+                dbc.Card(dbc.CardBody([
+                    html.P(f"{len(df)} participants - aperçu des 30 premières lignes",
+                           className="text-muted small mb-2"),
+                    dbc.Table.from_dataframe(display_df.head(30),
+                                             striped=True, hover=True, responsive=True, size="sm"),
+                ]), className="border-0"),
+                label="🔍 Données brutes", tab_id="tab-data",
+            ),
+        ], active_tab="tab-portfolio", className="mt-2")
     ])
 
 
@@ -432,14 +398,14 @@ def make_results_layout(df, scores):
 
 def register_callbacks(app):
 
-    # ── 1. Upload / Fichier exemple → store + résultats ──────
+    # ── 1. Upload / Fichier exemple ───────────────────────────
     @app.callback(
         Output("attrakdiff-results",       "children"),
         Output("attrakdiff-upload-status", "children"),
         Output("attrakdiff-store",         "data"),
-        Input("attrakdiff-upload",         "contents"),
+        Input("attrakdiff-upload-btn",     "contents"),
         Input("attrakdiff-btn-sample",     "n_clicks"),
-        State("attrakdiff-upload",         "filename"),
+        State("attrakdiff-upload-btn",     "filename"),
         prevent_initial_call=True,
     )
     def handle_data(contents, n_sample, filename):
@@ -451,11 +417,11 @@ def register_callbacks(app):
         if "btn-sample" in trigger and n_sample:
             df     = make_sample_df(20)
             scores = compute_scores(df)
-            store  = {"scores": scores, "df_json": df.to_json(), "n": len(df)}
+            store  = {"scores": scores, "df_json": df.to_json(), "n": len(df), "ai_text": ""}
             return (
-                make_results_layout(df, scores),
+                make_dashboard_content(df, scores),
                 dbc.Alert([html.I(className="bi bi-check-circle me-2"),
-                           "Fichier exemple chargé - 20 participants simulés."],
+                           "Fichier exemple chargé — 20 participants simulés."],
                           color="success", dismissable=True, className="mt-2"),
                 store,
             )
@@ -472,30 +438,46 @@ def register_callbacks(app):
                     [html.Strong("Colonnes manquantes : "), preview],
                     color="warning", dismissable=True), no_update
 
-            # Validation valeurs
             for col in [f"item_{i}" for i in range(1, 29)]:
                 if col in df.columns and not df[col].between(1, 7).all():
                     return no_update, dbc.Alert(
-                        f"La colonne {col} contient des valeurs hors de [1–7]. "
-                        "Vérifiez vos données.",
+                        f"La colonne {col} contient des valeurs hors de [1–7].",
                         color="warning", dismissable=True), no_update
 
             scores = compute_scores(df)
-            store  = {"scores": scores, "df_json": df.to_json(), "n": len(df)}
+            store  = {"scores": scores, "df_json": df.to_json(), "n": len(df), "ai_text": ""}
             return (
-                make_results_layout(df, scores),
+                make_dashboard_content(df, scores),
                 dbc.Alert([html.I(className="bi bi-check-circle me-2"),
-                           f"{filename} importé - {len(df)} participants."],
+                           f"{filename} importé — {len(df)} participants."],
                           color="success", dismissable=True, className="mt-2"),
                 store,
             )
 
         return no_update, no_update, no_update
 
-    # ── 2. Téléchargement du modèle CSV ──────────────────────
+    # ── 2. Onglets ────────────────────────────────────────────
+    @app.callback(
+        Output("attrakdiff-tab-dashboard", "style"),
+        Output("attrakdiff-tab-details",   "style"),
+        Output("attrakdiff-tab-ia",        "style"),
+        Output("attrakdiff-tab-pdf",       "style"),
+        Input("attrakdiff-tabs",           "active_tab"),
+        Input("attrakdiff-store",          "data"),
+    )
+    def show_tabs(active, store):
+        is_loaded = store is not None and store.get("n", 0) > 0
+        return (
+            {"display": "block"} if active == "tab-dashboard" and is_loaded else {"display": "none"},
+            {"display": "block"} if active == "tab-details"   else {"display": "none"},
+            {"display": "block"} if active == "tab-ia"        else {"display": "none"},
+            {"display": "block"} if active == "tab-pdf"       else {"display": "none"},
+        )
+
+    # ── 3. Téléchargement modèle CSV ──────────────────────────
     @app.callback(
         Output("attrakdiff-download-template", "data"),
-        Input("attrakdiff-btn-template",        "n_clicks"),
+        Input("attrakdiff-btn-template",       "n_clicks"),
         prevent_initial_call=True,
     )
     def download_template(n):
@@ -503,27 +485,37 @@ def register_callbacks(app):
             return no_update
         return dict(content=make_template_csv(), filename="attrakdiff_modele.csv", type="text/csv")
 
-    # ── 3. Export PDF ─────────────────────────────────────────
+    # ── 4. Reset ──────────────────────────────────────────────
     @app.callback(
-        Output("attrakdiff-download-pdf", "data"),
-        Input("attrakdiff-btn-pdf",        "n_clicks"),
-        State("attrakdiff-store",          "data"),
+        Output("attrakdiff-results",       "children", allow_duplicate=True),
+        Output("attrakdiff-upload-status", "children", allow_duplicate=True),
+        Output("attrakdiff-store",         "data",     allow_duplicate=True),
+        Output("attrakdiff-tabs",          "active_tab"),
+        Output("attrakdiff-ia-text",       "children"),
+        Output("attrakdiff-pdf-preview",   "children"),
+        Output("attrakdiff-pdf-download-zone", "children"),
+        Input("attrakdiff-btn-reset",      "n_clicks"),
         prevent_initial_call=True,
     )
-    def download_pdf(n, store):
-        if not n or not store:
-            return no_update
-        scores  = store.get("scores", {})
-        n_part  = store.get("n", 0)
-        ai_text = store.get("ai_text", "")
-        pdf_bytes = generate_pdf(scores, n_part, ai_text=ai_text)
-        return dcc.send_bytes(pdf_bytes, "rapport_attrakdiff.pdf")
+    def reset_all(n):
+        return "", "", None, "tab-dashboard", "", "", ""
 
-    # ── 4. Analyse IA ─────────────────────────────────────────
+    # ── 5. Modal Aide ─────────────────────────────────────────
     @app.callback(
-        Output("attrakdiff-ia-output", "children"),
-        Output("attrakdiff-store",     "data", allow_duplicate=True),
-        Input("attrakdiff-btn-ai",     "n_clicks"),
+        Output("attrakdiff-modal-help", "is_open"),
+        Input("attrakdiff-btn-help",    "n_clicks"),
+        Input("attrakdiff-close-help",  "n_clicks"),
+        State("attrakdiff-modal-help",  "is_open"),
+        prevent_initial_call=True,
+    )
+    def toggle_help(open_click, close_click, is_open):
+        return not is_open
+
+    # ── 6. Analyse IA ─────────────────────────────────────────
+    @app.callback(
+        Output("attrakdiff-ia-text",   "children", allow_duplicate=True),
+        Output("attrakdiff-store",     "data",     allow_duplicate=True),
+        Input("attrakdiff-btn-ai-tab", "n_clicks"),
         State("attrakdiff-store",      "data"),
         prevent_initial_call=True,
     )
@@ -538,27 +530,27 @@ def register_callbacks(app):
 
 Voici les résultats d'un questionnaire AttrakDiff 2 portant sur {n_part} participants :
 
-- PQ  (Qualité Pragmatique)     : {scores.get('PQ', 'N/A'):+.2f}  (échelle –3 à +3)
-- HQ-S (Stimulation hédonique)  : {scores.get('HQ-S', 'N/A'):+.2f}
-- HQ-I (Identité hédonique)     : {scores.get('HQ-I', 'N/A'):+.2f}
-- ATT  (Attractivité)           : {scores.get('ATT', 'N/A'):+.2f}
+- PQ  (Qualité Pragmatique)    : {scores.get('PQ', 'N/A'):+.2f}  (échelle –3 à +3)
+- HQ-S (Stimulation hédonique) : {scores.get('HQ-S', 'N/A'):+.2f}
+- HQ-I (Identité hédonique)    : {scores.get('HQ-I', 'N/A'):+.2f}
+- ATT  (Attractivité)          : {scores.get('ATT', 'N/A'):+.2f}
 
 Qualité Hédonique moyenne (HQ-S + HQ-I / 2) : {((scores.get('HQ-S') or 0) + (scores.get('HQ-I') or 0)) / 2:+.2f}
 
-Rappel des zones du diagramme portfolio AttrakDiff :
+Zones du diagramme portfolio AttrakDiff :
 - Souhaité  : HQ > +1 et PQ > +1  (idéal)
 - Orienté tâche : HQ < 0 et PQ > +1
 - Superflu  : HQ > +1 et PQ < 0
 - Inutile   : HQ < 0 et PQ < 0
 - Neutre    : zone centrale
 
-Fournis une analyse structurée et professionnelle en français incluant :
-1. La zone portfolio dans laquelle se situe le produit et ce que cela signifie
-2. L'interprétation de chaque dimension (forces et points à améliorer)
-3. 3 recommandations UX concrètes et priorisées pour améliorer l'expérience
-4. Une conclusion synthétique en 2-3 phrases
+Fournis une analyse structurée en français avec :
+#### Score global et zone portfolio
+#### Interprétation par dimension
+#### Recommandations UX (3 recommandations priorisées)
+#### Conclusion
 
-Format : utilise uniquement #### pour les titres, pas d'emojis, pas de tableaux.
+Format : uniquement #### pour les titres, pas d'emojis, pas de tableaux.
 """
 
         try:
@@ -573,26 +565,50 @@ Format : utilise uniquement #### pour les titres, pas d'emojis, pas de tableaux.
             ai_text = response.choices[0].message.content.strip()
         except Exception as e:
             return dbc.Alert(
-                [html.Strong("Erreur IA : "), str(e),
-                 html.Br(),
-                 html.Small("Vérifiez que la variable d'environnement OPENAI_API_KEY est définie.")],
+                [html.Strong("Erreur IA : "), str(e)],
                 color="danger"), no_update
 
-        # Sauvegarder dans le store pour inclusion dans le PDF
         updated_store = {**store, "ai_text": ai_text}
+        return ai_text, updated_store
 
-        # Affichage formaté
-        paragraphs = [p.strip() for p in ai_text.split("\n") if p.strip()]
-        output = html.Div([
-            dbc.Alert(
-                [html.I(className="bi bi-stars me-2"), "Analyse générée avec succès"],
-                color="success", className="mb-3"
-            ),
-            *[html.P(p, className="mb-2") for p in paragraphs],
-            html.Hr(),
-            html.Small([
-                html.I(className="bi bi-info-circle me-1"),
-                "Cette analyse a été générée par IA et doit être interprétée par un expert UX."
-            ], className="text-muted"),
-        ])
-        return output, updated_store
+    # ── 7. Export PDF ─────────────────────────────────────────
+    @app.callback(
+        Output("attrakdiff-pdf-preview",       "children", allow_duplicate=True),
+        Output("attrakdiff-pdf-download-zone", "children", allow_duplicate=True),
+        Input("attrakdiff-btn-pdf-tab",        "n_clicks"),
+        State("attrakdiff-store",              "data"),
+        prevent_initial_call=True,
+    )
+    def generate_pdf_preview(n, store):
+        if not n or not store:
+            return no_update, no_update
+
+        scores  = store.get("scores", {})
+        n_part  = store.get("n", 0)
+        ai_text = store.get("ai_text", "")
+
+        pdf_bytes = generate_pdf(scores, n_part, ai_text=ai_text)
+        b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+
+        iframe = html.Iframe(
+            src=f"data:application/pdf;base64,{b64}",
+            style={"width": "100%", "height": "100%", "border": "none"}
+        )
+        download_button = html.A(
+            dbc.Button("Télécharger le PDF", color="success"),
+            href=f"data:application/pdf;base64,{b64}",
+            download="rapport_attrakdiff.pdf",
+            target="_blank"
+        )
+        return iframe, download_button
+
+    # ── 8. Hidden callbacks (IDs legacy conservés) ────────────
+    @app.callback(
+        Output("attrakdiff-ia-output", "children"),
+        Output("attrakdiff-store",     "data", allow_duplicate=True),
+        Input("attrakdiff-btn-ai",     "n_clicks"),
+        State("attrakdiff-store",      "data"),
+        prevent_initial_call=True,
+    )
+    def generate_ai_hidden(n, store):
+        return no_update, no_update

@@ -8,8 +8,6 @@ import dash_bootstrap_components as dbc
 # ============================================================
 
 ATTRAKDIFF_ITEMS = [
-    # (id, label_gauche, label_droite, dimension)
-    # --- PQ : Qualité Pragmatique ---
     (1,  "Obstructif",          "Aidant",                "PQ"),
     (2,  "Compliqué",           "Simple",                "PQ"),
     (3,  "Imprévisible",        "Prévisible",            "PQ"),
@@ -17,7 +15,6 @@ ATTRAKDIFF_ITEMS = [
     (5,  "Peu maniable",        "Maniable",              "PQ"),
     (6,  "Peu pratique",        "Pratique",              "PQ"),
     (7,  "Difficile à utiliser","Facile à utiliser",     "PQ"),
-    # --- HQ-S : Hédonique / Stimulation ---
     (8,  "Conventionnel",       "Inventif",              "HQ-S"),
     (9,  "Sans imagination",    "Créatif",               "HQ-S"),
     (10, "Prudent",             "Audacieux",             "HQ-S"),
@@ -25,7 +22,6 @@ ATTRAKDIFF_ITEMS = [
     (12, "Ennuyeux",            "Captivant",             "HQ-S"),
     (13, "Sans exigence",       "Ambitieux",             "HQ-S"),
     (14, "Ordinaire",           "Inédit",                "HQ-S"),
-    # --- HQ-I : Hédonique / Identité ---
     (15, "Peu présentable",     "Présentable",           "HQ-I"),
     (16, "Repoussant",          "Accueillant",           "HQ-I"),
     (17, "Isole des autres",    "Intègre aux autres",    "HQ-I"),
@@ -33,7 +29,6 @@ ATTRAKDIFF_ITEMS = [
     (19, "Vulgaire",            "Stylé",                 "HQ-I"),
     (20, "Amateur",             "Expert",                "HQ-I"),
     (21, "Démodé",              "Tendance",              "HQ-I"),
-    # --- ATT : Attractivité ---
     (22, "Désagréable",         "Agréable",              "ATT"),
     (23, "Laid",                "Beau",                  "ATT"),
     (24, "Rebutant",            "Attrayant",             "ATT"),
@@ -58,127 +53,297 @@ DIM_LABELS = {
 }
 
 # ============================================================
-# LAYOUT PRINCIPAL  (/attrakdiff)
+# SECTION DASHBOARD
+# ============================================================
+
+attrakdiff_dashboard_section = html.Div([
+    html.Div(id="attrakdiff-upload-status", className="mb-2"),
+    html.Div(id="attrakdiff-results"),
+])
+
+# ============================================================
+# SECTION DÉTAILS
+# ============================================================
+
+attrakdiff_details_section = html.Div([
+    html.Div(
+        id="attrakdiff-data-preview",
+        style={
+            "maxHeight": "85vh",
+            "overflowY": "auto",
+            "border": "1px solid #ddd",
+            "padding": "10px",
+            "backgroundColor": "white",
+            "borderRadius": "6px"
+        }
+    )
+])
+
+# ============================================================
+# SECTION ANALYSE IA
+# ============================================================
+
+attrakdiff_ia_section = html.Div([
+    dbc.Button(
+        "🧠 Générer l'analyse IA",
+        id="attrakdiff-btn-ai-tab",
+        color="primary",
+        style={"padding": "3px 10px", "whiteSpace": "nowrap", "width": "200px", "marginBottom": "20px"}
+    ),
+    html.P(
+        "L'analyse ci-dessous est générée automatiquement par un modèle de "
+        "langage avancé (OpenAI GPT-4o). Elle est produite en temps réel à "
+        "partir des scores de votre questionnaire et n'est jamais enregistrée.",
+        style={
+            "fontSize": "14px",
+            "color": "#555",
+            "marginBottom": "20px",
+            "textAlign": "center",
+            "maxWidth": "1600px",
+            "marginLeft": "auto",
+            "marginRight": "auto"
+        }
+    ),
+    dcc.Loading(
+        id="attrakdiff-loading-ai",
+        type="circle",
+        children=dcc.Markdown(
+            id="attrakdiff-ia-text",
+            style={"whiteSpace": "pre-wrap", "marginTop": "20px"}
+        )
+    )
+])
+
+# ============================================================
+# SECTION PDF
+# ============================================================
+
+attrakdiff_pdf_section = html.Div([
+    dbc.Button(
+        "📄 Générer le PDF",
+        id="attrakdiff-btn-pdf-tab",
+        color="primary",
+        style={"marginBottom": "20px"}
+    ),
+    dcc.Loading(
+        id="attrakdiff-loading-pdf",
+        type="circle",
+        children=html.Div(
+            id="attrakdiff-pdf-preview",
+            style={
+                "height": "75vh",
+                "overflowY": "auto",
+                "border": "1px solid #ddd",
+                "padding": "10px",
+                "backgroundColor": "white",
+                "borderRadius": "6px"
+            }
+        )
+    ),
+    html.Div(id="attrakdiff-pdf-download-zone", style={"marginTop": "20px"})
+])
+
+# ============================================================
+# MODAL AIDE
+# ============================================================
+
+attrakdiff_modal_help = dbc.Modal(
+    [
+        dbc.ModalHeader(dbc.ModalTitle("Guide d'utilisation AttrakDiff")),
+        dbc.ModalBody([
+            html.Div([
+                html.H5("Sommaire", className="mb-2"),
+                html.Ul([
+                    html.Li("1. Remplir le fichier Excel", style={"marginBottom": "4px"}),
+                    html.Li("2. Les 4 dimensions AttrakDiff", style={"marginBottom": "4px"}),
+                    html.Li("3. Calcul des scores", style={"marginBottom": "4px"}),
+                    html.Li("4. Lire le diagramme Portfolio", style={"marginBottom": "4px"}),
+                    html.Li("5. Analyse IA", style={"marginBottom": "4px"}),
+                ], style={"lineHeight": "1.4"})
+            ], className="mb-3"),
+
+            html.Div([
+                html.H5("1. Remplir le fichier Excel", className="mt-3 mb-2"),
+                html.P("• 28 colonnes nommées item_1 à item_28, une ligne par participant."),
+                html.P("• Valeurs : entiers de 1 à 7."),
+                html.P("• 1 = pôle négatif (gauche), 7 = pôle positif (droite)."),
+
+                html.Hr(className="my-3"),
+
+                html.H5("2. Les 4 dimensions", className="mt-3 mb-2"),
+                *[
+                    html.P([
+                        html.Span("● ", style={"color": DIM_COLORS[dim]}),
+                        html.Strong(f"{dim} — {DIM_LABELS[dim]} : "),
+                        html.Span(f"items {[i for i,_,_,d in ATTRAKDIFF_ITEMS if d==dim][0]} "
+                                  f"à {[i for i,_,_,d in ATTRAKDIFF_ITEMS if d==dim][-1]}")
+                    ])
+                    for dim in ["PQ", "HQ-S", "HQ-I", "ATT"]
+                ],
+
+                html.Hr(className="my-3"),
+
+                html.H5("3. Calcul des scores", className="mt-3 mb-2"),
+                html.Div([
+                    html.P("1. Moyenne de chaque item par dimension"),
+                    html.P("2. Score = moyenne – 4  (ramène l'échelle 1–7 vers –3/+3)"),
+                    html.P("3. Score final par dimension : –3 (très négatif) → +3 (très positif)", style={"fontWeight": "bold"}),
+                ], style={"border": "1px solid #ddd", "padding": "10px", "borderRadius": "6px", "backgroundColor": "#f9f9f9"}),
+
+                html.Hr(className="my-3"),
+
+                html.H5("4. Lire le diagramme Portfolio", className="mt-3 mb-2"),
+                html.P("• Axe X : Qualité Hédonique moyenne (HQ-S + HQ-I) / 2"),
+                html.P("• Axe Y : Qualité Pragmatique (PQ)"),
+                html.P("• Zone Souhaité (haut droite) : produit utile ET attrayant — idéal"),
+                html.P("• Zone Orienté tâche (bas droite) : efficace mais peu stimulant"),
+                html.P("• Zone Superflu (haut gauche) : attrayant mais peu utilisable"),
+                html.P("• Zone Inutile (bas gauche) : améliorations nécessaires sur tout"),
+
+                html.Hr(className="my-3"),
+
+                html.H5("5. Analyse IA", className="mt-3 mb-2"),
+                html.P("• Utilise OpenAI GPT-4o avec les scores par dimension."),
+                html.P("• Aucune donnée individuelle n'est transmise au modèle."),
+                html.P("• L'analyse n'est jamais stockée."),
+
+            ], style={"maxHeight": "70vh", "overflowY": "auto"})
+        ]),
+        dbc.ModalFooter(
+            dbc.Button("Fermer", id="attrakdiff-close-help", className="ms-auto", color="primary")
+        ),
+    ],
+    id="attrakdiff-modal-help",
+    is_open=False,
+    size="lg",
+)
+
+# ============================================================
+# LAYOUT PRINCIPAL
 # ============================================================
 
 layout = dbc.Container([
 
-    dbc.Row([
-        dbc.Col([
-            html.H3([
-                html.I(className="bi bi-stars me-2"),
-                "AttrakDiff"
-            ], className="mb-1"),
-            html.P(
-                "Évaluez la qualité pragmatique, hédonique et l'attractivité perçue de votre interface.",
-                className="text-muted mb-4"
-            ),
-        ])
-    ]),
+    attrakdiff_modal_help,
 
-    dbc.Row([
-        # --- Zone d'import ---
-        dbc.Col([
-            dbc.Card([
-                dbc.CardBody([
-                    html.H5([
-                        html.I(className="bi bi-upload me-2"),
-                        "Importer vos données"
-                    ], className="mb-3"),
-                    html.P([
-                        "Fichier Excel ou CSV avec ",
-                        html.Strong("28 colonnes"),
-                        " nommées ",
-                        html.Code("item_1"),
-                        " à ",
-                        html.Code("item_28"),
-                        ", une ligne par participant. Valeurs : 1 à 7."
-                    ], className="text-muted small mb-3"),
+    dcc.Download(id="attrakdiff-download-template"),
+    dcc.Store(id="attrakdiff-store"),
+    dcc.Upload(id="attrakdiff-upload", children=html.Div(), multiple=False,
+               style={"display": "none"}),
 
+    # HEADER — titre + boutons
+    dbc.Row([
+        dbc.Col(
+            html.H4("Analyse du questionnaire AttrakDiff", className="mt-3 mb-3"),
+            md=6,
+            className="d-flex align-items-center"
+        ),
+        dbc.Col(
+            dbc.Row([
+                dbc.Col(
                     dcc.Upload(
-                        id="attrakdiff-upload",
-                        children=html.Div([
-                            html.I(className="bi bi-file-earmark-arrow-up fs-2 text-muted d-block mb-2"),
-                            html.Span("Glissez-déposez ou ", className="text-muted"),
-                            html.A("parcourez", className="text-primary fw-bold"),
-                            html.Span(" votre fichier", className="text-muted"),
-                            html.Br(),
-                            html.Small(".xlsx · .xls · .csv", className="text-muted"),
-                        ]),
-                        style={
-                            "width": "100%",
-                            "minHeight": "130px",
-                            "display": "flex",
-                            "alignItems": "center",
-                            "justifyContent": "center",
-                            "borderWidth": "2px",
-                            "borderStyle": "dashed",
-                            "borderRadius": "8px",
-                            "textAlign": "center",
-                            "borderColor": "#dee2e6",
-                            "backgroundColor": "#f8f9fa",
-                            "cursor": "pointer",
-                            "padding": "20px",
-                        },
-                        multiple=False
+                        id="attrakdiff-upload-btn",
+                        children=dbc.Button(
+                            [html.I(className="bi bi-folder2-open me-1"), " Importer"],
+                            color="secondary",
+                            style={"padding": "3px 5px", "whiteSpace": "nowrap", "width": "140px"}
+                        ),
+                        multiple=False,
+                        style={"cursor": "pointer"}
                     ),
+                    width="auto"
+                ),
+                dbc.Col(
+                    dbc.Button(
+                        [html.I(className="bi bi-stars me-1"), " Charger exemple"],
+                        id="attrakdiff-btn-sample",
+                        color="success",
+                        style={"padding": "3px 5px", "whiteSpace": "nowrap", "width": "160px"},
+                        n_clicks=0
+                    ),
+                    width="auto"
+                ),
+                dbc.Col(
+                    dbc.Button(
+                        [html.I(className="bi bi-trash me-1"), " Reset"],
+                        id="attrakdiff-btn-reset",
+                        color="danger",
+                        style={"padding": "3px 5px", "whiteSpace": "nowrap", "width": "120px"},
+                        n_clicks=0
+                    ),
+                    width="auto"
+                ),
+                dbc.Col(
+                    dbc.Button(
+                        [html.I(className="bi bi-download me-1"), " Modèle Excel"],
+                        id="attrakdiff-btn-template",
+                        color="info",
+                        style={"padding": "3px 5px", "whiteSpace": "nowrap", "width": "150px"},
+                        n_clicks=0
+                    ),
+                    width="auto"
+                ),
+                dbc.Col(
+                    dbc.Button(
+                        [html.I(className="bi bi-info-circle me-1"), " Aide"],
+                        id="attrakdiff-btn-help",
+                        color="dark",
+                        style={"padding": "3px 5px", "whiteSpace": "nowrap", "width": "100px"},
+                        n_clicks=0
+                    ),
+                    width="auto"
+                ),
+            ], className="g-2 justify-content-end mt-3"),
+            md=6,
+            className="d-flex justify-content-end align-items-center"
+        ),
+    ], className="g-2"),
 
-                    html.Div([
-                        dbc.Button([
-                            html.I(className="bi bi-file-earmark-text me-2"),
-                            "Fichier exemple"
-                        ], id="attrakdiff-btn-sample", color="outline-secondary",
-                           size="sm", className="mt-3 me-2", n_clicks=0),
-                        dbc.Button([
-                            html.I(className="bi bi-download me-2"),
-                            "Télécharger le modèle"
-                        ], id="attrakdiff-btn-template", color="outline-primary",
-                           size="sm", className="mt-3", n_clicks=0),
-                    ]),
+    # Info fichier
+    html.Div(id="attrakdiff-file-info", style={"display": "none"}),
 
-                    dcc.Download(id="attrakdiff-download-template"),
-                    html.Div(id="attrakdiff-upload-status", className="mt-3"),
-                ])
-            ])
-        ], width=8),
+    # ONGLETS
+    dbc.Tabs(
+        id="attrakdiff-tabs",
+        active_tab="tab-dashboard",
+        children=[
+            dbc.Tab(label="Dashboard",   tab_id="tab-dashboard"),
+            dbc.Tab(label="Détails",     tab_id="tab-details"),
+            dbc.Tab(label="Analyse IA",  tab_id="tab-ia"),
+            dbc.Tab(label="PDF",         tab_id="tab-pdf"),
+        ]
+    ),
 
-        # --- Info dimensions ---
-        dbc.Col([
-            dbc.Card([
-                dbc.CardBody([
-                    html.H6("Les 4 dimensions", className="mb-3 fw-bold"),
-                    *[
-                        html.Div([
-                            html.Span(
-                                "●",
-                                style={"color": DIM_COLORS[dim], "marginRight": "8px", "fontSize": "18px"}
-                            ),
-                            html.Strong(dim),
-                            html.Span(f"  {DIM_LABELS[dim]}", className="text-muted small"),
-                            html.Br(),
-                            html.Div(style={"height": "8px"}),
-                        ])
-                        for dim in ["PQ", "HQ-S", "HQ-I", "ATT"]
-                    ],
-                    html.Hr(className="my-2"),
-                    html.Small([
-                        html.I(className="bi bi-info-circle me-1"),
-                        "28 paires · Échelle 1–7 · Scores –3 à +3"
-                    ], className="text-muted"),
-                ])
-            ], className="h-100"),
-        ], width=4),
-    ], className="mb-4"),
-
-    # Zone résultats (remplie par callback)
-    html.Div(id="attrakdiff-results"),
+    dbc.Card(
+        dbc.CardBody(
+            html.Div([
+                html.Div(
+                    dcc.Loading(type="circle", children=attrakdiff_dashboard_section),
+                    id="attrakdiff-tab-dashboard"
+                ),
+                html.Div(attrakdiff_details_section, id="attrakdiff-tab-details",
+                         style={"display": "none"}),
+                html.Div(attrakdiff_ia_section,      id="attrakdiff-tab-ia",
+                         style={"display": "none"}),
+                html.Div(attrakdiff_pdf_section,     id="attrakdiff-tab-pdf",
+                         style={"display": "none"}),
+            ], style={
+                "minHeight": "85vh",
+                "maxHeight": "85vh",
+                "overflowY": "auto",
+                "padding": "5px",
+                "overflowX": "hidden"
+            })
+        ),
+        className="shadow-sm",
+        style={"padding": "0px", "backgroundColor": "#ffffff", "borderRadius": "0 0 10px 10px"}
+    ),
 
 ], fluid=True)
 
 
 # ============================================================
-# HIDDEN LAYOUTS — nécessaires pour que Dash enregistre
-# les IDs des callbacks même hors de la page active
+# HIDDEN LAYOUTS — IDs nécessaires pour les callbacks globaux
 # ============================================================
 
 dashboard_layout = html.Div([
